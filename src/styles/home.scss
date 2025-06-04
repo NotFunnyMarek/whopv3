@@ -1,0 +1,20 @@
+.home-container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 20px;
+  background-color: var(--dropdown-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    text-align: center;
+    margin-bottom: 12px;
+    color: var(--text-color);
+  }
+
+  p {
+    text-align: center;
+    color: var(--text-color);
+  }
+}

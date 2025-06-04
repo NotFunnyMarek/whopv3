@@ -1,0 +1,87 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f2f2f2;
+
+  .login-card {
+    width: 360px;
+    padding: 24px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      margin: 0 0 16px;
+      text-align: center;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+        color: #555;
+
+        input {
+          margin-top: 4px;
+          padding: 8px 10px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 14px;
+          transition: border 0.2s;
+
+          &:focus {
+            border-color: #007bff;
+            outline: none;
+          }
+        }
+      }
+
+      .btn-primary {
+        margin-top: 16px;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #0069d9;
+        }
+      }
+    }
+
+    .message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      color: #d9534f; /* červená pro chyby */
+      min-height: 20px;
+    }
+
+    .switch-link {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}

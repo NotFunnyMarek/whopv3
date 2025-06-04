@@ -1,0 +1,27 @@
+@import './variables';
+
+/**
+ * Definuje CSS proměnné pro světlé a tmavé téma.
+ * Při aktivní třídě .theme-light nebo .theme-dark na <body> se budou používat odpovídající barvy.
+ */
+.theme-light {
+  --bg-color:             #{$color-bg-light};
+  --text-color:           #{$color-text-light};
+  --border-color:         #{$color-border-light};
+  --icon-color:           #{$color-icon-default};
+  --icon-hover-color:     #{$color-icon-hover};
+  --dropdown-bg-color:    #{$color-dropdown-bg-light};
+  --bottombar-bg:         #{$bottombar-bg-light};
+  --bottombar-text-color: #{$bottombar-text-light};
+}
+
+.theme-dark {
+  --bg-color:             #{$color-bg-dark};
+  --text-color:           #{$color-text-dark};
+  --border-color:         #{$color-border-dark};
+  --icon-color:           #{$color-icon-default};
+  --icon-hover-color:     #{$color-icon-hover};
+  --dropdown-bg-color:    #{$color-dropdown-bg-dark};
+  --bottombar-bg:         #{$bottombar-bg-dark};
+  --bottombar-text-color: #{$bottombar-text-dark};
+}

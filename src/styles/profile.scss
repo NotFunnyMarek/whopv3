@@ -1,0 +1,165 @@
+@import './variables';
+@import './theme';
+
+.profile-container {
+  padding: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+  }
+
+  .profile-error {
+    color: #e53e3e; /* červená pro chyby */
+    margin-bottom: 10px;
+  }
+
+  .profile-success {
+    color: #38a169; /* zelená pro úspěch */
+    margin-bottom: 10px;
+  }
+
+  .profile-form {
+    display: flex;
+    gap: 20px;
+
+    .profile-left {
+      flex: 0 0 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-right: 1px solid var(--border-color);
+      padding-right: 20px;
+
+      .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--text-color);
+      }
+
+      .profile-sub {
+        margin: 4px 0 10px;
+        color: var(--text-color);
+        opacity: 0.7;
+      }
+
+      .btn-logout {
+        margin-top: auto;
+        background-color: transparent;
+        color: #e53e3e;
+        border: 1px solid #e53e3e;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 14px;
+
+        &:hover {
+          background-color: #ffe5e5;
+        }
+      }
+    }
+
+    .profile-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+        color: var(--text-color);
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+          margin-top: 4px;
+          padding: 8px 10px;
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          font-size: 14px;
+          background-color: var(--bg-color);
+          color: var(--text-color);
+          resize: vertical;
+        }
+
+        /* Styl pro disabled input „Email“ */
+        input[type="email"][disabled] {
+          background-color: #f0f0f0;
+          color: #888;
+          cursor: not-allowed;
+        }
+
+        textarea {
+          min-height: 80px;
+        }
+      }
+
+      .phone-input {
+        display: flex;
+        align-items: center;
+
+        span {
+          margin-right: 8px;
+          font-size: 18px;
+        }
+
+        input {
+          flex: 1;
+        }
+      }
+
+      .section-title {
+        margin-top: 20px;
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--text-color);
+
+        input[type="checkbox"] {
+          cursor: pointer;
+        }
+      }
+
+      .btn-save {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #48bb78; /* zelená */
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+
+        &:hover:enabled {
+          background-color: #38a169;
+        }
+      }
+
+      /* Styl pro disabled tlačítko Save */
+      .btn-save:disabled {
+        background-color: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+  }
+}
