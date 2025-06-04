@@ -1,127 +1,266 @@
-// src/styles/card.scss
+/* src/components/card.scss */
 
-@import './variables'; // pokud máš globální proměnné – jinak můžeš vynechat
+.card-container {
+  margin: 1rem;
+  font-family: sans-serif;
+}
 
-.card {
-  background: #000;
-  border-radius: 24px;
-  padding: 16px;
+/* Chybové hlášky */
+.card-error {
+  background: #fee;
+  color: #900;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Tlačítko Create */
+.card-create-btn {
+  background-color: #2563eb;
   color: #fff;
-  width: 100%;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background-color 0.15s ease;
+}
 
-  // --- Hlavička karty ---
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+.card-create-btn:hover {
+  background-color: #1e40af;
+}
 
-    .card__title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+/* ===== Modální okno ===== */
+.card-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
-      & .card__logo {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-      & .card__logo-placeholder {
-        width: 24px;
-        height: 24px;
-        background: #444;
-        border-radius: 50%;
-      }
-      & .card__title-text {
-        font-size: 14px;
-        background: #2a2a2a;
-        padding: 4px 8px;
-        border-radius: 12px;
-        white-space: nowrap;
-      }
-    }
+.card-modal {
+  background: #fff;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 600px;
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 
-    .card__payout-pill {
-      background: #2a2a2a;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-  }
+.card-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+}
 
-  // --- Obsah karty ---
-  &__content {
-    margin: 8px 0 12px 0;
+.card-modal-close:hover {
+  color: #333;
+}
 
-    .card__name {
-      font-size: 18px;
-      font-weight: bold;
-    }
+/* Formulář uvnitř modalu */
+.card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-    .card__details {
-      font-size: 14px;
-      color: #ccc;
-      margin-top: 4px;
-    }
-  }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
 
-  // --- Progress bar + pill ---
-  &__progress {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+.form-group-grouped {
+  display: flex;
+  gap: 1rem;
+}
 
-    .card__progress-bar {
-      flex: 1;
-      background: #333;
-      height: 8px;
-      border-radius: 4px;
-      overflow: hidden;
+.form-group-grouped > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
 
-      .card__progress-fill {
-        background: #0f0; // zelená barva fillu
-        height: 100%;
-        transition: width 0.3s ease;
-      }
-    }
+.required {
+  color: #e53935;
+}
 
-    .card__progress-pill {
-      background: #2a2a2a;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-  }
+.list-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
 
-  // --- Patička karty ---
-  &__footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.list-input-row input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+}
 
-    .card__footer-label {
-      background: #2a2a2a;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      margin-bottom: 8px;
-      white-space: nowrap;
-    }
+.list-add-btn {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
 
-    .card__footer-icons {
-      display: flex;
-      gap: 8px;
-      svg {
-        width: 20px;
-        height: 20px;
-        color: #fff;
-      }
-    }
-  }
+.list-add-btn:hover {
+  background-color: #1e40af;
+}
+
+.list-container {
+  list-style: none;
+  margin: 0.5rem 0 0 0;
+  padding: 0;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  background: #f3f3f3;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.list-item a {
+  flex: 1;
+  word-break: break-all;
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.list-delete-btn {
+  background: transparent;
+  border: none;
+  color: #e53935;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.list-delete-btn:hover {
+  color: #b71c1c;
+}
+
+.form-submit-btn {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  align-self: flex-end;
+  transition: background-color 0.15s ease;
+}
+
+.form-submit-btn:hover {
+  background-color: #1e40af;
+}
+
+/* ===== Grid s kartami ===== */
+.cards-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.card-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  background-color: #f7f7f7;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.card-tag {
+  background: #2563eb;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+}
+
+.card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-line {
+  font-size: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-percent {
+  font-weight: bold;
+}
+
+.card-progress-bar {
+  background: #eee;
+  border-radius: 0.25rem;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  background: #2563eb;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.card-info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.platform-pill {
+  display: inline-block;
+  background: #2563eb;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  margin-right: 0.25rem;
+  font-size: 0.75rem;
 }
