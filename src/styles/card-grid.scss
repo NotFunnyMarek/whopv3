@@ -1,0 +1,29 @@
+// src/styles/card-grid.scss
+
+.card-grid {
+  display: grid;
+  /* 4 karty vedle sebe na desktopu */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive: 3 sloupce pod 1200px */
+@media (max-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* 2 sloupce pod 900px */
+@media (max-width: 900px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* 1 sloupec pod 600px */
+@media (max-width: 600px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}

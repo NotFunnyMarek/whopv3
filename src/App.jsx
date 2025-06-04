@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';  // ← nově importujeme Profile
 
+
 const App = () => {
   return (
     <BrowserRouter>

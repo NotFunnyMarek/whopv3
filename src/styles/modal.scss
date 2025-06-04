@@ -1,0 +1,42 @@
+// src/styles/modal.scss
+
+.modal__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); // tmavý poloprůhledný overlay
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; // musí být nad vším ostatním
+}
+
+.modal__content {
+  background-color: #1e1e1e;  // tmavé pozadí, ladíme ke styles aplikace
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px; // maximální šířka modalu
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Tlačítko pro zavření v pravém horním rohu */
+.modal__close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Při hoveru lze změnit barvu křížku */
+.modal__close-btn:hover {
+  color: #f00; // například červený při hoveru
+}
