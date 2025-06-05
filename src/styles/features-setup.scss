@@ -1,0 +1,269 @@
+/* src/styles/features-setup.scss */
+
+@import './variables';
+@import './theme';
+
+/* ==============================
+   Kontejner celé stránky
+   ============================== */
+.features-setup-container {
+  max-width: 1200px;                     
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  background-color: var(--bg-color);
+  box-sizing: border-box;
+}
+
+/* ============================
+   Hlavička (nadpis)
+   ============================ */
+.features-setup-header {
+  margin-bottom: var(--spacing-md);
+
+  .features-setup-title {
+    font-family: var(--font-sans);
+    font-size: 2rem;                       
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+}
+
+/* ============================
+   Obsah (instrukce + karty + tlačítka)
+   ============================ */
+.features-setup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+}
+
+/* Podnadpis / instrukce */
+.features-setup-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1rem;                       
+  color: var(--muted-color);
+  margin: 0;
+  max-width: 800px;
+  line-height: 1.5;
+}
+
+/* ============================
+   Jedna karta (Feature)
+   ============================ */
+.feature-card {
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  position: relative;
+}
+
+/* Horní řádek s číslem a tlačítkem Smazat */
+.feature-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .feature-number {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .feature-remove-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: color var(--transition-default);
+    &:hover {
+      color: var(--danger-hover);
+    }
+  }
+}
+
+/* Pole: název i popisek */
+.feature-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  label {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--text-color);
+  }
+
+  .feature-input,
+  .feature-textarea {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: border-color var(--transition-default);
+  }
+
+  .feature-input:focus,
+  .feature-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  .feature-textarea {
+    resize: vertical; /* Povolit vertikální změnu výšky */
+  }
+}
+
+/* ============================
+   Wrapper pro obrázek (poměr 1:1)
+   ============================ */
+.feature-image-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  .feature-image-placeholder {
+    width: 150px;
+    height: 150px;
+    background-color: var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-color);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    border-radius: var(--radius-base);
+  }
+
+  .feature-image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
+  }
+
+  .feature-image-input {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================
+   Tlačítko pro přidání Feature
+   ============================ */
+.feature-add-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: none;
+  border: 2px dashed var(--primary-color);
+  color: var(--primary-color);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background var(--transition-default), color var(--transition-default);
+  align-self: flex-start;
+
+  .icon-plus {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background-color: var(--primary-hover-alt);
+    color: #fff;
+  }
+}
+
+/* ============================
+   Tlačítko Continue
+   ============================ */
+.features-continue-btn {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+  align-self: flex-start;
+}
+
+.features-continue-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
+.features-continue-btn:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =====================================
+   Responsivní úpravy (tablet & mobil)
+   ===================================== */
+@media (max-width: 768px) {
+  .feature-card {
+    padding: var(--spacing-md) 0;
+  }
+  .feature-image-wrapper {
+    .feature-image-placeholder,
+    .feature-image-preview {
+      width: 120px;
+      height: 120px;
+    }
+  }
+  .feature-add-btn {
+    font-size: 0.95rem;
+  }
+  .features-continue-btn {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .feature-card {
+    gap: var(--spacing-sm);
+  }
+  .feature-image-wrapper {
+    .feature-image-placeholder,
+    .feature-image-preview {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  .feature-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .features-continue-btn {
+    width: 100%;
+    padding: var(--spacing-xs) 0;
+    font-size: 0.85rem;
+  }
+}
