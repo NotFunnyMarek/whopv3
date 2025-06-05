@@ -1,3 +1,5 @@
+/* src/styles/profile.scss */
+
 @import './variables';
 @import './theme';
 
@@ -27,30 +29,55 @@
 
 .profile-form {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-lg);
 
-  .profile-left,
-  .profile-right {
-    background-color: var(--surface-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-md);
-  }
-
+  /* Levá část – avatar + logout */
   .profile-left {
+    flex: 0 0 240px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: var(--spacing-md);
 
-    .profile-avatar {
+    .profile-avatar-container {
+      position: relative;
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: var(--spacing-sm);
-      border: 2px solid var(--border-color);
+      overflow: hidden;
+      cursor: pointer;
+      background-color: var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img.profile-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      &.placeholder {
+        background-color: #e0e0e0;
+      }
+
+      .avatar-uploading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--text-color-dark);
+        z-index: 2;
+      }
     }
 
     h3 {
@@ -75,6 +102,8 @@
       font-weight: 600;
       box-shadow: var(--shadow-sm);
       transition: background var(--transition-default), transform var(--transition-default);
+      border: none;
+      cursor: pointer;
       &:hover {
         background: var(--error-color-dark);
         transform: translateY(-1px);
@@ -82,7 +111,9 @@
     }
   }
 
+  /* Pravá část – ostatní pole */
   .profile-right {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
@@ -106,6 +137,7 @@
         transition: border-color var(--transition-default);
         &:focus {
           border-color: var(--primary-color);
+          outline: none;
         }
       }
 
@@ -166,6 +198,8 @@
       font-weight: 600;
       box-shadow: var(--shadow-sm);
       transition: background var(--transition-default), transform var(--transition-default);
+      border: none;
+      cursor: pointer;
       &:hover:enabled {
         background: var(--accent-color-dark);
         transform: translateY(-1px);

@@ -1,54 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/profile.scss';
 
+// Vaše Cloudinary údaje
+const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
+const CLOUDINARY_UPLOAD_PRESET = 'unsigned_profile_avatars';
+const CLOUDINARY_UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+
 const Profile = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-  // Stav formuláře a zpráv
   const [form, setForm] = useState({
-    name: '',
-    bio: '',
-    username: '',
-    email: '',
-    phone: '',
-    showJoined: false,
-    showOwned: false,
-    showLocation: false,
+    name:        '',
+    bio:         '',
+    username:    '',
+    email:       '',
+    phone:       '',
+    avatar_url:  '',
+    showJoined:  false,
+    showOwned:   false,
+    showLocation:false,
   });
   const [initialForm, setInitialForm] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isDirty, setIsDirty] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
+  // Načtení profilu
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      credentials: 'include'
     })
       .then((res) => {
         if (res.status === 401) {
           navigate('/login');
           return null;
         }
-        if (!res.ok) {
-          throw new Error(`HTTP error: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
       .then((data) => {
         if (!data) return;
         if (data.status === 'success') {
           const loaded = {
-            name: data.data.name || '',
-            bio: data.data.bio || '',
-            username: data.data.username || '',
-            email: data.data.email || '',
-            phone: data.data.phone || '',
-            showJoined: false,
-            showOwned: false,
-            showLocation: false,
+            name:        data.data.name       || '',
+            bio:         data.data.bio        || '',
+            username:    data.data.username   || '',
+            email:       data.data.email      || '',
+            phone:       data.data.phone      || '',
+            avatar_url:  data.data.avatar_url || '',
+            showJoined:  false,
+            showOwned:   false,
+            showLocation:false
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -63,6 +70,7 @@ const Profile = () => {
       });
   }, [navigate]);
 
+  // Změna ostatních polí
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setError('');
@@ -70,66 +78,156 @@ const Profile = () => {
     setForm((prev) => {
       const updated = {
         ...prev,
-        [name]: type === 'checkbox' ? checked : value,
+        [name]: type === 'checkbox' ? checked : value
       };
-
       if (initialForm) {
         const dirtyNow =
-          updated.name !== initialForm.name ||
-          updated.bio !== initialForm.bio ||
-          updated.username !== initialForm.username ||
-          updated.email !== initialForm.email ||
-          updated.phone !== initialForm.phone;
+          updated.name       !== initialForm.name ||
+          updated.bio        !== initialForm.bio ||
+          updated.username   !== initialForm.username ||
+          updated.email      !== initialForm.email ||
+          updated.phone      !== initialForm.phone ||
+          updated.avatar_url !== initialForm.avatar_url;
         setIsDirty(dirtyNow);
       } else {
         setIsDirty(true);
       }
-
       return updated;
     });
   };
 
+  // Klik na avatar – otevře file input
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Uložíme avatar_url do DB
+  const saveAvatarToDb = async (avatarUrl) => {
+    try {
+      const payload = { avatar_url: avatarUrl };
+      const res = await fetch('https://app.byxbot.com/php/profile.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 401) {
+        navigate('/login');
+        return;
+      }
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.message || `HTTP ${res.status}`);
+      }
+      // Úspěch
+      setMessage('Avatar byl uložen v profilu.');
+      setInitialForm((prev) => ({
+        ...prev,
+        avatar_url: avatarUrl
+      }));
+      setIsDirty(false);
+    } catch (err) {
+      console.error('Chyba při ukládání avatar_url do DB:', err);
+      setError('Nepodařilo se uložit avatar do profilu.');
+    }
+  };
+
+  // Po výběru souboru nahrajeme na Cloudinary
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validace velikosti/typu
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('Avatar je příliš velký (max. 5 MB).');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+      setError('Nepodporovaný formát (povoleno JPG, PNG, GIF).');
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    setIsUploadingAvatar(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    fetch(CLOUDINARY_UPLOAD_URL, {
+      method: 'POST',
+      body: formData
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Chyba při nahrávání na Cloudinary: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data.secure_url) {
+          const newUrl = data.secure_url;
+          // Nastavíme v UI
+          setForm((prev) => ({
+            ...prev,
+            avatar_url: newUrl
+          }));
+          // Hned uložíme do DB
+          saveAvatarToDb(newUrl);
+        } else {
+          setError('Nepodařilo se získat URL z Cloudinary.');
+        }
+      })
+      .catch((err) => {
+        console.error('Chyba při uploadu na Cloudinary:', err);
+        setError('Nepodařilo se nahrát avatar.');
+      })
+      .finally(() => {
+        setIsUploadingAvatar(false);
+      });
+  };
+
+  // Odeslání ostatních polí profilu (jméno, bio, uživatelské jméno, telefon)
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    setMessage('Ukládám...');
+    setMessage('Ukládám…');
 
     const payload = {
-      name: form.name,
-      bio: form.bio,
-      username: form.username,
-      email: form.email,
-      phone: form.phone,
+      name:       form.name,
+      bio:        form.bio,
+      username:   form.username,
+      email:      form.email,
+      phone:      form.phone,
+      avatar_url: form.avatar_url  // i avatar_url se pošle, ale ten je v DB už uložen
     };
 
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     })
       .then((res) => {
         if (res.status === 401) {
           navigate('/login');
           return null;
         }
-        if (res.status === 400) {
-          return res.json();
-        }
-        if (!res.ok) {
-          throw new Error(`HTTP error: ${res.status}`);
-        }
+        if (res.status === 400) return res.json();
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.text();
       })
       .then((result) => {
         if (result === null) return;
-
         if (typeof result === 'object' && result.status === 'error') {
           setError(result.message);
           setMessage('');
           return;
         }
-
         if (typeof result === 'string') {
           const trimmed = result.trim();
           if (trimmed === '') {
@@ -165,12 +263,13 @@ const Profile = () => {
       });
   };
 
+  // Logout
   const handleLogout = () => {
     fetch('https://app.byxbot.com/php/logout.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({}),
+      body: JSON.stringify({})
     })
       .then((res) => {
         if (res.ok) {
@@ -190,12 +289,37 @@ const Profile = () => {
       {message && !error && <p className="profile-success">{message}</p>}
 
       <form onSubmit={handleSubmit} className="profile-form">
+        {/* Levá část (avatar + logout) */}
         <div className="profile-left">
-          <img
-            src={'https://via.placeholder.com/100'}
-            alt="avatar"
-            className="profile-avatar"
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleAvatarChange}
           />
+
+          <div
+            className="profile-avatar-container"
+            onClick={handleAvatarClick}
+            title="Klikni pro změnu avatara"
+          >
+            {isUploadingAvatar && (
+              <div className="avatar-uploading-overlay">Nahrávám…</div>
+            )}
+            {form.avatar_url ? (
+              <img
+                src={form.avatar_url}
+                alt="avatar"
+                className="profile-avatar"
+              />
+            ) : (
+              <div className="profile-avatar placeholder">
+                <span>Upload</span>
+              </div>
+            )}
+          </div>
+
           <h3>{form.name || 'Uživatel'}</h3>
           <p className="profile-sub">@{form.username || ''}</p>
           <button
@@ -207,6 +331,7 @@ const Profile = () => {
           </button>
         </div>
 
+        {/* Pravá část (ostatní pole) */}
         <div className="profile-right">
           <label>
             Name

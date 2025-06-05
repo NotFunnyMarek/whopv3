@@ -1,3 +1,5 @@
+/* src/styles/sidebar.scss */
+
 @import './variables';
 @import './theme';
 
@@ -34,12 +36,14 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+
     ul {
       list-style: none;
       margin: 0;
       padding: 0;
       width: 100%;
     }
+
     &-item {
       width: 100%;
       display: flex;
@@ -47,17 +51,40 @@
       align-items: center;
       margin: var(--spacing-lg) 0;
       position: relative;
+
       .sidebar__icon {
         font-size: var(--icon-size);
         color: var(--muted-color);
         transition: color var(--transition-default), transform var(--transition-default);
       }
+
       a.active .sidebar__icon {
         color: var(--primary-color);
       }
+
       &:hover .sidebar__icon {
         color: var(--primary-hover);
         transform: scale(1.2);
+      }
+
+      /* Zvětšená profilová fotka */
+      .sidebar__profile-img {
+        /* místo var(--icon-size) použijeme větší hodnotu, např. 2rem */
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--border-color);
+        transition: transform var(--transition-default), border-color var(--transition-default);
+      }
+
+      a.active .sidebar__profile-img {
+        border-color: var(--primary-color);
+      }
+
+      &:hover .sidebar__profile-img {
+        transform: scale(1.1);
+        border-color: var(--primary-hover);
       }
     }
   }
