@@ -1,16 +1,14 @@
-// src/components/Sidebar.jsx
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import '../styles/sidebar.scss';
 import Logo from '../assets/logo.png';
-import { FiHome, FiSearch, FiMessageSquare, FiBell, FiUser } from 'react-icons/fi';
+import { FiHome, FiSearch, FiMessageSquare, FiBell } from 'react-icons/fi';
 
 const Sidebar = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [balance, setBalance] = useState(0);
   const [error, setError] = useState('');
 
-  // Načteme avatar přihlášeného uživatele
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
@@ -19,22 +17,20 @@ const Sidebar = () => {
     })
       .then((res) => {
         if (res.status === 401) {
-          // Pokud není přihlášen, ikona zůstane výchozí
           return null;
         }
-        if (!res.ok) {
-          throw new Error(`HTTP error: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
       .then((data) => {
         if (data && data.status === 'success') {
           setAvatarUrl(data.data.avatar_url || '');
+          setBalance(parseFloat(data.data.balance) || 0);
         }
       })
       .catch((err) => {
-        console.error('Chyba při načtení avataru:', err);
-        setError('Nepodařilo se načíst profilovou fotku.');
+        console.error('Chyba při načítání profilu (Sidebar):', err);
+        setError('Nepodařilo se načíst data.');
       });
   }, []);
 
@@ -43,6 +39,12 @@ const Sidebar = () => {
       <div className="sidebar__logo">
         <img src={Logo} alt="Logo platformy" />
       </div>
+
+      {/** Volitelně: zobrazíme saldo nad menu */}
+      <div className="sidebar__balance-display">
+        ${balance.toFixed(2)}
+      </div>
+
       <nav className="sidebar__nav">
         <ul>
           <li className="sidebar__nav-item">
@@ -74,7 +76,7 @@ const Sidebar = () => {
                   className="sidebar__profile-img"
                 />
               ) : (
-                <FiUser className="sidebar__icon" />
+                <FiHome className="sidebar__icon" />
               )}
             </NavLink>
           </li>

@@ -1,39 +1,46 @@
+// src/pages/Profile.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/profile.scss';
 
-// Vaše Cloudinary údaje
 const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
 const CLOUDINARY_UPLOAD_PRESET = 'unsigned_profile_avatars';
 const CLOUDINARY_UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+
+const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd';
 
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
-    name:        '',
-    bio:         '',
-    username:    '',
-    email:       '',
-    phone:       '',
-    avatar_url:  '',
-    showJoined:  false,
-    showOwned:   false,
-    showLocation:false,
+    user_id:         null,
+    name:            '',
+    bio:             '',
+    username:        '',
+    email:           '',
+    phone:           '',
+    avatar_url:      '',
+    balance:         0,
+    deposit_address: '',
+    showJoined:      false,
+    showOwned:       false,
+    showLocation:    false,
   });
   const [initialForm, setInitialForm] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
-  // Načtení profilu
+  // 1) Načteme profil (GET)
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include'
+      credentials: 'include',
     })
       .then((res) => {
         if (res.status === 401) {
@@ -47,15 +54,18 @@ const Profile = () => {
         if (!data) return;
         if (data.status === 'success') {
           const loaded = {
-            name:        data.data.name       || '',
-            bio:         data.data.bio        || '',
-            username:    data.data.username   || '',
-            email:       data.data.email      || '',
-            phone:       data.data.phone      || '',
-            avatar_url:  data.data.avatar_url || '',
-            showJoined:  false,
-            showOwned:   false,
-            showLocation:false
+            user_id:         data.data.user_id ?? null,
+            name:            data.data.name       || '',
+            bio:             data.data.bio        || '',
+            username:        data.data.username   || '',
+            email:           data.data.email      || '',
+            phone:           data.data.phone      || '',
+            avatar_url:      data.data.avatar_url || '',
+            balance:         data.data.balance    ?? 0,
+            deposit_address: data.data.deposit_address || '',
+            showJoined:      false,
+            showOwned:       false,
+            showLocation:    false,
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -70,7 +80,7 @@ const Profile = () => {
       });
   }, [navigate]);
 
-  // Změna ostatních polí
+  // 2) Změna polí
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setError('');
@@ -78,16 +88,16 @@ const Profile = () => {
     setForm((prev) => {
       const updated = {
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
+        [name]: type === 'checkbox' ? checked : value,
       };
       if (initialForm) {
         const dirtyNow =
-          updated.name       !== initialForm.name ||
-          updated.bio        !== initialForm.bio ||
-          updated.username   !== initialForm.username ||
-          updated.email      !== initialForm.email ||
-          updated.phone      !== initialForm.phone ||
-          updated.avatar_url !== initialForm.avatar_url;
+          updated.name          !== initialForm.name ||
+          updated.bio           !== initialForm.bio ||
+          updated.username      !== initialForm.username ||
+          updated.email         !== initialForm.email ||
+          updated.phone         !== initialForm.phone ||
+          updated.avatar_url    !== initialForm.avatar_url;
         setIsDirty(dirtyNow);
       } else {
         setIsDirty(true);
@@ -96,14 +106,11 @@ const Profile = () => {
     });
   };
 
-  // Klik na avatar – otevře file input
+  // 3) Upload avatara
   const handleAvatarClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    if (fileInputRef.current) fileInputRef.current.click();
   };
 
-  // Uložíme avatar_url do DB
   const saveAvatarToDb = async (avatarUrl) => {
     try {
       const payload = { avatar_url: avatarUrl };
@@ -111,7 +118,7 @@ const Profile = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (res.status === 401) {
         navigate('/login');
@@ -121,12 +128,8 @@ const Profile = () => {
         const errJson = await res.json().catch(() => null);
         throw new Error(errJson?.message || `HTTP ${res.status}`);
       }
-      // Úspěch
       setMessage('Avatar byl uložen v profilu.');
-      setInitialForm((prev) => ({
-        ...prev,
-        avatar_url: avatarUrl
-      }));
+      setInitialForm((prev) => ({ ...prev, avatar_url: avatarUrl }));
       setIsDirty(false);
     } catch (err) {
       console.error('Chyba při ukládání avatar_url do DB:', err);
@@ -134,12 +137,9 @@ const Profile = () => {
     }
   };
 
-  // Po výběru souboru nahrajeme na Cloudinary
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Validace velikosti/typu
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError('Avatar je příliš velký (max. 5 MB).');
@@ -160,7 +160,7 @@ const Profile = () => {
 
     fetch(CLOUDINARY_UPLOAD_URL, {
       method: 'POST',
-      body: formData
+      body: formData,
     })
       .then((res) => {
         if (!res.ok) {
@@ -171,12 +171,7 @@ const Profile = () => {
       .then((data) => {
         if (data.secure_url) {
           const newUrl = data.secure_url;
-          // Nastavíme v UI
-          setForm((prev) => ({
-            ...prev,
-            avatar_url: newUrl
-          }));
-          // Hned uložíme do DB
+          setForm((prev) => ({ ...prev, avatar_url: newUrl }));
           saveAvatarToDb(newUrl);
         } else {
           setError('Nepodařilo se získat URL z Cloudinary.');
@@ -191,7 +186,7 @@ const Profile = () => {
       });
   };
 
-  // Odeslání ostatních polí profilu (jméno, bio, uživatelské jméno, telefon)
+  // 4) Uložení ostatních polí (name, bio, username, phone, avatar_url)
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -203,14 +198,14 @@ const Profile = () => {
       username:   form.username,
       email:      form.email,
       phone:      form.phone,
-      avatar_url: form.avatar_url  // i avatar_url se pošle, ale ten je v DB už uložen
+      avatar_url: form.avatar_url,
     };
 
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
       .then((res) => {
         if (res.status === 401) {
@@ -263,13 +258,13 @@ const Profile = () => {
       });
   };
 
-  // Logout
+  // 5) Logout
   const handleLogout = () => {
     fetch('https://app.byxbot.com/php/logout.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({})
+      body: JSON.stringify({}),
     })
       .then((res) => {
         if (res.ok) {
@@ -281,12 +276,89 @@ const Profile = () => {
       .catch((err) => console.error('Logout chyba:', err));
   };
 
+  // 6) Depozitní modal
+  const openDepositModal = () => {
+    setShowDepositModal(true);
+  };
+  const closeDepositModal = () => {
+    setShowDepositModal(false);
+  };
+
+  // 7) Získání ceny SOL
+  const [solPrice, setSolPrice] = useState(0);
+  useEffect(() => {
+    fetch(COINGECKO_API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        setSolPrice(data?.solana?.usd || 0);
+      })
+      .catch(() => {
+        setSolPrice(0);
+      });
+  }, []);
+
   return (
     <div className="profile-container">
       <h2>Account settings</h2>
 
       {error && <p className="profile-error">{error}</p>}
       {message && !error && <p className="profile-success">{message}</p>}
+
+      {/* Zobrazení balance a tlačítka Deposit */}
+      <div className="profile-balance-section">
+        <strong>Balance:</strong> ${form.balance.toFixed(2)} USD
+        <button
+          type="button"
+          className="btn-deposit"
+          onClick={openDepositModal}
+        >
+          Deposit
+        </button>
+      </div>
+
+      {/* Modal pro Deposit instrukce */}
+      {showDepositModal && (
+        <div className="deposit-modal-overlay" onClick={closeDepositModal}>
+          <div
+            className="deposit-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="deposit-modal-close-btn"
+              onClick={closeDepositModal}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <h3>Deposit SOL (Testnet)</h3>
+            <p>
+              Pošlete SOL na následující adresu (Solana Testnet):<br />
+              <code className="deposit-address">{form.deposit_address}</code>
+            </p>
+            <p>
+              V peněžence (např. Phantom) zadejte částku a do „Memo“ vložte vaše <strong>user_id</strong>:{' '}
+              <code>
+                {form.user_id !== null ? form.user_id : '(ID není dostupné)'}
+              </code>
+            </p>
+            <p>
+              Například, pokud je vaše user_id <strong>42</strong>, v Memo napište <code>42</code>.
+            </p>
+            {solPrice !== 0 && (
+              <p>
+                1 SOL ≈ ${solPrice.toFixed(2)} USD (zdroj: CoinGecko)
+              </p>
+            )}
+            <button
+              type="button"
+              className="deposit-modal-ok-btn"
+              onClick={closeDepositModal}
+            >
+              Zavřít
+            </button>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="profile-form">
         {/* Levá část (avatar + logout) */}
