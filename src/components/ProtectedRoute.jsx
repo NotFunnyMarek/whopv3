@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (checking) {
-    return <div className="centered">Kontrola relace…</div>;
+    return <div className="text-center">Kontrola relace…</div>;
   }
   if (!loggedIn) {
     return <Navigate to="/login" replace />;

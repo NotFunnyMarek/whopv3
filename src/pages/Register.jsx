@@ -25,7 +25,6 @@ const Register = () => {
         setUsername('');
         setEmail('');
         setPassword('');
-        // Po krátké pauze přepneme na /login
         setTimeout(() => navigate('/login'), 1500);
       } else {
         setMessage(`Chyba při registraci (HTTP ${res.status}).`);

@@ -6,155 +6,178 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: $bottombar-height;
-  background-color: var(--bottombar-bg);
+  height: var(--bottombar-height);
+  background-color: var(--surface-color);
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  box-sizing: border-box;
-  z-index: 100;
+  padding: 0 var(--spacing-md);
+  z-index: 50;
   justify-content: flex-start;
+  box-shadow: var(--shadow-sm);
 
   &__left {
     position: relative;
 
     &-button {
-      background: none;
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 4px;
-      color: var(--text-color);
-      cursor: pointer;
-      transition: background-color 0.2s;
-
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border: none;
+      border-radius: var(--radius-lg);
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition-default), transform var(--transition-default);
       &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, var(--primary-hover), var(--accent-color));
+        transform: translateY(-2px);
+      }
+      svg {
+        width: var(--icon-size);
+        height: var(--icon-size);
       }
     }
 
     &-dropdown {
       position: absolute;
-      bottom: $bottombar-height + 8px;
+      bottom: calc(var(--bottombar-height) + var(--spacing-sm));
       left: 0;
-      width: 200px;
-      background-color: var(--dropdown-bg-color);
+      width: 16rem;
+      background-color: var(--surface-color);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 10px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-md);
       display: none;
       flex-direction: column;
-      gap: 10px;
-      box-sizing: border-box;
+      gap: var(--spacing-sm);
+      z-index: 100;
 
       &.visible {
         display: flex;
+        animation: fadeIn var(--transition-default);
+      }
+
+      .bottombar__left-dropdown-item {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text-color);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-base);
+        transition: background-color var(--transition-default);
+        &:hover {
+          background-color: var(--border-color);
+        }
       }
 
       &-item-theme {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        color: var(--text-color);
-
-        div {
+        gap: var(--spacing-sm);
+        label {
           display: flex;
           align-items: center;
-          gap: 6px;
-
+          gap: var(--spacing-xs);
+          span {
+            cursor: pointer;
+            color: var(--text-color);
+          }
           input[type='radio'] {
-            width: 14px;
-            height: 14px;
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary-color);
             cursor: pointer;
           }
-
-          label {
-            cursor: pointer;
+          &:hover span {
+            color: var(--primary-color);
           }
         }
       }
 
       &-item-whatsnew {
-        font-size: 14px;
-        color: var(--text-color);
-        display: flex;
         justify-content: center;
-
+        font-weight: 600;
         span {
-          margin-left: 4px;
-          font-weight: bold;
+          margin-left: var(--spacing-xs);
+          font-weight: 700;
+          color: var(--accent-color);
         }
       }
 
       &-item-help {
-        margin-top: 8px;
-        padding: 6px 10px;
-        font-size: 14px;
-        background-color: var(--bottombar-bg);
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        text-decoration: none;
+        background-color: var(--primary-color);
+        color: #fff;
         text-align: center;
-        cursor: pointer;
-
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-base);
+        box-shadow: var(--shadow-sm);
+        transition: background-color var(--transition-default), transform var(--transition-default);
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: var(--primary-hover);
+          transform: translateY(-1px);
         }
       }
 
-      /* NOVĚ: styl pro Logout tlačítko */
       &-item-logout {
-        margin-top: 8px;
-        padding: 6px 10px;
-        font-size: 14px;
-        background-color: var(--bottombar-bg);
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        cursor: pointer;
+        background-color: var(--error-color);
+        color: #fff;
         text-align: center;
-
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-base);
+        box-shadow: var(--shadow-sm);
+        transition: background-color var(--transition-default), transform var(--transition-default);
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: var(--error-color-dark);
+          transform: translateY(-1px);
         }
       }
     }
   }
 
-  /* Absolutně umístěný kontejner ikon ve středu */
   &__center-icons {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: flex-end;
-    gap: 16px;
+    gap: var(--spacing-md);
   }
 
   &__center-icon {
-    width: 36px;
-    height: 36px;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
-    background-color: var(--dropdown-bg-color);
+    background-color: var(--surface-color);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-
-    svg {
-      width: 20px;
-      height: 20px;
-      fill: var(--icon-color);
-      transition: fill 0.2s ease;
+    transition: transform var(--transition-default), box-shadow var(--transition-default);
+    &:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: var(--shadow-md);
     }
-
+    svg {
+      width: var(--icon-size);
+      height: var(--icon-size);
+      fill: var(--muted-color);
+      transition: fill var(--transition-default);
+    }
     &:hover svg {
-      fill: var(--icon-hover-color);
+      fill: var(--primary-color);
     }
   }
+}
+
+/* Klíčová animace */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

@@ -1,86 +1,92 @@
+@import './variables';
+@import './theme';
+
 .register-page {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #f2f2f2;
+  background-color: var(--surface-color);
 
   .register-card {
     width: 360px;
-    padding: 24px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
 
-    h2 {
-      margin: 0 0 16px;
-      text-align: center;
-      font-size: 24px;
-      color: #333;
-    }
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: center;
+    color: var(--text-color);
+  }
 
-    .register-form {
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+
+    label {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      font-size: 0.875rem;
+      color: var(--text-color);
 
-      label {
-        display: flex;
-        flex-direction: column;
-        font-size: 14px;
-        color: #555;
-
-        input {
-          margin-top: 4px;
-          padding: 8px 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-size: 14px;
-          transition: border 0.2s;
-
-          &:focus {
-            border-color: #007bff;
-            outline: none;
-          }
-        }
-      }
-
-      .btn-primary {
-        margin-top: 16px;
-        padding: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-
-        &:hover {
-          background-color: #0069d9;
+      input {
+        margin-top: var(--spacing-xs);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        font-size: 1rem;
+        background-color: var(--surface-color);
+        color: var(--text-color);
+        transition: border-color var(--transition-default);
+        &:focus {
+          border-color: var(--primary-color);
         }
       }
     }
 
-    .message {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
-      color: #d9534f; /* červená pro chybová hlášení */
-      min-height: 20px;
+    .btn-primary {
+      margin-top: var(--spacing-md);
+      padding: var(--spacing-xs) var(--spacing-md);
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: #fff;
+      border-radius: var(--radius-base);
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition-default), transform var(--transition-default);
+      &:hover {
+        background: linear-gradient(135deg, var(--primary-hover), var(--accent-color));
+        transform: translateY(-2px);
+      }
     }
+  }
 
-    .switch-link {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
+  .message {
+    font-size: 0.875rem;
+    color: var(--error-color);
+    text-align: center;
+    min-height: 1.25rem;
+  }
 
-      a {
-        color: #007bff;
-        text-decoration: none;
-        &:hover {
-          text-decoration: underline;
-        }
+  .switch-link {
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--text-color);
+
+    a {
+      color: var(--primary-color);
+      text-decoration: underline;
+      transition: color var(--transition-default);
+      &:hover {
+        color: var(--primary-hover);
       }
     }
   }

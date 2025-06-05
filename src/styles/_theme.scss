@@ -1,27 +1,79 @@
-@import './variables';
+/* ======================
+   Definice CSS proměnných pro světlé a tmavé téma
+   ====================== */
 
-/**
- * Definuje CSS proměnné pro světlé a tmavé téma.
- * Při aktivní třídě .theme-light nebo .theme-dark na <body> se budou používat odpovídající barvy.
- */
 .theme-light {
-  --bg-color:             #{$color-bg-light};
-  --text-color:           #{$color-text-light};
-  --border-color:         #{$color-border-light};
-  --icon-color:           #{$color-icon-default};
-  --icon-hover-color:     #{$color-icon-hover};
-  --dropdown-bg-color:    #{$color-dropdown-bg-light};
-  --bottombar-bg:         #{$bottombar-bg-light};
-  --bottombar-text-color: #{$bottombar-text-light};
+  --bg-color:            #{$color-bg-light};
+  --surface-color:       #{$color-surface-light};
+  --text-color:          #{$color-text-light};
+  --muted-color:         #{$color-muted-light};
+  --border-color:        #{$color-border-light};
+
+  --primary-color:       #{$color-primary};
+  --primary-hover:       #{$color-primary-dark};
+  --secondary-color:     #{$color-secondary};
+  --accent-color:        #{$color-accent};
+  --accent-color-dark:   #{$color-accent-dark};
+  --error-color:         #{$color-error};
+  --error-color-dark:    #{$color-error-dark};
+  --success-color:       #{$color-success};
+  --success-color-dark:  #{$color-success-dark};
+
+  --radius-base:         #{$radius-base};
+  --radius-lg:           #{$radius-lg};
+  --spacing-xxs:         #{$spacing-xxs};
+  --spacing-xs:          #{$spacing-xs};
+  --spacing-sm:          #{$spacing-sm};
+  --spacing-md:          #{$spacing-md};
+  --spacing-lg:          #{$spacing-lg};
+  --spacing-xl:          #{$spacing-xl};
+
+  --transition-default:  #{$transition-default};
+  --shadow-sm:           #{$shadow-sm};
+  --shadow-md:           #{$shadow-md};
+  --shadow-lg:           #{$shadow-lg};
+
+  --sidebar-width:       #{$sidebar-width};
+  --bottombar-height:    #{$bottombar-height};
+  --icon-size:           #{$icon-size-base};
+
+  --font-sans:           'Inter', sans-serif;
 }
 
 .theme-dark {
-  --bg-color:             #{$color-bg-dark};
-  --text-color:           #{$color-text-dark};
-  --border-color:         #{$color-border-dark};
-  --icon-color:           #{$color-icon-default};
-  --icon-hover-color:     #{$color-icon-hover};
-  --dropdown-bg-color:    #{$color-dropdown-bg-dark};
-  --bottombar-bg:         #{$bottombar-bg-dark};
-  --bottombar-text-color: #{$bottombar-text-dark};
+  --bg-color:            #{$color-bg-dark};
+  --surface-color:       #{$color-surface-dark};
+  --text-color:          #{$color-text-dark};
+  --muted-color:         #{$color-muted-dark};
+  --border-color:        #{$color-border-dark};
+
+  --primary-color:       #{$color-primary};
+  --primary-hover:       #{$color-primary-dark};
+  --secondary-color:     #{$color-secondary};
+  --accent-color:        #{$color-accent};
+  --accent-color-dark:   #{$color-accent-dark};
+  --error-color:         #{$color-error};
+  --error-color-dark:    #{$color-error-dark};
+  --success-color:       #{$color-success};
+  --success-color-dark:  #{$color-success-dark};
+
+  --radius-base:         #{$radius-base};
+  --radius-lg:           #{$radius-lg};
+  --spacing-xxs:         #{$spacing-xxs};
+  --spacing-xs:          #{$spacing-xs};
+  --spacing-sm:          #{$spacing-sm};
+  --spacing-md:          #{$spacing-md};
+  --spacing-lg:          #{$spacing-lg};
+  --spacing-xl:          #{$spacing-xl};
+
+  --transition-default:  #{$transition-default};
+  --shadow-sm:           #{$shadow-sm};
+  --shadow-md:           #{$shadow-md};
+  --shadow-lg:           #{$shadow-lg};
+
+  --sidebar-width:       #{$sidebar-width};
+  --bottombar-height:    #{$bottombar-height};
+  --icon-size:           #{$icon-size-base};
+
+  --font-sans:           'Inter', sans-serif;
 }

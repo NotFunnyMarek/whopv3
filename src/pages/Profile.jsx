@@ -1,5 +1,3 @@
-// src/pages/Profile.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/profile.scss';
@@ -18,19 +16,18 @@ const Profile = () => {
     showOwned: false,
     showLocation: false,
   });
-  const [initialForm, setInitialForm] = useState(null); // pro porovnání, zda se něco změnilo
-  const [message, setMessage] = useState('');   // úspěšná hláška
-  const [error, setError] = useState('');       // chybová hláška
-  const [isDirty, setIsDirty] = useState(false); // true, pokud se liší aktuální form od initialForm
+  const [initialForm, setInitialForm] = useState(null);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
 
-  // Po prvním vykreslení načteme data GETem
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     })
-      .then(res => {
+      .then((res) => {
         if (res.status === 401) {
           navigate('/login');
           return null;
@@ -40,7 +37,7 @@ const Profile = () => {
         }
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         if (!data) return;
         if (data.status === 'success') {
           const loaded = {
@@ -54,32 +51,30 @@ const Profile = () => {
             showLocation: false,
           };
           setForm(loaded);
-          setInitialForm(loaded); // uložíme původní hodnoty
-          setIsDirty(false);      // zatím bez změn
+          setInitialForm(loaded);
+          setIsDirty(false);
         } else {
           setError('Chyba při načítání: ' + (data.message || ''));
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Chyba při načítání profilu:', err);
         setError('Nepodařilo se načíst profil.');
       });
   }, [navigate]);
 
-  // Detekce změny pole => odstranění předchozích hlášek a nastavení isDirty
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setError('');
     setMessage('');
-    setForm(prev => {
+    setForm((prev) => {
       const updated = {
         ...prev,
         [name]: type === 'checkbox' ? checked : value,
       };
 
-      // Porovnání s initialForm pro detekci "dirty"
       if (initialForm) {
-        const dirtyNow = 
+        const dirtyNow =
           updated.name !== initialForm.name ||
           updated.bio !== initialForm.bio ||
           updated.username !== initialForm.username ||
@@ -94,7 +89,6 @@ const Profile = () => {
     });
   };
 
-  // Odeslání formuláře (POST)
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -114,7 +108,7 @@ const Profile = () => {
       credentials: 'include',
       body: JSON.stringify(payload),
     })
-      .then(res => {
+      .then((res) => {
         if (res.status === 401) {
           navigate('/login');
           return null;
@@ -127,28 +121,24 @@ const Profile = () => {
         }
         return res.text();
       })
-      .then(result => {
-        if (result === null) return; // už přesměrováno
+      .then((result) => {
+        if (result === null) return;
 
-        // Pokud JSON s chybou (HTTP 400)
         if (typeof result === 'object' && result.status === 'error') {
           setError(result.message);
           setMessage('');
           return;
         }
 
-        // Pokud prázdné tělo => úspěch
         if (typeof result === 'string') {
           const trimmed = result.trim();
           if (trimmed === '') {
             setMessage('Vše bylo úspěšně uloženo.');
             setError('');
-            // aktualizujeme initialForm
             setInitialForm({ ...form });
             setIsDirty(false);
             return;
           }
-          // Pokus parsovat JSON
           try {
             const data = JSON.parse(trimmed);
             if (data.status === 'success') {
@@ -161,7 +151,6 @@ const Profile = () => {
               setMessage('');
             }
           } catch {
-            // Neplatný JSON, ale považujeme to za úspěch
             setMessage('Vše bylo úspěšně uloženo.');
             setError('');
             setInitialForm({ ...form });
@@ -169,14 +158,13 @@ const Profile = () => {
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Chyba při ukládání profilu:', err);
         setError('Chyba při ukládání profilu.');
         setMessage('');
       });
   };
 
-  // Odhlášení
   const handleLogout = () => {
     fetch('https://app.byxbot.com/php/logout.php', {
       method: 'POST',
@@ -184,21 +172,20 @@ const Profile = () => {
       credentials: 'include',
       body: JSON.stringify({}),
     })
-      .then(res => {
+      .then((res) => {
         if (res.ok) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
           navigate('/login');
         }
       })
-      .catch(err => console.error('Logout chyba:', err));
+      .catch((err) => console.error('Logout chyba:', err));
   };
 
   return (
     <div className="profile-container">
       <h2>Account settings</h2>
 
-      {/* Chybová / úspěšná hláška */}
       {error && <p className="profile-error">{error}</p>}
       {message && !error && <p className="profile-success">{message}</p>}
 
@@ -258,7 +245,6 @@ const Profile = () => {
               name="email"
               value={form.email}
               disabled
-              style={{ backgroundColor: '#f0f0f0', color: '#888' }}
             />
           </label>
 
@@ -310,7 +296,7 @@ const Profile = () => {
           <button
             type="submit"
             className="btn-save"
-            disabled={!isDirty}  /* Zneaktivníme Save, pokud nejsou žádné změny */
+            disabled={!isDirty}
           >
             Save
           </button>

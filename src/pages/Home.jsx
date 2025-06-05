@@ -1,7 +1,6 @@
-// src/pages/Home.jsx
-import React, { useState, useEffect } from 'react';
-import CardForm from '../components/CardForm';
+import React, { useState, useEffect, useMemo } from 'react';
 import CardGrid from '../components/CardGrid';
+import CardForm from '../components/CardForm';
 import Modal from '../components/Modal';
 import '../styles/home.scss';
 
@@ -16,12 +15,16 @@ const Home = () => {
   // Stav otevření/zavření modálního okna
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Filtry a řazení
+  const [filterType, setFilterType] = useState('All');
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [sortOption, setSortOption] = useState('Nejvyšší rozpočet');
+
   // 1) Načteme kampaně po prvním vykreslení
   useEffect(() => {
     fetchCampaigns();
   }, []);
 
-  // Funkce pro načtení všech kampaní
   const fetchCampaigns = async () => {
     setLoading(true);
     setErrorMsg('');
@@ -29,13 +32,13 @@ const Home = () => {
       const res = await fetch(API_URL, {
         method: 'GET',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
       if (!res.ok) {
         throw new Error(`Chyba ${res.status}`);
       }
       const data = await res.json();
-      // Data jsou již ve správném tvaru (čísla, pole atd.)
+      // Předpokládáme, že server vrací už "normalized" pole
       setCardsData(data);
     } catch (error) {
       setErrorMsg('Nelze načíst kampaně: ' + error.message);
@@ -49,6 +52,35 @@ const Home = () => {
     fetchCampaigns();
   };
 
+  // Filtrování podle typu a kategorie
+  const filteredData = useMemo(() => {
+    let arr = [...cardsData];
+    if (filterType !== 'All') {
+      arr = arr.filter((c) => c.category === filterType);
+    }
+    if (filterCategory !== 'All') {
+      arr = arr.filter((c) => c.type === filterCategory);
+    }
+    // Řazení
+    switch (sortOption) {
+      case 'Nejvyšší rozpočet':
+        arr.sort((a, b) => b.budget - a.budget);
+        break;
+      case 'Nejnižší rozpočet':
+        arr.sort((a, b) => a.budget - b.budget);
+        break;
+      case 'Nejnovější':
+        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case 'Nejstarší':
+        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        break;
+      default:
+        break;
+    }
+    return arr;
+  }, [cardsData, filterType, filterCategory, sortOption]);
+
   return (
     <div className="home-container">
       {/* HLAVIČKA */}
@@ -56,22 +88,24 @@ const Home = () => {
         <h1 className="home-title">Content Rewards</h1>
         <p className="home-subtitle">
           Post content on social media and get paid for the views you generate. Pokud chcete spustit kampaň{' '}
-          <a href="#">klikněte sem</a>.
+          <button onClick={() => setIsModalOpen(true)}>klikněte sem</button>.
         </p>
       </div>
 
       {/* KONTROLY (počet, filtry, tlačítko Create, sort) */}
       <div className="home-controls">
         <div className="home-count">
-          {loading
-            ? 'Načítám kampaně…'
-            : `${cardsData.length} live kampaní`}
+          {loading ? 'Načítám kampaně…' : `${filteredData.length} live kampaní`}
         </div>
 
         <div className="home-filters">
           <label className="home-filter-item">
             Typ:
-            <select className="home-select">
+            <select
+              className="home-select"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
               <option>All</option>
               <option>Clipping</option>
               <option>UGC</option>
@@ -80,7 +114,11 @@ const Home = () => {
 
           <label className="home-filter-item">
             Kategorie:
-            <select className="home-select">
+            <select
+              className="home-select"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
               <option>All</option>
               <option>Personal brand</option>
               <option>Product review</option>
@@ -98,7 +136,11 @@ const Home = () => {
 
         <label className="home-sort">
           Řadit podle:
-          <select className="home-select">
+          <select
+            className="home-select"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
             <option>Nejvyšší rozpočet</option>
             <option>Nejnižší rozpočet</option>
             <option>Nejnovější</option>
@@ -109,17 +151,23 @@ const Home = () => {
 
       {/* MODÁLNÍ OKNO S FORMULÁŘEM */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <CardForm
-          onAddCard={() => {}}
-          onClose={() => setIsModalOpen(false)}
-          onRefresh={handleRefresh}
-        />
+        <CardForm onClose={() => setIsModalOpen(false)} onRefresh={handleRefresh} />
       </Modal>
 
-      {/* GRID S KAMPANĚMI */}
+      {/* GRID S KAMPANĚMI NEBO SKELETON-LOADING */}
       <div className="home-grid">
         {errorMsg && <div className="home-error">{errorMsg}</div>}
-        {!loading && <CardGrid cardsData={cardsData} />}
+
+        {loading ? (
+          /* Skeleton loading: zobrazíme třeba 8 prázdných bloků */
+          <div className="cards-grid">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="card-item card-skeleton" />
+            ))}
+          </div>
+        ) : (
+          <CardGrid cardsData={filteredData} />
+        )}
       </div>
     </div>
   );

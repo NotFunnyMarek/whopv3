@@ -1,25 +1,49 @@
-// Barevné proměnné, velikosti atp.
+/* ======================
+   Základní proměnné (barvy, rozměry, stíny, přechody)
+   ====================== */
 
-$color-bg-light:       #ffffff !default;
-$color-text-light:     #111111 !default;
-$color-border-light:   #e0e0e0 !default;
+// Barvy
+$color-primary:         #427077d8 !default;
+$color-primary-dark:    #000000d8 !default;
+$color-secondary:       #1a3438d8 !default;
+$color-accent:          #191a1ad8 !default;
+$color-accent-dark:     darken($color-accent, 10%) !default;
+$color-error:           #cecdcd !default;
+$color-error-dark:      darken($color-error, 10%) !default;
+$color-success:         #22C55E !default;
+$color-success-dark:    darken($color-success, 10%) !default;
 
-$color-bg-dark:        #1e1e1e !default;
-$color-text-dark:      #f5f5f5 !default;
-$color-border-dark:    #333333 !default;
+$color-bg-light:        #F9FAFB !default;
+$color-surface-light:   #FFFFFF !default;
+$color-border-light:    #E5E7EB !default;
+$color-text-light:      #111827 !default;
+$color-muted-light:     #6B7280 !default;
 
-$color-icon-default:       #555555 !default;
-$color-icon-hover:         #000000 !default;
-$color-dropdown-bg-light:  #f7f7f7 !default;
-$color-dropdown-bg-dark:   #2b2b2b !default;
+$color-bg-dark:         #1F2937 !default;
+$color-surface-dark:    #111827 !default;
+$color-border-dark:     #374151 !default;
+$color-text-dark:       #F9FAFB !default;
+$color-muted-dark:      #9CA3AF !default;
 
-$sidebar-width:     80px !default;
-$sidebar-icon-size: 24px !default;
-$bottombar-height:  60px !default;
+// Radius a rozestupy
+$radius-base:           0.5rem !default;
+$radius-lg:             1rem !default;
+$spacing-xxs:           0.25rem !default;
+$spacing-xs:            0.5rem !default;
+$spacing-sm:            1rem !default;
+$spacing-md:            1.5rem !default;
+$spacing-lg:            2rem !default;
+$spacing-xl:            3rem !default;
 
-$bottombar-bg-light:  #f2f2f2 !default;
-$bottombar-bg-dark:   #2a2a2a !default;
-$bottombar-text-light:#111111 !default;
-$bottombar-text-dark: #eeeeee !default;
+// Přechody a stíny
+$transition-default:    0.2s ease-in-out !default;
+$shadow-sm:             0 1px 2px rgba(0, 0, 0, 0.05) !default;
+$shadow-md:             0 4px 6px rgba(0, 0, 0, 0.1) !default;
+$shadow-lg:             0 10px 15px rgba(0, 0, 0, 0.15) !default;
 
-$tooltip-shadow: rgba(0, 0, 0, 0.2) !default;
+// Sidebar / Bottombar
+$sidebar-width:         4.5rem !default;
+$bottombar-height:      4rem !default;
+
+// Ikony
+$icon-size-base:        1.25rem !default;

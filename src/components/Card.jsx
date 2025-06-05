@@ -1,5 +1,3 @@
-// src/components/Card.jsx
-
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import '../styles/card.scss';
@@ -38,7 +36,7 @@ export default function Card() {
       try {
         const res = await fetch(API_URL, {
           method: 'GET',
-          credentials: 'include', // posíláme PHPSESSID (GET zvládne i anonymně, ale je OK)
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         });
         if (!res.ok) {
@@ -147,7 +145,7 @@ export default function Card() {
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        credentials: 'include', // Nutné, aby PHP dostalo PHPSESSID a vědělo, kdo je user_id
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -221,6 +219,7 @@ export default function Card() {
       <button
         className="card-create-btn"
         onClick={() => setIsModalOpen(true)}
+        type="button"
       >
         Create
       </button>
@@ -327,35 +326,24 @@ export default function Card() {
           </div>
 
           {/* Platforms */}
-          <fieldset className="form-group">
+          <fieldset className="form-group cf-fieldset">
             <legend>Platforms</legend>
-            <label>
-              <input
-                type="checkbox"
-                name="instagram"
-                checked={platforms.instagram}
-                onChange={handlePlatformChange}
-              />{' '}
-              Instagram
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="tiktok"
-                checked={platforms.tiktok}
-                onChange={handlePlatformChange}
-              />{' '}
-              TikTok
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="youtube"
-                checked={platforms.youtube}
-                onChange={handlePlatformChange}
-              />{' '}
-              YouTube
-            </label>
+            <div className="cf-platforms-row">
+              {['instagram', 'tiktok', 'youtube'].map((name) => (
+                <label key={name} className="cf-platform-label">
+                  <input
+                    type="checkbox"
+                    name={name}
+                    checked={platforms[name]}
+                    onChange={handlePlatformChange}
+                  />
+                  {name === 'instagram' && <FiStar className="cf-icon-instagram" />}
+                  {name === 'tiktok' && <FiStar className="cf-icon-tiktok" />}
+                  {name === 'youtube' && <FiStar className="cf-icon-youtube" />}
+                  <span className="cf-platform-text">{name}</span>
+                </label>
+              ))}
+            </div>
           </fieldset>
 
           {/* Thumbnail URL */}
@@ -372,7 +360,7 @@ export default function Card() {
           {/* Available Content (URL) */}
           <div className="form-group">
             <label>Available Content (URL)</label>
-            <div className="list-input-row">
+            <div className="list-input-row cf-list-input-row">
               <input
                 type="text"
                 placeholder="https://drive.google.com/..."
@@ -381,15 +369,15 @@ export default function Card() {
               />
               <button
                 type="button"
-                className="list-add-btn"
+                className="list-add-btn cf-list-add-button"
                 onClick={addContentLink}
               >
                 ➕
               </button>
             </div>
-            <ul className="list-container">
+            <ul className="list-container cf-list-container">
               {contentLinks.map((link, idx) => (
-                <li key={idx} className="list-item">
+                <li key={idx} className="list-item cf-list-item">
                   <a
                     href={/^https?:\/\//.test(link) ? link : `https://${link}`}
                     target="_blank"
@@ -399,7 +387,7 @@ export default function Card() {
                   </a>
                   <button
                     type="button"
-                    className="list-delete-btn"
+                    className="list-delete-btn cf-list-delete-button"
                     onClick={() => removeContentLink(idx)}
                   >
                     🗑
@@ -409,10 +397,10 @@ export default function Card() {
             </ul>
           </div>
 
-          {/* Content Requirements (textový seznam) */}
+          {/* Content Requirements */}
           <div className="form-group">
             <label>Content Requirements</label>
-            <div className="list-input-row">
+            <div className="list-input-row cf-list-input-row">
               <input
                 type="text"
                 placeholder="e.g. Must tag @whop"
@@ -421,19 +409,19 @@ export default function Card() {
               />
               <button
                 type="button"
-                className="list-add-btn"
+                className="list-add-btn cf-list-add-button"
                 onClick={addRequirement}
               >
                 ➕
               </button>
             </div>
-            <ul className="list-container">
+            <ul className="list-container cf-list-container">
               {requirements.map((item, idx) => (
-                <li key={idx} className="list-item">
+                <li key={idx} className="list-item cf-list-item">
                   <span>{item}</span>
                   <button
                     type="button"
-                    className="list-delete-btn"
+                    className="list-delete-btn cf-list-delete-button"
                     onClick={() => removeRequirement(idx)}
                   >
                     🗑
@@ -475,7 +463,7 @@ export default function Card() {
                 <div className="card-progress-bar">
                   <div
                     className="card-progress-fill"
-                    style={{ width: camp.paid_percent + '%' }}
+                    style={{ width: `${camp.paid_percent}%` }}
                   ></div>
                 </div>
                 <ul className="card-info-list">

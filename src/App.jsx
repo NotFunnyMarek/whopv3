@@ -43,6 +43,7 @@ const App = () => {
                 <main className="main-content">
                   <Profile />
                 </main>
+                <BottomBar />
               </div>
             </ProtectedRoute>
           }

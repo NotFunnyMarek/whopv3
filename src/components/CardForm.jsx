@@ -1,4 +1,3 @@
-// src/components/CardForm.jsx
 import React, { useState } from 'react';
 import {
   FaInstagram,
@@ -13,73 +12,53 @@ import '../styles/card-form.scss';
 
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
-export default function CardForm({ onAddCard, onClose, onRefresh }) {
+export default function CardForm({ onClose, onRefresh }) {
   // Základní stavy formuláře
   const [campaignName, setCampaignName] = useState('');
   const [category, setCategory] = useState('');
   const [budget, setBudget] = useState('');
   const [currency, setCurrency] = useState('USD');
-
-  // Jediné pole: $ za 1000 views
+  const [type, setType] = useState('Clipping');
   const [rewardPerThousand, setRewardPerThousand] = useState('');
-
   const [minPayout, setMinPayout] = useState('');
   const [maxPayout, setMaxPayout] = useState('');
-
-  // Checkboxy pro platformy
   const [platforms, setPlatforms] = useState({
     instagram: false,
     tiktok: false,
     youtube: false,
   });
-
-  // Thumbnail URL (textové pole), ne file
   const [thumbnailUrl, setThumbnailUrl] = useState('');
-
-  // Stavy pro AVAILABLE CONTENT (více URL)
   const [newContentLink, setNewContentLink] = useState('');
   const [contentLinks, setContentLinks] = useState([]);
-
-  // Stavy pro CONTENT REQUIREMENTS (víc pravidel)
   const [newRequirement, setNewRequirement] = useState('');
   const [requirements, setRequirements] = useState([]);
-
-  // Chyby
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Checkboxy platform
   const handlePlatformChange = (e) => {
     const { name, checked } = e.target;
     setPlatforms((prev) => ({ ...prev, [name]: checked }));
   };
 
-  // Přidání jedné URL do seznamu contentLinks
   const addContentLink = () => {
     const url = newContentLink.trim();
     if (!url) return;
     setContentLinks((prev) => [...prev, url]);
     setNewContentLink('');
   };
-
-  // Smazání URL podle indexu
   const removeContentLink = (idx) => {
     setContentLinks((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Přidání nové content requirement
   const addRequirement = () => {
     const text = newRequirement.trim();
     if (!text) return;
     setRequirements((prev) => [...prev, text]);
     setNewRequirement('');
   };
-
-  // Smazání requirement podle indexu
   const removeRequirement = (idx) => {
     setRequirements((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Odeslání formuláře
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -95,10 +74,10 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
       return;
     }
 
-    // Vytvoříme payload
     const payload = {
       campaign_name: campaignName,
       category: category,
+      type: type,
       budget: parseFloat(budget),
       currency: currency,
       reward_per_thousand: parseFloat(rewardPerThousand),
@@ -107,7 +86,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
       platforms: Object.keys(platforms).filter((k) => platforms[k]),
       thumbnail_url: thumbnailUrl.trim(),
       content_links: contentLinks,
-      requirements: requirements
+      requirements: requirements,
     };
 
     try {
@@ -115,7 +94,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -123,12 +102,9 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
         return;
       }
       if (res.status === 201) {
-        // Úspěšné vložení – zavřeme modal a informujeme rodiče o úspěchu
-        onRefresh(); // Řekneme rodiči, aby znovu načetl data
+        onRefresh();
         onClose();
-        // V parentském komponentu (Home) pak aktualizujeme stav cardsData
       } else {
-        // Vrátila se chyba 400/500
         const data = await res.json();
         setErrorMsg(data.error || `Chyba ${res.status}`);
       }
@@ -137,16 +113,15 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
     }
   };
 
-  // Rendeříme ikonku platformy v preview (nebo pro checkboxy)
-  const renderPlatformIcon = (name, idx) => {
+  const renderPlatformIcon = (name) => {
     const size = 20;
     switch (name) {
       case 'instagram':
-        return <FaInstagram key={idx} size={size} className="cf-icon-instagram" />;
+        return <FaInstagram size={size} className="cf-icon-instagram" />;
       case 'tiktok':
-        return <FaTiktok key={idx} size={size} className="cf-icon-tiktok" />;
+        return <FaTiktok size={size} className="cf-icon-tiktok" />;
       case 'youtube':
-        return <FaYoutube key={idx} size={size} className="cf-icon-youtube" />;
+        return <FaYoutube size={size} className="cf-icon-youtube" />;
       default:
         return null;
     }
@@ -188,7 +163,22 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           </select>
         </div>
 
-        {/* Campaign budget */}
+        {/* Type */}
+        <div className="cf-input-group">
+          <label>
+            Typ kampaně <span className="cf-required">*</span>
+          </label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            required
+          >
+            <option value="Clipping">Clipping</option>
+            <option value="UGC">UGC</option>
+          </select>
+        </div>
+
+        {/* Campaign budget + currency */}
         <div className="cf-input-group">
           <label>
             Rozpočet kampaně <span className="cf-required">*</span>{' '}
@@ -216,7 +206,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Reward rate ($ za 1000 views) */}
+        {/* Reward rate */}
         <div className="cf-input-group">
           <label>
             Odměna (za 1000 zhlédnutí) <span className="cf-required">*</span>{' '}
@@ -237,7 +227,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Minimum & Maximum payout */}
+        {/* Min & Max payout */}
         <div className="cf-grid-two-cols">
           <div className="cf-input-group">
             <label>
@@ -276,7 +266,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
         </div>
 
         {/* Platforms */}
-        <fieldset className="cf-input-group cf-fieldset">
+        <fieldset className="cf-fieldset">
           <legend>
             Platformy <span className="cf-required">*</span>{' '}
             <FaQuestionCircle title="Vyberte sociální sítě, kde bude kampaň běžet." />
@@ -290,13 +280,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
                   checked={platforms[name]}
                   onChange={handlePlatformChange}
                 />
-                {name === 'instagram' && (
-                  <FaInstagram className="cf-icon-instagram" />
-                )}
-                {name === 'tiktok' && <FaTiktok className="cf-icon-tiktok" />}
-                {name === 'youtube' && (
-                  <FaYoutube className="cf-icon-youtube" />
-                )}
+                {renderPlatformIcon(name)}
                 <span className="cf-platform-text">{name}</span>
               </label>
             ))}
@@ -314,7 +298,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           />
         </div>
 
-        {/* ---------- AVAILABLE CONTENT ---------- */}
+        {/* Available Content (URL) */}
         <div className="cf-input-group">
           <h4 className="cf-subtitle">Dostupný obsah</h4>
           <label className="cf-small-note">
@@ -335,7 +319,6 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
               <FaPlus />
             </button>
           </div>
-          {/* Seznam přidaných odkazů */}
           <ul className="cf-list-container">
             {contentLinks.map((link, idx) => (
               <li key={idx} className="cf-list-item">
@@ -361,7 +344,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           </ul>
         </div>
 
-        {/* ---------- CONTENT REQUIREMENTS ---------- */}
+        {/* Content Requirements */}
         <div className="cf-input-group">
           <h4 className="cf-subtitle">Požadavky na obsah</h4>
           <label className="cf-small-note">
@@ -382,7 +365,6 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
               <FaPlus />
             </button>
           </div>
-          {/* Seznam přidaných požadavků */}
           <ul className="cf-list-container">
             {requirements.map((item, idx) => (
               <li key={idx} className="cf-list-item">
@@ -400,7 +382,7 @@ export default function CardForm({ onAddCard, onClose, onRefresh }) {
           </ul>
         </div>
 
-        {/* Tlačítko Create */}
+        {/* Tlačítko Submit */}
         <button type="submit" className="cf-submit-button">
           Uložit kampaň
         </button>

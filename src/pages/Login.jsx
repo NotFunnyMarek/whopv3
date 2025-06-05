@@ -5,7 +5,7 @@ import '../styles/login.scss';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [message,  setMessage]  = useState('');
+  const [message, setMessage]  = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -15,7 +15,7 @@ const Login = () => {
       const res = await fetch('https://app.byxbot.com/php/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',   // DŮLEŽITÉ: zajistí uložení PHPSESSID cookie
+        credentials: 'include',
         body: JSON.stringify({ username, password })
       });
 
@@ -26,7 +26,6 @@ const Login = () => {
         } catch {
           data = {};
         }
-        // Uložíme do localStorage příznak i data uživatele
         localStorage.setItem('authToken', 'loggedIn');
         const userObj = {
           id: data.user?.id || null,

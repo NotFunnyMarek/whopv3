@@ -8,7 +8,7 @@ import './styles/sidebar.scss';
 import './styles/bottombar.scss';
 import './styles/login.scss';
 import './styles/register.scss';
-import './styles/profile.scss';  // profilové styly
+import './styles/profile.scss';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

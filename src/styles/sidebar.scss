@@ -1,27 +1,31 @@
 @import './variables';
 @import './theme';
 
-// Sidebar vlevo (fixed)
 .sidebar {
-  width:  $sidebar-width;
+  width: var(--sidebar-width);
   height: 100vh;
-  background-color: var(--bg-color);
+  background-color: var(--surface-color);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-sizing: border-box;
+  padding-top: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
 
   &__logo {
-    margin-top: 20px;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
+    margin-bottom: var(--spacing-lg);
     img {
-      width: 40px; // nebo podle vašeho loga
-      display: block;
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-sm);
+      transition: transform var(--transition-default);
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 
@@ -30,31 +34,30 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    width: 100%;
-
     ul {
       list-style: none;
       margin: 0;
       padding: 0;
+      width: 100%;
     }
-
     &-item {
-      margin-bottom: 30px;
-      cursor: pointer;
-      transition: color 0.2s;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: var(--spacing-lg) 0;
+      position: relative;
       .sidebar__icon {
-        font-size: $sidebar-icon-size;
-        color: var(--icon-color);
+        font-size: var(--icon-size);
+        color: var(--muted-color);
+        transition: color var(--transition-default), transform var(--transition-default);
       }
-
+      a.active .sidebar__icon {
+        color: var(--primary-color);
+      }
       &:hover .sidebar__icon {
-        color: var(--icon-hover-color);
+        color: var(--primary-hover);
+        transform: scale(1.2);
       }
     }
   }
