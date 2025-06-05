@@ -1,5 +1,4 @@
 // src/App.jsx
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
@@ -8,8 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';  // ← nově importujeme Profile
-
+import Profile from './pages/Profile';
 
 const App = () => {
   return (
@@ -19,7 +17,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Chráněné: Home */}
+        {/* Chráněná: Home */}
         <Route
           path="/"
           element={
