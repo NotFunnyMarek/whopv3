@@ -27,12 +27,113 @@
   color: var(--success-color);
 }
 
+/* ===== Nové: Balance / Deposit ===== */
+.profile-balance-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+
+  strong {
+    font-size: 1.125rem;
+    color: var(--text-color);
+  }
+  .btn-deposit {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background var(--transition-default), transform var(--transition-default);
+    &:hover {
+      background: var(--accent-color-dark);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* Deposit modal overlay */
+.deposit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+.deposit-modal-content {
+  background-color: var(--surface-color);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  color: var(--text-color);
+
+  h3 {
+    margin-top: 0;
+    color: var(--text-color);
+  }
+  p {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    line-height: 1.4;
+  }
+  code.deposit-address {
+    display: block;
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-xs);
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    font-family: monospace;
+    word-break: break-all;
+  }
+
+  .deposit-modal-close-btn {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--muted-color);
+    transition: color var(--transition-default);
+    &:hover {
+      color: var(--error-color);
+    }
+  }
+  .deposit-modal-ok-btn {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background var(--transition-default), transform var(--transition-default);
+    &:hover {
+      background: var(--accent-color-dark);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* ===== Zbytek stylů zůstává beze změn ===== */
+
 .profile-form {
   display: flex;
   flex-direction: row;
   gap: var(--spacing-lg);
 
-  /* Levá část – avatar + logout */
   .profile-left {
     flex: 0 0 240px;
     display: flex;
@@ -111,7 +212,6 @@
     }
   }
 
-  /* Pravá část – ostatní pole */
   .profile-right {
     flex: 1;
     display: flex;

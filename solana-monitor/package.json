@@ -1,0 +1,15 @@
+{
+  "name": "solana-monitor",
+  "version": "1.0.0",
+  "description": "Skripty pro generování deposit address a monitor transakcí na Solana",
+  "type": "module",
+  "main": "monitor.js",
+  "scripts": {
+    "start": "node monitor.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.65.0",
+    "mysql2": "^3.3.0",
+    "bs58": "^4.0.1"
+  }
+}
