@@ -1,47 +1,38 @@
+// src/components/Modal.jsx
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import '../styles/modal.scss';
 
 /**
- * Modal – jednoduchá wrapper‐komponenta, která vykreslí velký overlay,
- * a ve středu zobrazí obsah (children).
- *
- * Props:
- * - isOpen: boolean – zda je modal viditelný či skrytý.
- * - onClose: funkce – volá se, když uživatel klikne mimo obsah modalu (na overlay).
- * - children: ReactNode – obsah modalu (např. formulář).
+ * Modal ukáže obsah (children) pouze pokud isOpen=true.
+ * Defaultní hodnoty isOpen/onClose jsou přímo v parametrech funkce.
  */
-const Modal = ({ isOpen, onClose, children }) => {
+export default function Modal({
+  isOpen = false,
+  onClose = () => {},
+  children
+}) {
   if (!isOpen) return null;
 
-  // Kliknutí na overlay (ale ne na „content“) spustí onClose
+  // Když klikneme na overlay mimo .modal-content, zavře se modal
   const handleOverlayClick = (e) => {
-    // Jestliže kliknuto přímo na overlay (nikoli na potomka .modal__content)
-    if (e.target.classList.contains('modal__overlay')) {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
   return (
-    <div className="modal__overlay" onClick={handleOverlayClick}>
-      <div className="modal__content">
-        <button className="modal__close-btn" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-content">
+        <button
+          className="modal-close-btn"
+          onClick={onClose}
+          aria-label="Close"
+        >
           ✕
         </button>
         {children}
       </div>
     </div>
   );
-};
-
-Modal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  children: PropTypes.node
-};
-
-Modal.defaultProps = {
-  children: null
-};
-
-export default Modal;
+}

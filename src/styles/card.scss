@@ -5,7 +5,7 @@
   font-family: sans-serif;
 }
 
-/* Chybové hlášky */
+/* Chybová hláška */
 .card-error {
   background: #fee;
   color: #900;
@@ -31,43 +31,7 @@
   background-color: #1e40af;
 }
 
-/* ===== Modální okno ===== */
-.card-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.card-modal {
-  background: #fff;
-  border-radius: 0.5rem;
-  width: 90%;
-  max-width: 600px;
-  padding: 1.5rem;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.card-modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #999;
-}
-
-.card-modal-close:hover {
-  color: #333;
-}
-
-/* Formulář uvnitř modalu */
+/* Formulář v modalu */
 .card-form {
   display: flex;
   flex-direction: column;
@@ -175,7 +139,7 @@
   background-color: #1e40af;
 }
 
-/* ===== Grid s kartami ===== */
+/* ===== Grid s kampaněmi ===== */
 .cards-grid {
   display: grid;
   gap: 1rem;
@@ -218,6 +182,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.card-author {
+  font-size: 0.875rem;
+  color: #555;
+  margin-bottom: 0.5rem;
 }
 
 .card-line {
