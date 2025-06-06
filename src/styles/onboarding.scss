@@ -1,73 +1,53 @@
-/* src/styles/onboarding.scss */
-
 @import './variables';
 @import './theme';
 
-/* ===================================
-   Kontejner celé stránky Onboarding
-   =================================== */
 .onboarding-container {
-  max-width: 1200px;                   /* stejně jako .home-container */
+  max-width: 800px;
   margin: 0 auto;
-  padding: var(--spacing-lg);          /* velké odsazení shodné s Home */
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  background-color: var(--bg-color);   /* bílé pozadí, stejně jako Home */
-  box-sizing: border-box;
+  background-color: var(--bg-color);
 }
 
-/* =========================
-   Horní pás (hlavička)
-   ========================= */
 .onboarding-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: var(--spacing-sm);
   margin-bottom: var(--spacing-lg);
 
   .onboarding-title {
-    font-family: var(--font-sans);
-    font-size: 2rem;                   /* shodné s .home-title */
+    font-size: 2rem;
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 }
 
-/* =================================
-   Hlavní obsah (otázka + karty)
-   ================================= */
 .onboarding-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--spacing-md);             /* střední mezera mezi bloky */
+  gap: var(--spacing-md);
 }
 
-/* Otázka (velký text) */
 .onboarding-question {
-  font-family: var(--font-sans);
-  font-size: 1.5rem;                   /* podobné velké nadpisy jako na Home, ale drobet menší než hlavní titulek */
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-color);
   margin: 0;
 }
 
-/* Podnadpis (instrukce) */
 .onboarding-subtitle {
-  font-family: var(--font-sans);
-  font-size: 1rem;                     /* stejná velikost jako .home-subtitle */
+  font-size: 1rem;
   color: var(--muted-color);
   margin: 0;
   margin-bottom: var(--spacing-lg);
-  max-width: 800px;
+  max-width: 600px;
   line-height: 1.5;
 }
 
-/* =================================
-   Kontejner pro karty (Options)
-   ================================= */
 .onboarding-options {
   display: flex;
   gap: var(--spacing-md);
@@ -75,9 +55,6 @@
   justify-content: center;
 }
 
-/* =================================
-   Jedna karta (jedna možnost)
-   ================================= */
 .option-card {
   display: flex;
   align-items: center;
@@ -88,19 +65,15 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  min-width: 260px;
+  min-width: 240px;
   transition: border-color var(--transition-default), transform var(--transition-default);
 }
 
-/* Když je karta vybraná, má výraznější border + lehce se zvedne */
 .option-card.selected {
   border-color: var(--primary-color);
   transform: translateY(-2px);
 }
 
-/* ======================
-   Radiobutton (ikonka)
-   ====================== */
 .option-radio {
   width: 20px;
   height: 20px;
@@ -113,7 +86,6 @@
   font-size: 1.25rem;
 }
 
-/* Nenaznačená (unchecked) ikona – kruh se šedým okrajem */
 .radio-icon.unchecked {
   width: 16px;
   height: 16px;
@@ -121,44 +93,33 @@
   border-radius: 50%;
 }
 
-/* Zaškrtnutá ikona (checked) – barevná, ve stejném odstínu jako primární barva */
 .radio-icon.checked {
   color: var(--primary-color);
 }
 
-/* ========================
-   Ikony uvnitř karty
-   ======================== */
 .option-icon {
   font-size: 1.5rem;
   color: var(--text-color);
 }
 
 .icon-globe {
-  /* ponecháme default barvu textu */
+  /* default barva textu */
 }
 
 .icon-plus {
   color: var(--primary-color);
 }
 
-/* ========================
-   Text uvnitř karty
-   ======================== */
 .option-text {
-  font-family: var(--font-sans);
   font-size: 1rem;
+  font-weight: 500;
   color: var(--text-color);
 }
 
-/* ========================
-   Tlačítko „Continue“
-   ======================== */
 .onboarding-button {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-sm) var(--spacing-lg);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;                 /* stejné jako .home-create-btn */
+  font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
@@ -177,49 +138,21 @@
   transform: translateY(-2px);
 }
 
-/* Když není nic vybrané, tlačítko je šedé a „not-allowed“ */
 .onboarding-button:disabled {
   background-color: var(--border-color);
   cursor: not-allowed;
   transform: none;
 }
 
-/* ============================
-   Responsivní úpravy (tablet & mobil)
-   ============================ */
-@media (max-width: 768px) {
-  .onboarding-question {
-    font-size: 1.375rem;
-  }
-  .onboarding-subtitle {
-    font-size: 0.95rem;
-  }
-  .option-card {
-    min-width: 220px;
-    padding: var(--spacing-xs) var(--spacing-md);
-  }
-  .onboarding-button {
-    max-width: 100%;
-  }
+.onboarding-loading,
+.onboarding-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  color: var(--text-color);
 }
 
-@media (max-width: 480px) {
-  .onboarding-question {
-    font-size: 1.25rem;
-  }
-  .onboarding-subtitle {
-    font-size: 0.9rem;
-    max-width: 100%;
-  }
-  .onboarding-options {
-    gap: var(--spacing-sm);
-  }
-  .option-card {
-    width: 100%;
-    justify-content: flex-start;
-  }
-  .onboarding-button {
-    padding: var(--spacing-xs) 0;
-    font-size: 0.85rem;
-  }
+.onboarding-error p {
+  color: var(--danger-color);
 }

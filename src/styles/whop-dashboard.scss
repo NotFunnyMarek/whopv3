@@ -1,17 +1,15 @@
 @import './variables';
 @import './theme';
 
-.whop-dashboard-container {
+.whop-container {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   background-color: var(--bg-color);
   color: var(--text-color);
-  min-height: 100vh;
   position: relative;
-  font-family: var(--font-sans);
 }
 
-/* Tlačítko „Zpět“ */
 .whop-back-btn {
   position: absolute;
   top: var(--spacing-md);
@@ -21,33 +19,44 @@
   font-size: 1.25rem;
   color: var(--text-color);
   cursor: pointer;
-  z-index: 20;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   transition: color var(--transition-default);
 }
 .whop-back-btn:hover {
   color: var(--primary-color);
 }
 
-.whop-banner-wrapper {
-  position: relative;
+/* =========================== */
+/* Banner sekce                */
+/* =========================== */
+.whop-banner {
   width: 100%;
-  height: 300px;
   background-color: var(--border-color);
-  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  height: 350px;
 }
 
 .whop-banner-image {
   width: 100%;
-  height: 100%;
+  height: 350px;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.whop-banner-image:hover {
+  transform: scale(1.02);
 }
 
 .whop-banner-placeholder {
   width: 100%;
-  height: 100%;
+  height: 350px;
+  background-color: var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,157 +64,371 @@
   font-size: 1rem;
 }
 
-.whop-logo-wrapper {
-  position: absolute;
-  top: calc(300px - 75px);
-  left: var(--spacing-lg);
-  width: 150px;
-  height: 150px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background-color: var(--surface-color);
-  box-shadow: var(--shadow-sm);
-  z-index: 10;
-}
-
-.whop-logo-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.whop-name-wrapper {
-  margin-top: var(--spacing-lg);
-  margin-left: calc(var(--spacing-lg) + 170px);
-}
-
-.whop-name {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-color);
-}
-
-.whop-nav {
-  margin-top: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--surface-color);
-}
-
-.whop-nav-list {
-  display: flex;
-  gap: var(--spacing-lg);
-  list-style: none;
-  margin: 0;
-  padding: 0 var(--spacing-lg);
-}
-
-.whop-nav-item {
-  font-size: 1rem;
-  padding: var(--spacing-sm) 0;
-  color: var(--muted-color);
-  cursor: pointer;
-  position: relative;
-  transition: color var(--transition-default);
-}
-.whop-nav-item:hover {
-  color: var(--primary-color);
-}
-.whop-nav-item.active {
-  color: var(--text-color);
-  font-weight: 600;
-}
-.whop-nav-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--primary-color);
-  border-radius: var(--radius-base);
-}
-
-.whop-main-content {
-  flex: 1;
-  padding: var(--spacing-lg);
-  background-color: var(--bg-color);
-  font-size: 1rem;
-  color: var(--muted-color);
-}
-
-.whop-dashboard-error {
-  width: 100%;
-  min-height: 50vh;
+/* Edit móд banneru */
+.whop-banner-edit-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.whop-banner-image-edit {
+  width: 100%;
+  max-width: 900px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: var(--radius-base);
+  border: 1px solid var(--border-color);
+}
+
+.whop-banner-placeholder-edit {
+  width: 100%;
+  max-width: 900px;
+  height: 250px;
+  background-color: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-color);
+  font-size: 1rem;
+  border-radius: var(--radius-base);
+}
+
+.whop-banner-input-edit {
+  margin-top: var(--spacing-xs);
+  font-size: 0.875rem;
+}
+
+.banner-uploading {
+  font-size: 1rem;
+  color: var(--muted-color);
+}
+
+.whop-banner-error-edit {
+  font-size: 0.875rem;
+  color: var(--danger-color);
+}
+
+/* =========================== */
+/* Obsah pod bannerem          */
+/* =========================== */
+.whop-content {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: calc(var(--spacing-lg) * 1.5) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Nadpis a popis (view + edit) */
+.whop-header {
+  text-align: center;
+
+  .whop-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-color);
+  }
+
+  .whop-description {
+    font-size: 1.125rem;
+    color: var(--muted-color);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .whop-input-name {
+    font-size: 2rem;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .whop-input-description {
+    font-size: 1rem;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    width: 100%;
+    max-width: 600px;
+    margin: var(--spacing-sm) auto 0;
+    box-sizing: border-box;
+  }
+
+  .whop-input-name:focus,
+  .whop-input-description:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+}
+
+/* Tlačítka Edit / Save */
+.whop-action-btns {
+  display: flex;
   justify-content: center;
   gap: var(--spacing-md);
-  color: var(--danger-color);
-  font-size: 1rem;
+
+  .whop-edit-btn,
+  .whop-save-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background var(--transition-default), transform var(--transition-default);
+  }
+  .whop-edit-btn:hover,
+  .whop-save-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+    transform: translateY(-2px);
+  }
 }
 
-.whop-dashboard-error button {
-  padding: var(--spacing-xs) var(--spacing-md);
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: #fff;
-  border: none;
+/* =========================== */
+/* Seznam features             */
+/* =========================== */
+.whop-features-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  .features-section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+}
+
+/* ========== View-only ========== */
+.whop-features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+@media (min-width: 640px) {
+  .whop-features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.whop-feature-card {
+  background-color: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  align-items: flex-start;
+  transition: transform 0.2s ease;
+}
+.whop-feature-card:hover {
+  transform: translateY(-3px);
+}
+
+.whop-feature-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: var(--radius-base);
+  border: 1px solid var(--border-color);
+}
+
+.whop-feature-image-placeholder {
+  width: 90px;
+  height: 90px;
+  background-color: var(--border-color);
+  border-radius: var(--radius-base);
+}
+
+.whop-feature-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.whop-feature-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.whop-feature-subtitle {
+  font-size: 0.875rem;
+  color: var(--muted-color);
+  margin: 0;
+}
+
+/* ========== Edit móд ========== */
+.feature-card-edit {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: background var(--transition-default), transform var(--transition-default);
-}
-.whop-dashboard-error button:hover {
-  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-  transform: translateY(-2px);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  position: relative;
 }
 
-@media (max-width: 768px) {
-  .whop-banner-wrapper {
-    height: 200px;
+.feature-number-edit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.feature-field-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  label {
+    font-size: 0.875rem;
+    color: var(--text-color);
   }
-  .whop-logo-wrapper {
-    top: calc(200px - 60px);
+
+  .feature-input-edit,
+  .feature-textarea-edit {
+    font-size: 1rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: border-color var(--transition-default);
+  }
+  .feature-input-edit:focus,
+  .feature-textarea-edit:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  .feature-textarea-edit {
+    resize: vertical;
+  }
+}
+
+.feature-image-wrapper-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  .feature-image-placeholder-edit,
+  .feature-image-uploading {
     width: 120px;
     height: 120px;
+    background-color: var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-color);
+    font-size: 0.875rem;
+    border-radius: var(--radius-base);
   }
-  .whop-name-wrapper {
-    margin-left: calc(var(--spacing-lg) + 140px);
+
+  .feature-image-preview-edit {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--border-color);
   }
-  .whop-name {
-    font-size: 1.5rem;
+
+  .feature-image-input-edit {
+    font-size: 0.875rem;
   }
-  .whop-nav-list {
-    gap: var(--spacing-md);
-    padding: 0 var(--spacing-md);
-  }
-  .whop-nav-item {
-    font-size: 0.95rem;
+
+  .feature-image-error-edit {
+    color: var(--danger-color);
+    font-size: 0.875rem;
   }
 }
 
-@media (max-width: 480px) {
-  .whop-banner-wrapper {
-    height: 150px;
-  }
-  .whop-logo-wrapper {
-    top: calc(150px - 50px);
-    width: 100px;
-    height: 100px;
-  }
-  .whop-name-wrapper {
-    margin-left: calc(var(--spacing-md) + 110px);
-  }
-  .whop-name {
-    font-size: 1.25rem;
-  }
-  .whop-nav-list {
-    gap: var(--spacing-sm);
-    padding: 0 var(--spacing-md);
-  }
-  .whop-nav-item {
-    font-size: 0.9rem;
-  }
+/* Tlačítko pro smazání feature v editačním módu */
+.feature-remove-btn-edit {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: color var(--transition-default);
+}
+.feature-remove-btn-edit:hover {
+  color: var(--danger-hover);
+}
+
+/* Tlačítko pro přidání nové feature */
+.feature-add-btn-edit {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: none;
+  border: 2px dashed var(--primary-color);
+  color: var(--primary-color);
+  font-size: 1rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background var(--transition-default), color var(--transition-default);
+  width: fit-content;
+  align-self: center;
+}
+.feature-add-btn-edit:hover {
+  background-color: var(--primary-hover-alt);
+  color: #fff;
+}
+
+/* Stav Loading a Error */
+.whop-loading,
+.whop-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: var(--text-color);
+}
+
+.whop-error p {
+  color: var(--danger-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.whop-error button {
+  background: var(--primary-color);
+  color: #fff;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+.whop-error button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }

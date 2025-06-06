@@ -1,106 +1,92 @@
-/* src/styles/setup.scss */
-
 @import './variables';
 @import './theme';
 
-/* ==============================
-   Kontejner celé Setup stránky
-   ============================== */
 .setup-container {
-  max-width: 1200px;                   /* stejně jako .home-container */
+  max-width: 600px;
   margin: 0 auto;
-  padding: var(--spacing-lg);          /* velké odsazení stejným způsobem jako Home/Onboarding */
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  background-color: var(--bg-color);   /* bílé pozadí (stejně jako Home/Onboarding) */
-  box-sizing: border-box;
+  background-color: var(--bg-color);
 }
 
-/* =====================
-   Hlavička Setup kroku
-   ===================== */
 .setup-header {
-  /* Nemusíme mít rámeček, prostě jen padding a margin analogicky k Home */
-  margin-bottom: var(--spacing-md);
-
   .setup-title {
-    font-family: var(--font-sans);
-    font-size: 2rem;                  /* stejná velikost jako .home-title */
+    font-size: 2rem;
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 }
 
-/* ===================
-   Obsah Setup stránky
-   =================== */
 .setup-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;            /* text a input zarovnáme doleva */
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 
-/* Podnadpis (subtitle) pod hlavním nadpisem */
 .setup-subtitle {
-  font-family: var(--font-sans);
-  font-size: 1rem;                    /* shodné s .home-subtitle */
+  font-size: 1rem;
   color: var(--muted-color);
   margin: 0;
-  max-width: 600px;                   /* ohraničení šířky pro lepší čitelnost */
-  line-height: 1.5;
 }
 
-/* =======================================
-   Wrapper kolem inputu a počítadla znaků
-   ======================================= */
 .setup-input-wrapper {
-  position: relative;                 /* pro umístění počítadla vlevo/doprava pod input */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 
-  /* Samotný input */
-  .setup-input {
-    width: 100%;
-    max-width: 600px;                 /* omezení šířky inputu */
-    padding: var(--spacing-xs) var(--spacing-sm);
+  .setup-input,
+  .setup-textarea {
     font-family: var(--font-sans);
     font-size: 1rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-base);
-    background-color: var(--bg-color);
+    background-color: var(--surface-color);
     color: var(--text-color);
     transition: border-color var(--transition-default);
   }
-
-  .setup-input:focus {
+  .setup-input:focus,
+  .setup-textarea:focus {
     outline: none;
     border-color: var(--primary-color);
   }
+}
 
-  /* Počítadlo znaků (napravo pod inputem) */
-  .char-count {
-    position: absolute;
-    right: 0;
-    bottom: -1.5rem;                 /* posun pod input */
-    font-family: var(--font-sans);
-    font-size: 0.875rem;             /* drobnější než hlavní text */
-    color: var(--muted-color);
+.char-count {
+  font-size: 0.875rem;
+  color: var(--muted-color);
+  text-align: right;
+}
+
+.setup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+
+  .back-button {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: background var(--transition-default), transform var(--transition-default);
+  }
+  .back-button:hover {
+    background-color: var(--border-color-hover);
+    transform: translateY(-1px);
   }
 }
 
-/* =======================
-   Tlačítko Continue
-   ======================= */
 .setup-button {
-  margin-top: var(--spacing-lg);
-  align-self: flex-start;           /* tlačítko doleva zarovnané */
   padding: var(--spacing-sm) var(--spacing-lg);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;               /* stejná velikost jako .home-create-btn */
-  font-weight: 600;
-  color: #fff;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
   border: none;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -118,51 +104,4 @@
   background-color: var(--border-color);
   cursor: not-allowed;
   transform: none;
-}
-
-/* =====================================
-   Responsivní úpravy (tablet & mobil)
-   ===================================== */
-@media (max-width: 768px) {
-  .setup-title {
-    font-size: 1.75rem;
-  }
-  .setup-subtitle {
-    font-size: 0.95rem;
-    max-width: 100%;
-  }
-  .setup-input {
-    font-size: 0.95rem;
-    padding: var(--spacing-xs) var(--spacing-xs);
-  }
-  .char-count {
-    font-size: 0.8rem;
-  }
-  .setup-button {
-    padding: var(--spacing-xs) var(--spacing-md);
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .setup-title {
-    font-size: 1.5rem;
-  }
-  .setup-subtitle {
-    font-size: 0.9rem;
-  }
-  .setup-input {
-    width: 100%;
-    max-width: 100%;
-    font-size: 0.9rem;
-  }
-  .char-count {
-    font-size: 0.75rem;
-    bottom: -1.25rem;
-  }
-  .setup-button {
-    width: 100%;
-    padding: var(--spacing-xs) 0;
-    font-size: 0.85rem;
-  }
 }

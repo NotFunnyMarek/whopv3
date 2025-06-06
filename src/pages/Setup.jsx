@@ -1,74 +1,119 @@
 // src/pages/Setup.jsx
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/setup.scss';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/setup.scss";
+import { getWhopSetupCookie, setWhopSetupCookie } from "../utils/cookieUtils";
 
 export default function Setup() {
   const navigate = useNavigate();
 
-  // Jestli jsme sem přišli z jiného kroku (např. chci umožnit „zpět“), 
-  // mohli bychom z location.state načíst nějaká data. Pro jednoduchost teď nezačínáme se žádným state.
-  // Tu definujeme čistě nový stav.
-  const [whopName, setWhopName] = useState('');
-  const maxLength = 30;
+  // Načteme z cookie, pokud existuje
+  const cookieData = getWhopSetupCookie();
+  const initialName = cookieData?.name || "";
+  const initialDesc = cookieData?.description || "";
 
-  const handleChange = (e) => {
+  const [whopName, setWhopName] = useState(initialName);
+  const [description, setDescription] = useState(initialDesc);
+  const maxNameLength = 30;
+  const maxDescLength = 200;
+
+  useEffect(() => {
+    // Upravíme cookie, když se whopName nebo description změní
+    const newData = {
+      ...(cookieData || {}),
+      name: whopName,
+      description: description,
+    };
+    setWhopSetupCookie(newData);
+  }, [whopName, description]);
+
+  const handleNameChange = (e) => {
     const value = e.target.value;
-    if (value.length <= maxLength) {
+    if (value.length <= maxNameLength) {
       setWhopName(value);
     }
   };
 
-  const handleContinue = () => {
-    if (!whopName.trim()) return;
+  const handleDescChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= maxDescLength) {
+      setDescription(value);
+    }
+  };
 
-    // Vytvoříme částečný objekt whopData s tím, co jsme doposud zadali
+  const handleContinue = () => {
+    if (!whopName.trim() || !description.trim()) return;
+
     const whopData = {
       name: whopName.trim(),
-      slug: '',         // slug zatím neznáme, vyplní se v dalším kroku
-      features: [],     // features teprve přijdou v dalším kroku
-      logoUrl: '',      // logo zatím nepřidáváme
+      description: description.trim(),
+      slug: cookieData?.slug || "",
+      features: cookieData?.features || [],
+      logoUrl: cookieData?.logoUrl || "",
     };
 
-    navigate('/setup/link', { state: { whopData } });
+    setWhopSetupCookie(whopData);
+    navigate("/setup/link", { state: { whopData } });
+  };
+
+  const handleBack = () => {
+    // Není předchozí krok – můžeme jít zpět třeba na onboarding
+    navigate("/onboarding");
   };
 
   return (
     <div className="setup-container">
-      {/* HLAVIČKA */}
       <div className="setup-header">
         <h1 className="setup-title">Name your whop</h1>
       </div>
 
-      {/* PODNADPIS */}
       <div className="setup-content">
         <p className="setup-subtitle">
-          This is the name of your social business. Don’t worry, you can change this later.
+          Zadej název a základní popis svého whopu. Popis se zobrazí návštěvníkům.
         </p>
 
-        {/* INPUT + počítadlo znaků */}
+        {/* Input pro jméno */}
         <div className="setup-input-wrapper">
           <input
             type="text"
             className="setup-input"
             placeholder="Enter your whop name"
             value={whopName}
-            onChange={handleChange}
+            onChange={handleNameChange}
           />
           <div className="char-count">
-            {whopName.length}/{maxLength}
+            {whopName.length}/{maxNameLength}
           </div>
         </div>
 
-        {/* CONTINUE */}
-        <button
-          className="setup-button"
-          onClick={handleContinue}
-          disabled={whopName.trim().length === 0}
-        >
-          Continue
-        </button>
+        {/* Textarea pro popis */}
+        <div className="setup-input-wrapper">
+          <textarea
+            className="setup-textarea"
+            placeholder="Enter your whop description"
+            value={description}
+            onChange={handleDescChange}
+            rows="3"
+          />
+          <div className="char-count">
+            {description.length}/{maxDescLength}
+          </div>
+        </div>
+
+        {/* Tlačítka Back a Continue */}
+        <div className="setup-buttons">
+          <button className="back-button" onClick={handleBack}>
+            ← Back
+          </button>
+          <button
+            className="setup-button"
+            onClick={handleContinue}
+            disabled={whopName.trim().length === 0 || description.trim().length === 0}
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   );

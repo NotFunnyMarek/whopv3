@@ -1,51 +1,66 @@
 // src/pages/ChooseLink.jsx
 
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import '../styles/choose-link.scss';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "../styles/choose-link.scss";
+import { getWhopSetupCookie, setWhopSetupCookie } from "../utils/cookieUtils";
 
 export default function ChooseLink() {
-  // HOOKS MUSÍ BÝT NA VRCHOLU FUNKCE
-  const [slug, setSlug] = useState('');
+  const [slug, setSlug] = useState("");
   const maxSlugLength = 30;
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Načíst předchozí data (jméno whopu) z location.state
-  const prevWhopData = location.state?.whopData || null;
+  // Pokud jsme sem přišli s state, použijeme ho, jinak načteme z cookie
+  const cookieData = getWhopSetupCookie();
+  const prevWhopData = location.state?.whopData || cookieData || null;
 
-  // Pokud chybí, zobrazíme chybovou obrazovku
+  useEffect(() => {
+    if (prevWhopData?.slug) {
+      setSlug(prevWhopData.slug);
+    }
+  }, [prevWhopData]);
+
   if (!prevWhopData) {
     return (
       <div className="choose-link-error">
         <p>Whop data not found. Please complete the previous step first.</p>
-        <button onClick={() => navigate('/setup')}>Go to Setup</button>
+        <button onClick={() => navigate("/setup")}>Go to Setup</button>
       </div>
     );
   }
 
-  // Zpracování změny v poli slugu
   const handleChange = (e) => {
-    // Pouze alfanumerické, pomlčka, podtržítko
-    const value = e.target.value.replace(/[^a-zA-Z0-9\-_]/g, '');
+    const value = e.target.value.replace(/[^a-zA-Z0-9\-_]/g, "");
     if (value.length <= maxSlugLength) {
       setSlug(value);
     }
   };
 
-  // Přechod na další krok setupu (FeaturesSetup)
+  const handleBack = () => {
+    // Uložíme state do cookie a jdeme o krok zpět
+    const newData = {
+      ...prevWhopData,
+      slug: slug,
+    };
+    setWhopSetupCookie(newData);
+    navigate("/setup", { state: { whopData: newData } });
+  };
+
   const handleContinue = () => {
     if (!slug.trim()) return;
 
     const whopData = {
       name: prevWhopData.name,
+      description: prevWhopData.description,
       slug: slug.trim(),
-      features: [],      // doplníme až dále
-      logoUrl: prevWhopData.logoUrl || '',
+      features: prevWhopData.features || [],
+      logoUrl: prevWhopData.logoUrl || "",
     };
 
-    navigate('/setup/features', { state: { whopData } });
+    setWhopSetupCookie(whopData);
+    navigate("/setup/features", { state: { whopData } });
   };
 
   return (
@@ -74,13 +89,18 @@ export default function ChooseLink() {
           {slug.length}/{maxSlugLength}
         </div>
 
-        <button
-          className="choose-link-button"
-          onClick={handleContinue}
-          disabled={slug.trim().length === 0}
-        >
-          Continue
-        </button>
+        <div className="choose-link-buttons">
+          <button className="back-button" onClick={handleBack}>
+            ← Back
+          </button>
+          <button
+            className="choose-link-button"
+            onClick={handleContinue}
+            disabled={slug.trim().length === 0}
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   );

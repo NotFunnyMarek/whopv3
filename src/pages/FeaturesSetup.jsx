@@ -1,51 +1,90 @@
 // src/pages/FeaturesSetup.jsx
 
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { FaPlus, FaTrash } from 'react-icons/fa';
-import '../styles/features-setup.scss';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FaPlus, FaTrash } from "react-icons/fa";
+import "../styles/features-setup.scss";
+import { getWhopSetupCookie, setWhopSetupCookie } from "../utils/cookieUtils";
 
 export default function FeaturesSetup() {
-  // HOOKS vždy na vrcholu
-  const [features, setFeatures] = useState([
-    { id: 1, title: '', subtitle: '', imageFile: null, imagePreview: null },
-    { id: 2, title: '', subtitle: '', imageFile: null, imagePreview: null },
-  ]);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Načtení předchozích dat: očekáváme { name, slug, logoUrl } z ChooseLink.jsx
-  const prevWhopData = location.state?.whopData || null;
+  // Načteme data z cookie (pokud existují) ještě před jakýmkoli hookem
+  const cookieData = getWhopSetupCookie();
+  // Můžeme dostat whopData buď z location.state, nebo z cookie
+  const prevWhopData = location.state?.whopData || cookieData || null;
 
-  // Když chybí whopData, vrátíme chybovou obrazovku
+  // === HOOKS MUSÍ BÝT NA VRCHOLU FUNKCE ===
+  // Funkce, která vrátí počáteční stav pole features:
+  const getInitialFeatures = () => {
+    if (
+      prevWhopData &&
+      Array.isArray(prevWhopData.features) &&
+      prevWhopData.features.length > 0
+    ) {
+      // Pokud máme v prevWhopData již uložené features, použijeme je:
+      return prevWhopData.features.map((f, idx) => ({
+        id: idx + 1,
+        title: f.title || "",
+        subtitle: f.subtitle || "",
+        imageUrl: f.imageUrl || "",
+        isUploading: false,
+        error: "",
+      }));
+    }
+    // Jinak od začátku dvě prázdné karty
+    return [
+      { id: 1, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
+      { id: 2, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
+    ];
+  };
+
+  const [features, setFeatures] = useState(getInitialFeatures());
+
+  // useEffect ukládá do cookie pokaždé, když se features změní
+  useEffect(() => {
+    if (!prevWhopData) return;
+    const newData = {
+      ...prevWhopData,
+      features: features.map((f) => ({
+        title: f.title,
+        subtitle: f.subtitle,
+        imageUrl: f.imageUrl,
+      })),
+    };
+    setWhopSetupCookie(newData);
+  }, [features, prevWhopData]);
+
+  // === KONEC HOOKŮ ===
+
+  // Pokud chybí předchozí whopData, hned vracíme chybovou obrazovku
   if (!prevWhopData) {
     return (
       <div className="features-setup-error">
         <p>Whop data not found. Please complete the previous steps first.</p>
-        <button onClick={() => navigate('/setup')}>Go to Setup</button>
+        <button onClick={() => navigate("/setup")}>Go to Setup</button>
       </div>
     );
   }
 
-  // Přidání nové feature
+  // === Funkce pro přidání nové feature ===
   const addFeature = () => {
     if (features.length >= 6) return;
-    const newId =
-      features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
-    setFeatures([
-      ...features,
-      { id: newId, title: '', subtitle: '', imageFile: null, imagePreview: null },
+    const newId = features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
+    setFeatures((prev) => [
+      ...prev,
+      { id: newId, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
     ]);
   };
 
-  // Odebrání feature (musí zůstat minimálně 2)
+  // === Funkce pro odstranění feature (minimálně 2 musí zůstat) ===
   const removeFeature = (id) => {
     if (features.length <= 2) return;
-    setFeatures(features.filter((f) => f.id !== id));
+    setFeatures((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // Změna názvu / podnadpisu
+  // === Změna názvu / podnadpisu ===
   const handleChange = (id, field, value) => {
     setFeatures((prev) =>
       prev.map((f) =>
@@ -59,48 +98,119 @@ export default function FeaturesSetup() {
     );
   };
 
-  // Nahrání obrázku a generování náhledu
-  const handleImageChange = (id, file) => {
+  // === Nahrávání obrázku na Cloudinary a generování náhledu ===
+  const handleImageChange = async (id, file) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
+
+    // Validace velikosti souboru
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxSize) {
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? {
-                ...f,
-                imageFile: file,
-                imagePreview: reader.result,
-              }
+            ? { ...f, error: "Obrázek je příliš velký (max 5 MB).", isUploading: false }
             : f
         )
       );
-    };
-    reader.readAsDataURL(file);
+      return;
+    }
+
+    // Validace typu souboru
+    if (!file.type.startsWith("image/")) {
+      setFeatures((prev) =>
+        prev.map((f) =>
+          f.id === id
+            ? { ...f, error: "Vyberte prosím platný obrázek.", isUploading: false }
+            : f
+        )
+      );
+      return;
+    }
+
+    // Označíme, že právě nahráváme
+    setFeatures((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, isUploading: true, error: "" } : f))
+    );
+
+    const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
+    const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
+    const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error(`Chyba při nahrávání na Cloudinary: ${res.status}`);
+      }
+      const data = await res.json();
+      if (!data.secure_url) {
+        throw new Error("Nepodařilo se získat secure_url z Cloudinary.");
+      }
+      // Uložíme do stavu imageUrl a vypneme isUploading
+      setFeatures((prev) =>
+        prev.map((f) =>
+          f.id === id
+            ? { ...f, imageUrl: data.secure_url, isUploading: false, error: "" }
+            : f
+        )
+      );
+    } catch (err) {
+      console.error("Cloudinary upload error:", err);
+      setFeatures((prev) =>
+        prev.map((f) =>
+          f.id === id
+            ? { ...f, imageUrl: "", isUploading: false, error: "Chyba při nahrávání obrázku." }
+            : f
+        )
+      );
+    }
   };
 
-  // Validace: kolik features má title i imageFile
-  const validCount = features.reduce((count, f) => {
-    return count + (f.title.trim() && f.imageFile ? 1 : 0);
-  }, 0);
+  // Počet validních features (musí mít neprázdný title i imageUrl)
+  const validCount = features.reduce(
+    (count, f) => count + (f.title.trim() && f.imageUrl ? 1 : 0),
+    0
+  );
   const isContinueEnabled = validCount >= 2;
 
-  // Po kliknutí Continue: sestavíme whopData s features a pokračujeme na BannerSetup
+  // === Handler pro tlačítko „Back“ ===
+  const handleBack = () => {
+    const newData = {
+      ...prevWhopData,
+      features: features.map((f) => ({
+        title: f.title,
+        subtitle: f.subtitle,
+        imageUrl: f.imageUrl,
+      })),
+    };
+    setWhopSetupCookie(newData);
+    navigate("/setup/link", { state: { whopData: newData } });
+  };
+
+  // === Handler pro tlačítko „Continue“ ===
   const handleContinue = () => {
     if (!isContinueEnabled) return;
 
     const whopData = {
       name: prevWhopData.name,
+      description: prevWhopData.description,
       slug: prevWhopData.slug,
       features: features.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
-        imageUrl: f.imagePreview,
+        imageUrl: f.imageUrl,
       })),
-      logoUrl: prevWhopData.logoUrl || '',
+      logoUrl: prevWhopData.logoUrl || "",
     };
 
-    navigate('/setup/banner', { state: { whopData } });
+    setWhopSetupCookie(whopData);
+    navigate("/setup/banner", { state: { whopData } });
   };
 
   return (
@@ -139,21 +249,18 @@ export default function FeaturesSetup() {
                 className="feature-input"
                 placeholder="Enter feature title"
                 value={feature.title}
-                onChange={(e) => handleChange(feature.id, 'title', e.target.value)}
+                onChange={(e) => handleChange(feature.id, "title", e.target.value)}
               />
             </div>
 
             <div className="feature-field">
-              <label htmlFor={`feature-subtitle-${feature.id}`}>Subtitle
-                (Optional)</label>
+              <label htmlFor={`feature-subtitle-${feature.id}`}>Subtitle (Optional)</label>
               <textarea
                 id={`feature-subtitle-${feature.id}`}
                 className="feature-textarea"
                 placeholder="Enter feature subtitle"
                 value={feature.subtitle}
-                onChange={(e) =>
-                  handleChange(feature.id, 'subtitle', e.target.value)
-                }
+                onChange={(e) => handleChange(feature.id, "subtitle", e.target.value)}
                 rows="2"
               />
             </div>
@@ -161,16 +268,16 @@ export default function FeaturesSetup() {
             <div className="feature-field">
               <label>Image (1:1) *</label>
               <div className="feature-image-wrapper">
-                {feature.imagePreview ? (
+                {feature.isUploading ? (
+                  <div className="feature-image-uploading">Nahrávám…</div>
+                ) : feature.imageUrl ? (
                   <img
-                    src={feature.imagePreview}
+                    src={feature.imageUrl}
                     alt={`Feature ${index + 1}`}
                     className="feature-image-preview"
                   />
                 ) : (
-                  <div className="feature-image-placeholder">
-                    No image selected
-                  </div>
+                  <div className="feature-image-placeholder">No image selected</div>
                 )}
                 <input
                   type="file"
@@ -181,28 +288,32 @@ export default function FeaturesSetup() {
                     handleImageChange(feature.id, file);
                   }}
                 />
+                {feature.error && (
+                  <div className="feature-image-error">{feature.error}</div>
+                )}
               </div>
             </div>
           </div>
         ))}
 
         {features.length < 6 && (
-          <button
-            type="button"
-            className="feature-add-btn"
-            onClick={addFeature}
-          >
+          <button type="button" className="feature-add-btn" onClick={addFeature}>
             <FaPlus className="icon-plus" /> Add Feature
           </button>
         )}
 
-        <button
-          className="features-continue-btn"
-          onClick={handleContinue}
-          disabled={!isContinueEnabled}
-        >
-          Continue
-        </button>
+        <div className="features-setup-buttons">
+          <button className="back-button" onClick={handleBack}>
+            ← Back
+          </button>
+          <button
+            className="features-continue-btn"
+            onClick={handleContinue}
+            disabled={!isContinueEnabled}
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   );
