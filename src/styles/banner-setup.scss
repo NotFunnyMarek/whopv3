@@ -1,13 +1,8 @@
-/* src/styles/banner-setup.scss */
-
 @import './variables';
 @import './theme';
 
-/* ===========================
-   Kontejner celé stránky
-   =========================== */
 .banner-setup-container {
-  max-width: 1200px;                    
+  max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
   display: flex;
@@ -17,24 +12,18 @@
   box-sizing: border-box;
 }
 
-/* ===========================
-   Hlavička (nadpis)
-   =========================== */
 .banner-setup-header {
   margin-bottom: var(--spacing-md);
 
   .banner-setup-title {
     font-family: var(--font-sans);
-    font-size: 2rem;                    /* stejné jako ostatní titulky */
+    font-size: 2rem;
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 }
 
-/* ===========================
-   Obsah stránky
-   =========================== */
 .banner-setup-content {
   display: flex;
   flex-direction: column;
@@ -42,19 +31,15 @@
   gap: var(--spacing-md);
 }
 
-/* Podnadpis (instrukce) */
 .banner-setup-subtitle {
   font-family: var(--font-sans);
-  font-size: 1rem;                      /* jako u Home a předchozích kroků */
+  font-size: 1rem;
   color: var(--muted-color);
   margin: 0;
   max-width: 800px;
   line-height: 1.5;
 }
 
-/* ===========================================
-   Wrapper pro nahrání banneru a náhled obrázku
-   =========================================== */
 .banner-input-wrapper {
   display: flex;
   flex-direction: column;
@@ -63,7 +48,7 @@
   .banner-placeholder {
     width: 100%;
     max-width: 800px;
-    height: 200px;                      /* poměr ~4:1 (1200×300) – výška 200px */
+    height: 200px;
     background-color: var(--border-color);
     display: flex;
     align-items: center;
@@ -77,7 +62,7 @@
   .banner-preview-image {
     width: 100%;
     max-width: 800px;
-    height: 200px;                      /* zachovat poměr 1200×300 → 4:1, proto 200px */
+    height: 200px;
     object-fit: cover;
     border-radius: var(--radius-base);
     border: 1px solid var(--border-color);
@@ -90,16 +75,12 @@
   }
 }
 
-/* Chybové hlášení */
 .banner-error {
   font-family: var(--font-sans);
   font-size: 0.875rem;
   color: var(--danger-color);
 }
 
-/* ===========================
-   Tlačítko Continue
-   =========================== */
 .banner-continue-button {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-sm) var(--spacing-lg);
@@ -128,13 +109,37 @@
   transform: none;
 }
 
-/* ======================================
-   Responsivní úpravy (tablet & mobil)
-   ====================================== */
+.banner-setup-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: var(--spacing-md);
+  color: var(--danger-color);
+}
+
+.banner-setup-error-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+
+.banner-setup-error-btn:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .banner-placeholder,
   .banner-preview-image {
-    height: 180px;                     /* mírně menší výška na tabletu */
+    height: 180px;
   }
   .banner-setup-title {
     font-size: 1.75rem;
@@ -142,10 +147,8 @@
   .banner-setup-subtitle {
     font-size: 0.95rem;
   }
-  .banner-input-wrapper {
-    .banner-file-input {
-      font-size: 0.95rem;
-    }
+  .banner-file-input {
+    font-size: 0.95rem;
   }
   .banner-continue-button {
     padding: var(--spacing-xs) var(--spacing-md);
@@ -156,7 +159,7 @@
 @media (max-width: 480px) {
   .banner-placeholder,
   .banner-preview-image {
-    height: 150px;                     /* ještě menší pro mobily */
+    height: 150px;
   }
   .banner-setup-title {
     font-size: 1.5rem;
@@ -164,10 +167,8 @@
   .banner-setup-subtitle {
     font-size: 0.9rem;
   }
-  .banner-input-wrapper {
-    .banner-file-input {
-      font-size: 0.9rem;
-    }
+  .banner-file-input {
+    font-size: 0.9rem;
   }
   .banner-continue-button {
     width: 100%;

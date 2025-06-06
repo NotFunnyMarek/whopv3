@@ -1,4 +1,5 @@
 // src/pages/Setup.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/setup.scss';
@@ -6,12 +7,12 @@ import '../styles/setup.scss';
 export default function Setup() {
   const navigate = useNavigate();
 
-  // Stav pro jméno whopu
+  // Jestli jsme sem přišli z jiného kroku (např. chci umožnit „zpět“), 
+  // mohli bychom z location.state načíst nějaká data. Pro jednoduchost teď nezačínáme se žádným state.
+  // Tu definujeme čistě nový stav.
   const [whopName, setWhopName] = useState('');
-  // Maximální délka jména
   const maxLength = 30;
 
-  // Změna v inputu
   const handleChange = (e) => {
     const value = e.target.value;
     if (value.length <= maxLength) {
@@ -19,12 +20,18 @@ export default function Setup() {
     }
   };
 
-  // Po kliknutí na Continue: přejede na /setup/link
   const handleContinue = () => {
     if (!whopName.trim()) return;
-    console.log('Zadané jméno whopu:', whopName);
-    // Teď navigujeme na druhý krok setupu: ChooseLink
-    navigate('/setup/link');
+
+    // Vytvoříme částečný objekt whopData s tím, co jsme doposud zadali
+    const whopData = {
+      name: whopName.trim(),
+      slug: '',         // slug zatím neznáme, vyplní se v dalším kroku
+      features: [],     // features teprve přijdou v dalším kroku
+      logoUrl: '',      // logo zatím nepřidáváme
+    };
+
+    navigate('/setup/link', { state: { whopData } });
   };
 
   return (
@@ -34,12 +41,13 @@ export default function Setup() {
         <h1 className="setup-title">Name your whop</h1>
       </div>
 
-      {/* OBSAH */}
+      {/* PODNADPIS */}
       <div className="setup-content">
         <p className="setup-subtitle">
           This is the name of your social business. Don’t worry, you can change this later.
         </p>
 
+        {/* INPUT + počítadlo znaků */}
         <div className="setup-input-wrapper">
           <input
             type="text"
@@ -53,6 +61,7 @@ export default function Setup() {
           </div>
         </div>
 
+        {/* CONTINUE */}
         <button
           className="setup-button"
           onClick={handleContinue}

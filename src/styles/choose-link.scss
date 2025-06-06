@@ -1,40 +1,29 @@
-/* src/styles/choose-link.scss */
-
 @import './variables';
 @import './theme';
 
-/* ===========================
-   Kontejner celé stránky
-   =========================== */
 .choose-link-container {
-  max-width: 1200px;                     /* vsadíme na stejnou šířku jako Home/Setup */
+  max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  background-color: var(--bg-color);     /* bílé pozadí */
+  background-color: var(--bg-color);
   box-sizing: border-box;
 }
 
-/* ===========================
-   Hlavička s nadpisem
-   =========================== */
 .choose-link-header {
   margin-bottom: var(--spacing-md);
 
   .choose-link-title {
     font-family: var(--font-sans);
-    font-size: 2rem;                     /* stejná velikost jako .home-title */
+    font-size: 2rem;
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 }
 
-/* ===========================
-   Obsah stránky
-   =========================== */
 .choose-link-content {
   display: flex;
   flex-direction: column;
@@ -42,19 +31,15 @@
   gap: var(--spacing-md);
 }
 
-/* Podnadpis / popisek pod nadpisem */
 .choose-link-subtitle {
   font-family: var(--font-sans);
-  font-size: 1rem;                       /* shodně s ostatními podnadpisy */
+  font-size: 1rem;
   color: var(--muted-color);
   margin: 0;
-  max-width: 600px;                      /* omezení šířky pro lepší čitelnost */
+  max-width: 600px;
   line-height: 1.5;
 }
 
-/* =======================================
-   Wrapper kolem prefixu a samotného inputu
-   ======================================= */
 .choose-link-input-wrapper {
   display: flex;
   align-items: center;
@@ -68,7 +53,7 @@
     font-family: var(--font-sans);
     font-size: 1rem;
     color: var(--text-color);
-    white-space: nowrap;                 /* prefix se nevysazuje */
+    white-space: nowrap;
   }
 
   .choose-link-input {
@@ -82,25 +67,19 @@
   }
 }
 
-/* Počítadlo znaků, zobrazené přímo pod input-wrapper */
 .choose-link-charcount {
   font-family: var(--font-sans);
-  font-size: 0.875rem;                   /* menší font, jako u Home */
+  font-size: 0.875rem;
   color: var(--muted-color);
   margin-top: var(--spacing-xs);
-  margin-left: calc(var(--spacing-xs) + var(--spacing-xs) + var(--spacing-sm));  
-  /* odsazení tak, aby počítadlo bylo pod inputem: 
-     var(--spacing-xs) (vertical margin) + šířka borderu wrapperu atd. */
+  margin-left: var(--spacing-xs);
 }
 
-/* ===========================
-   Tlačítko Continue
-   =========================== */
 .choose-link-button {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-sm) var(--spacing-lg);
   font-family: var(--font-sans);
-  font-size: 0.875rem;                   /* stejně jako ostatní tlačítka */
+  font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
@@ -123,9 +102,33 @@
   transform: none;
 }
 
-/* =====================================
-   Responsivní úpravy (tablet & mobil)
-   ===================================== */
+.choose-link-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: var(--spacing-md);
+  color: var(--danger-color);
+}
+
+.choose-link-error button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+
+.choose-link-error button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .choose-link-title {
     font-size: 1.75rem;

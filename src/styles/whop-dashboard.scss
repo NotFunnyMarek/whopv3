@@ -1,0 +1,211 @@
+@import './variables';
+@import './theme';
+
+.whop-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  position: relative;
+  font-family: var(--font-sans);
+}
+
+/* Tlačítko „Zpět“ */
+.whop-back-btn {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--text-color);
+  cursor: pointer;
+  z-index: 20;
+  transition: color var(--transition-default);
+}
+.whop-back-btn:hover {
+  color: var(--primary-color);
+}
+
+.whop-banner-wrapper {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background-color: var(--border-color);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whop-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.whop-banner-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-color);
+  font-size: 1rem;
+}
+
+.whop-logo-wrapper {
+  position: absolute;
+  top: calc(300px - 75px);
+  left: var(--spacing-lg);
+  width: 150px;
+  height: 150px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.whop-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.whop-name-wrapper {
+  margin-top: var(--spacing-lg);
+  margin-left: calc(var(--spacing-lg) + 170px);
+}
+
+.whop-name {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.whop-nav {
+  margin-top: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.whop-nav-list {
+  display: flex;
+  gap: var(--spacing-lg);
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--spacing-lg);
+}
+
+.whop-nav-item {
+  font-size: 1rem;
+  padding: var(--spacing-sm) 0;
+  color: var(--muted-color);
+  cursor: pointer;
+  position: relative;
+  transition: color var(--transition-default);
+}
+.whop-nav-item:hover {
+  color: var(--primary-color);
+}
+.whop-nav-item.active {
+  color: var(--text-color);
+  font-weight: 600;
+}
+.whop-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--primary-color);
+  border-radius: var(--radius-base);
+}
+
+.whop-main-content {
+  flex: 1;
+  padding: var(--spacing-lg);
+  background-color: var(--bg-color);
+  font-size: 1rem;
+  color: var(--muted-color);
+}
+
+.whop-dashboard-error {
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  color: var(--danger-color);
+  font-size: 1rem;
+}
+
+.whop-dashboard-error button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+.whop-dashboard-error button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .whop-banner-wrapper {
+    height: 200px;
+  }
+  .whop-logo-wrapper {
+    top: calc(200px - 60px);
+    width: 120px;
+    height: 120px;
+  }
+  .whop-name-wrapper {
+    margin-left: calc(var(--spacing-lg) + 140px);
+  }
+  .whop-name {
+    font-size: 1.5rem;
+  }
+  .whop-nav-list {
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-md);
+  }
+  .whop-nav-item {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .whop-banner-wrapper {
+    height: 150px;
+  }
+  .whop-logo-wrapper {
+    top: calc(150px - 50px);
+    width: 100px;
+    height: 100px;
+  }
+  .whop-name-wrapper {
+    margin-left: calc(var(--spacing-md) + 110px);
+  }
+  .whop-name {
+    font-size: 1.25rem;
+  }
+  .whop-nav-list {
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-md);
+  }
+  .whop-nav-item {
+    font-size: 0.9rem;
+  }
+}

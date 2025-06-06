@@ -13,6 +13,7 @@ import Setup from './pages/Setup';
 import ChooseLink from './pages/ChooseLink';
 import FeaturesSetup from './pages/FeaturesSetup';
 import BannerSetup from './pages/BannerSetup';
+import WhopDashboard from './pages/WhopDashboard';
 
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -122,6 +123,21 @@ const App = () => {
                 <Sidebar />
                 <main className="main-content">
                   <BannerSetup />
+                </main>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Nový: WhopDashboard – po dokončení setupu */}
+        <Route
+          path="/:slug"
+          element={
+            <ProtectedRoute>
+              <div className="app-container">
+                <Sidebar />
+                <main className="main-content">
+                  <WhopDashboard />
                 </main>
               </div>
             </ProtectedRoute>

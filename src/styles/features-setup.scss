@@ -1,13 +1,8 @@
-/* src/styles/features-setup.scss */
-
 @import './variables';
 @import './theme';
 
-/* ==============================
-   Kontejner celé stránky
-   ============================== */
 .features-setup-container {
-  max-width: 1200px;                     
+  max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
   display: flex;
@@ -17,24 +12,18 @@
   box-sizing: border-box;
 }
 
-/* ============================
-   Hlavička (nadpis)
-   ============================ */
 .features-setup-header {
   margin-bottom: var(--spacing-md);
 
   .features-setup-title {
     font-family: var(--font-sans);
-    font-size: 2rem;                       
+    font-size: 2rem;
     font-weight: 600;
     margin: 0;
     color: var(--text-color);
   }
 }
 
-/* ============================
-   Obsah (instrukce + karty + tlačítka)
-   ============================ */
 .features-setup-content {
   display: flex;
   flex-direction: column;
@@ -42,19 +31,15 @@
   gap: var(--spacing-lg);
 }
 
-/* Podnadpis / instrukce */
 .features-setup-subtitle {
   font-family: var(--font-sans);
-  font-size: 1rem;                       
+  font-size: 1rem;
   color: var(--muted-color);
   margin: 0;
   max-width: 800px;
   line-height: 1.5;
 }
 
-/* ============================
-   Jedna karta (Feature)
-   ============================ */
 .feature-card {
   width: 100%;
   max-width: 800px;
@@ -69,7 +54,6 @@
   position: relative;
 }
 
-/* Horní řádek s číslem a tlačítkem Smazat */
 .feature-card-header {
   display: flex;
   justify-content: space-between;
@@ -95,7 +79,6 @@
   }
 }
 
-/* Pole: název i popisek */
 .feature-field {
   display: flex;
   flex-direction: column;
@@ -126,13 +109,10 @@
   }
 
   .feature-textarea {
-    resize: vertical; /* Povolit vertikální změnu výšky */
+    resize: vertical;
   }
 }
 
-/* ============================
-   Wrapper pro obrázek (poměr 1:1)
-   ============================ */
 .feature-image-wrapper {
   display: flex;
   flex-direction: column;
@@ -165,9 +145,6 @@
   }
 }
 
-/* ============================
-   Tlačítko pro přidání Feature
-   ============================ */
 .feature-add-btn {
   display: flex;
   align-items: center;
@@ -193,9 +170,6 @@
   }
 }
 
-/* ============================
-   Tlačítko Continue
-   ============================ */
 .features-continue-btn {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-sm) var(--spacing-lg);
@@ -224,9 +198,33 @@
   transform: none;
 }
 
-/* =====================================
-   Responsivní úpravy (tablet & mobil)
-   ===================================== */
+.features-setup-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: var(--spacing-md);
+  color: var(--danger-color);
+}
+
+.features-setup-error button {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+
+.features-setup-error button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .feature-card {
     padding: var(--spacing-md) 0;

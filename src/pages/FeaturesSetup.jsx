@@ -1,49 +1,65 @@
 // src/pages/FeaturesSetup.jsx
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import '../styles/features-setup.scss';
 
 export default function FeaturesSetup() {
-  const navigate = useNavigate();
-
-  // Stav pro všechny features (každá má id, title, subtitle, imageFile, imagePreview)
+  // HOOKS vždy na vrcholu
   const [features, setFeatures] = useState([
     { id: 1, title: '', subtitle: '', imageFile: null, imagePreview: null },
     { id: 2, title: '', subtitle: '', imageFile: null, imagePreview: null },
   ]);
 
-  // Přidání nové feature (max. 6)
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Načtení předchozích dat: očekáváme { name, slug, logoUrl } z ChooseLink.jsx
+  const prevWhopData = location.state?.whopData || null;
+
+  // Když chybí whopData, vrátíme chybovou obrazovku
+  if (!prevWhopData) {
+    return (
+      <div className="features-setup-error">
+        <p>Whop data not found. Please complete the previous steps first.</p>
+        <button onClick={() => navigate('/setup')}>Go to Setup</button>
+      </div>
+    );
+  }
+
+  // Přidání nové feature
   const addFeature = () => {
     if (features.length >= 6) return;
-    const newId = features.length > 0
-      ? Math.max(...features.map((f) => f.id)) + 1
-      : 1;
+    const newId =
+      features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
     setFeatures([
       ...features,
       { id: newId, title: '', subtitle: '', imageFile: null, imagePreview: null },
     ]);
   };
 
-  // Odebrání feature (alespoň 2 musí zůstat)
+  // Odebrání feature (musí zůstat minimálně 2)
   const removeFeature = (id) => {
     if (features.length <= 2) return;
     setFeatures(features.filter((f) => f.id !== id));
   };
 
-  // Změna názvu nebo podnadpisu u feature
+  // Změna názvu / podnadpisu
   const handleChange = (id, field, value) => {
     setFeatures((prev) =>
       prev.map((f) =>
         f.id === id
-          ? { ...f, [field]: value }
+          ? {
+              ...f,
+              [field]: value,
+            }
           : f
       )
     );
   };
 
-  // Zpracování nahrání obrázku (imageFile + náhled)
+  // Nahrání obrázku a generování náhledu
   const handleImageChange = (id, file) => {
     if (!file) return;
     const reader = new FileReader();
@@ -51,7 +67,11 @@ export default function FeaturesSetup() {
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, imageFile: file, imagePreview: reader.result }
+            ? {
+                ...f,
+                imageFile: file,
+                imagePreview: reader.result,
+              }
             : f
         )
       );
@@ -59,33 +79,42 @@ export default function FeaturesSetup() {
     reader.readAsDataURL(file);
   };
 
-  // Validace: spočítáme, kolik feature má title i imageFile vyplněné
+  // Validace: kolik features má title i imageFile
   const validCount = features.reduce((count, f) => {
     return count + (f.title.trim() && f.imageFile ? 1 : 0);
   }, 0);
   const isContinueEnabled = validCount >= 2;
 
-  // Po kliknutí na Continue: přesměrujeme na /setup/banner
+  // Po kliknutí Continue: sestavíme whopData s features a pokračujeme na BannerSetup
   const handleContinue = () => {
     if (!isContinueEnabled) return;
-    console.log('Zadané features:', features);
-    navigate('/setup/banner');
+
+    const whopData = {
+      name: prevWhopData.name,
+      slug: prevWhopData.slug,
+      features: features.map((f) => ({
+        title: f.title.trim(),
+        subtitle: f.subtitle.trim(),
+        imageUrl: f.imagePreview,
+      })),
+      logoUrl: prevWhopData.logoUrl || '',
+    };
+
+    navigate('/setup/banner', { state: { whopData } });
   };
 
   return (
     <div className="features-setup-container">
-      {/* HLAVIČKA */}
       <div className="features-setup-header">
         <h1 className="features-setup-title">Add Your Whop Features</h1>
       </div>
 
-      {/* OBSAH */}
       <div className="features-setup-content">
         <p className="features-setup-subtitle">
-          Define at least 2 and up to 6 features. Each feature can have a title, an optional subtitle, and a square image.
+          Define at least 2 and up to 6 features. Each feature can have a title, an
+          optional subtitle, and a square image.
         </p>
 
-        {/* Jednotlivé karty pro každou feature */}
         {features.map((feature, index) => (
           <div key={feature.id} className="feature-card">
             <div className="feature-card-header">
@@ -110,14 +139,13 @@ export default function FeaturesSetup() {
                 className="feature-input"
                 placeholder="Enter feature title"
                 value={feature.title}
-                onChange={(e) =>
-                  handleChange(feature.id, 'title', e.target.value)
-                }
+                onChange={(e) => handleChange(feature.id, 'title', e.target.value)}
               />
             </div>
 
             <div className="feature-field">
-              <label htmlFor={`feature-subtitle-${feature.id}`}>Subtitle (Optional)</label>
+              <label htmlFor={`feature-subtitle-${feature.id}`}>Subtitle
+                (Optional)</label>
               <textarea
                 id={`feature-subtitle-${feature.id}`}
                 className="feature-textarea"
@@ -158,7 +186,6 @@ export default function FeaturesSetup() {
           </div>
         ))}
 
-        {/* Tlačítko "Add Feature" (pokud je méně než 6) */}
         {features.length < 6 && (
           <button
             type="button"
@@ -169,7 +196,6 @@ export default function FeaturesSetup() {
           </button>
         )}
 
-        {/* Tlačítko "Continue" */}
         <button
           className="features-continue-btn"
           onClick={handleContinue}
