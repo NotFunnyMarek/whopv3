@@ -1,5 +1,3 @@
-// src/pages/Setup.jsx
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/setup.scss";
@@ -19,7 +17,7 @@ export default function Setup() {
   const maxDescLength = 200;
 
   useEffect(() => {
-    // Upravíme cookie, když se whopName nebo description změní
+    // Uložíme nový název a popis do cookie
     const newData = {
       ...(cookieData || {}),
       name: whopName,
@@ -58,7 +56,7 @@ export default function Setup() {
   };
 
   const handleBack = () => {
-    // Není předchozí krok – můžeme jít zpět třeba na onboarding
+    // Například zpět na Onboarding
     navigate("/onboarding");
   };
 
@@ -109,7 +107,9 @@ export default function Setup() {
           <button
             className="setup-button"
             onClick={handleContinue}
-            disabled={whopName.trim().length === 0 || description.trim().length === 0}
+            disabled={
+              whopName.trim().length === 0 || description.trim().length === 0
+            }
           >
             Continue
           </button>

@@ -1,5 +1,3 @@
-// src/pages/ChooseLink.jsx
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/choose-link.scss";
@@ -12,7 +10,7 @@ export default function ChooseLink() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Pokud jsme sem přišli s state, použijeme ho, jinak načteme z cookie
+  // Pokud existuje state z location, použijeme ho; jinak z cookie
   const cookieData = getWhopSetupCookie();
   const prevWhopData = location.state?.whopData || cookieData || null;
 
@@ -32,6 +30,7 @@ export default function ChooseLink() {
   }
 
   const handleChange = (e) => {
+    // Pouze alfanumerické + pomlčka/podtržítko
     const value = e.target.value.replace(/[^a-zA-Z0-9\-_]/g, "");
     if (value.length <= maxSlugLength) {
       setSlug(value);
@@ -39,7 +38,7 @@ export default function ChooseLink() {
   };
 
   const handleBack = () => {
-    // Uložíme state do cookie a jdeme o krok zpět
+    // Uložíme state do cookie a vrátíme se na /setup
     const newData = {
       ...prevWhopData,
       slug: slug,
@@ -75,7 +74,7 @@ export default function ChooseLink() {
         </p>
 
         <div className="choose-link-input-wrapper">
-          <span className="choose-link-prefix">whop.com/</span>
+          <span className="choose-link-prefix">wrax.com/c/</span>
           <input
             type="text"
             className="choose-link-input"

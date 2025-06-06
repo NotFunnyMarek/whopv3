@@ -32,6 +32,7 @@ import './styles/setup.scss';
 import './styles/choose-link.scss';
 import './styles/features-setup.scss';
 import './styles/banner-setup.scss';
+import './styles/whop-dashboard.scss'; // ujistěte se, že máte i tento import
 
 const App = () => {
   return (
@@ -129,9 +130,9 @@ const App = () => {
           }
         />
 
-        {/* Nový: WhopDashboard – po dokončení setupu */}
+        {/* NOVÉ: WhopDashboard – nyní pod /c/:slug */}
         <Route
-          path="/:slug"
+          path="/c/:slug"
           element={
             <ProtectedRoute>
               <div className="app-container">

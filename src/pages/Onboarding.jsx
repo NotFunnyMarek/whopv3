@@ -1,5 +1,3 @@
-// src/pages/Onboarding.jsx
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGlobe, FaPlus, FaCheckCircle } from "react-icons/fa";
@@ -17,10 +15,13 @@ export default function Onboarding() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("https://app.byxbot.com/php/get_user_whops.php", {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await fetch(
+          "https://app.byxbot.com/php/get_user_whops.php",
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
         const text = await res.text();
         let json;
         try {
@@ -57,13 +58,14 @@ export default function Onboarding() {
     if (selectedOption === "new") {
       navigate("/setup");
     } else {
-      navigate(`/${selectedOption}`);
+      // Přebíráme existing whop slug → navigujeme na /c/:slug
+      navigate(`/c/${selectedOption}`);
     }
   };
 
   const handleBack = () => {
-    // Např. na přihlášení nebo homepage
-    navigate("/"); // nebo "/"
+    // Např. na homepage nebo login
+    navigate("/");
   };
 
   if (loading) {
@@ -96,15 +98,17 @@ export default function Onboarding() {
           Which dashboard would you like to create your whop in?
         </h2>
         <p className="onboarding-subtitle">
-          We only recommend creating a new dashboard if you are starting a different
-          business with a separate team or bank account.
+          We only recommend creating a new dashboard if you are starting a
+          different business with a separate team or bank account.
         </p>
 
         {/* MOŽNOSTI */}
         <div className="onboarding-options">
           {/* 1) Vytvořit nový whop */}
           <div
-            className={selectedOption === "new" ? "option-card selected" : "option-card"}
+            className={
+              selectedOption === "new" ? "option-card selected" : "option-card"
+            }
             onClick={handleSelectNew}
           >
             <div className="option-radio">

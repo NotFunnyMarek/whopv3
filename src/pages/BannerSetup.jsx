@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/banner-setup.scss";
-import { getWhopSetupCookie, setWhopSetupCookie, clearWhopSetupCookie } from "../utils/cookieUtils";
+import {
+  getWhopSetupCookie,
+  setWhopSetupCookie,
+  clearWhopSetupCookie,
+} from "../utils/cookieUtils";
 
 const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
 const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
@@ -13,16 +17,17 @@ export default function BannerSetup() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Nejprve se pokusíme načíst state z location, jinak z cookie
+  // Získáme předchozí data buď z location.state, nebo z cookie
   const cookieData = getWhopSetupCookie();
   const prevWhopData = location.state?.whopData || cookieData || null;
 
+  // Stav pro URL banneru, stav uploadu a případné chyby
   const [bannerUrl, setBannerUrl] = useState(prevWhopData?.bannerUrl || "");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
+  // Pokaždé, kdy se bannerUrl změní, uložíme nové whopData do cookie
   useEffect(() => {
-    // Uložíme každé nové bannerUrl i do cookie
     if (bannerUrl) {
       const newData = {
         ...prevWhopData,
@@ -32,17 +37,22 @@ export default function BannerSetup() {
     }
   }, [bannerUrl]);
 
+  // Pokud nemáme žádná předchozí data, zobrazíme chybovou hlášku
   if (!prevWhopData) {
     return (
       <div className="banner-setup-error">
         <p>Whop data not found. Please complete the previous steps first.</p>
-        <button className="banner-setup-error-btn" onClick={() => navigate("/setup")}>
+        <button
+          className="banner-setup-error-btn"
+          onClick={() => navigate("/setup")}
+        >
           Go to Setup
         </button>
       </div>
     );
   }
 
+  // Handler pro nahrání bannerového obrázku na Cloudinary
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) {
@@ -92,6 +102,7 @@ export default function BannerSetup() {
     }
   };
 
+  // Handler pro tlačítko Back: vracíme se do FeaturesSetup a ukládáme do cookie
   const handleBack = () => {
     const newData = {
       ...prevWhopData,
@@ -101,9 +112,11 @@ export default function BannerSetup() {
     navigate("/setup/features", { state: { whopData: newData } });
   };
 
+  // Handler pro tlačítko Continue: odeslání finálního Whop payloadu a přesměrování
   const handleContinue = async () => {
     if (!bannerUrl) return;
 
+    // Sestavíme objekt, který pošleme na backend (whop.php)
     const whopPayload = {
       name: prevWhopData.name,
       description: prevWhopData.description,
@@ -144,9 +157,9 @@ export default function BannerSetup() {
         return;
       }
 
-      // Úspěšné uložení – smažeme cookie a jdeme na whopDashboard
+      // Úspěšné uložení – vymazání cookie a navigace na /c/:slug
       clearWhopSetupCookie();
-      navigate(`/${json.slug}`);
+      navigate(`/c/${json.slug}`);
     } catch (err) {
       console.error("Network/Fetch error při volání whop.php:", err);
       setError("Network error: " + err.message);
@@ -165,11 +178,16 @@ export default function BannerSetup() {
           Toto bude banner, který se zobrazí v horní části tvého whopu. Doporučená velikost: 1200 × 300 px.
         </p>
 
+        {/* Náhled bytebanneru nebo stav uploadu */}
         <div className="banner-input-wrapper">
           {isUploading ? (
             <div className="banner-uploading">Nahrávám…</div>
           ) : bannerUrl ? (
-            <img src={bannerUrl} alt="Banner Preview" className="banner-preview-image" />
+            <img
+              src={bannerUrl}
+              alt="Banner Preview"
+              className="banner-preview-image"
+            />
           ) : (
             <div className="banner-placeholder">No banner selected</div>
           )}
@@ -183,6 +201,7 @@ export default function BannerSetup() {
 
         {error && <div className="banner-error">{error}</div>}
 
+        {/* Tlačítka Back a Continue */}
         <div className="banner-setup-buttons">
           <button className="back-button" onClick={handleBack}>
             ← Back
