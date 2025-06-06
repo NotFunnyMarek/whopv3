@@ -1,18 +1,43 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/bottombar.scss';
-import { FiMenu, FiStar, FiHeart, FiSettings, FiUser, FiBell } from 'react-icons/fi';
+import { FiMenu, FiSettings, FiUser, FiBell } from 'react-icons/fi';
+import { FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
-const iconComponents = [FiHeart, FiHeart, FiHeart, FiHeart, FiHeart];
-
-const BottomBar = () => {
+export default function BottomBar() {
   const { theme, setLight, setDark } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hoveredX, setHoveredX] = useState(null);
   const iconsContainerRef = useRef(null);
   const navigate = useNavigate();
 
+  // Stav pro whopy, ke kterým je přihlášen aktuální uživatel
+  const [joinedWhops, setJoinedWhops] = useState([]);
+
+  // Načíst joined whops při mountu
+  useEffect(() => {
+    fetchJoinedWhops();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchJoinedWhops = async () => {
+    try {
+      const res = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(`Chyba ${res.status}`);
+      const data = await res.json();
+      // Data musí mít pole objektů: { id, slug, banner_url }
+      setJoinedWhops(data);
+    } catch (err) {
+      console.error('Chyba při načítání připojených whopů:', err);
+      setJoinedWhops([]);
+    }
+  };
+
+  // Menu dropdown
   const handleMenuClick = () => {
     setDropdownOpen((prev) => !prev);
   };
@@ -95,7 +120,7 @@ const BottomBar = () => {
 
           {/* What's New */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-whatsnew">
-            Whats New <span>6/4/25</span>
+            Whats New <span>6/6/25</span>
           </div>
 
           {/* Need help? */}
@@ -121,24 +146,35 @@ const BottomBar = () => {
         </div>
       </div>
 
-      {/* Střední část: interaktivní ikonky s “vlnivým” hover efektem */}
+      {/* Střední část: bannery whopů s animací při hoveru */}
       <div
         className="bottombar__center-icons"
         ref={iconsContainerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {iconComponents.map((Icon, idx) => {
+        {joinedWhops.map((whop, idx) => {
+          // pokud myš není nad bar: normální zobrazení
           if (hoveredX === null) {
             return (
-              <div key={idx} className="bottombar__center-icon">
-                <Icon size={20} />
+              <div
+                key={whop.id}
+                className="bottombar__center-icon"
+                onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
+              >
+                <img
+                  src={whop.banner_url}
+                  alt={`Banner ${whop.slug}`}
+                  className="bottombar__center-img"
+                />
               </div>
             );
           }
+
+          // když je hover, počítáme výšku zvednutí podle vzdálenosti
           const container = iconsContainerRef.current;
           const { left, width } = container.getBoundingClientRect();
-          const segment = width / iconComponents.length;
+          const segment = width / joinedWhops.length;
           const iconCenterX = left + segment * (idx + 0.5);
           const dx = Math.abs(hoveredX - iconCenterX);
           const maxRadius = segment * 2;
@@ -148,20 +184,23 @@ const BottomBar = () => {
 
           return (
             <div
-              key={idx}
+              key={whop.id}
               className="bottombar__center-icon"
               style={{
                 transform: `translateY(${translateY}px)`,
                 transition: 'transform var(--transition-default)',
               }}
+              onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
             >
-              <Icon size={20} />
+              <img
+                src={whop.banner_url}
+                alt={`Banner ${whop.slug}`}
+                className="bottombar__center-img"
+              />
             </div>
           );
         })}
       </div>
     </div>
   );
-};
-
-export default BottomBar;
+}

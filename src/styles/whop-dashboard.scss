@@ -276,6 +276,33 @@
     transform: translateY(-2px);
   }
 
+  .whop-join-btn,
+.whop-leave-btn {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: background-color var(--transition-default);
+
+  &:hover {
+    background-color: var(--primary-hover);
+  }
+}
+
+.whop-leave-btn {
+  background-color: var(--error-color);
+  &:hover {
+    background-color: var(--error-color-dark);
+  }
+}
+
+
   .whop-delete-btn {
     background: var(--danger-color);
     color: #000000;

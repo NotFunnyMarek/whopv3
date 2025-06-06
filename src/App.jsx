@@ -1,9 +1,9 @@
 // src/App.jsx
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import BottomBar from './components/BottomBar';
+import JoinedWhopsBar from './components/JoinedWhopsBar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home';
@@ -37,6 +37,8 @@ import './styles/card-form.scss';
 import './styles/card.scss';
 import './styles/modal.scss';
 import './styles/home.scss';
+import './styles/bottombar.scss';
+import './styles/joinedWhopsBar.scss';
 
 const App = () => {
   return (
@@ -144,6 +146,7 @@ const App = () => {
                 <main className="main-content">
                   <WhopDashboard />
                 </main>
+                <BottomBar />
               </div>
             </ProtectedRoute>
           }
@@ -175,6 +178,7 @@ const App = () => {
                 <main className="main-content">
                   <Profile />
                 </main>
+                <BottomBar />
               </div>
             </ProtectedRoute>
           }
@@ -190,6 +194,7 @@ const App = () => {
                 <main className="main-content">
                   <Balances />
                 </main>
+                <BottomBar />
               </div>
             </ProtectedRoute>
           }

@@ -1,0 +1,40 @@
+@import './variables';
+@import './theme';
+
+.joined-whops-bar {
+  position: fixed;
+  bottom: var(--bottombar-height);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+
+  .joined-whop-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: var(--surface-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform var(--transition-default), box-shadow var(--transition-default);
+
+    &:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    .joined-whop-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

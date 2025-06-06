@@ -10,6 +10,8 @@ import {
   FaArrowLeft,
   FaUserPlus,
   FaLink,
+  FaSignOutAlt,
+  FaUsers,
 } from "react-icons/fa";
 import Modal from "../components/Modal";
 import CardForm from "../components/CardForm"; // Komponenta pro vytvoření kampaně
@@ -56,7 +58,7 @@ export default function WhopDashboard() {
   // 1) Po načtení / změně slugu načti Whop → potom i kampaně
   useEffect(() => {
     const slugToFetch = location.pathname.startsWith("/c/")
-      ? location.pathname.split("/c/")[1]
+      ? location.pathname.split("/c/")[1].split("?")[0]
       : initialSlug;
 
     const fetchWhop = async () => {
@@ -100,7 +102,7 @@ export default function WhopDashboard() {
           id: idx + 1,
           title: f.title,
           subtitle: f.subtitle,
-          imageUrl: f.imageUrl,
+          imageUrl: f.image_url,
           isUploading: false,
           error: "",
         }));
@@ -304,7 +306,7 @@ export default function WhopDashboard() {
         id: idx + 1,
         title: f.title,
         subtitle: f.subtitle,
-        imageUrl: f.imageUrl,
+        imageUrl: f.image_url,
         isUploading: false,
         error: "",
       }));
@@ -451,7 +453,65 @@ export default function WhopDashboard() {
     );
   };
 
-  // 13) Loading Whopu
+  // 13) Join Whop
+  const handleJoin = async () => {
+    if (!whopData) return;
+    try {
+      const res = await fetch("https://app.byxbot.com/php/join_whop.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ whop_id: whopData.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.message || "Nepodařilo se připojit k whopu.");
+        return;
+      }
+      // Po úspěchu načteme znovu data whopu, aby se aktualizovalo is_member a members_count
+      const refresh = await fetch(
+        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(whopData.slug)}`,
+        { method: "GET", credentials: "include" }
+      );
+      const refreshed = await refresh.json();
+      if (refresh.ok && refreshed.status === "success") {
+        setWhopData(refreshed.data);
+      }
+    } catch (err) {
+      console.error("Chyba při join_whop:", err);
+    }
+  };
+
+  // 14) Leave Whop
+  const handleLeave = async () => {
+    if (!whopData) return;
+    try {
+      const res = await fetch("https://app.byxbot.com/php/leave_whop.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ whop_id: whopData.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.message || "Nepodařilo se opustit whop.");
+        return;
+      }
+      // Po úspěchu načteme znovu data whopu, aby se aktualizovalo is_member a members_count
+      const refresh = await fetch(
+        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(whopData.slug)}`,
+        { method: "GET", credentials: "include" }
+      );
+      const refreshed = await refresh.json();
+      if (refresh.ok && refreshed.status === "success") {
+        setWhopData(refreshed.data);
+      }
+    } catch (err) {
+      console.error("Chyba při leave_whop:", err);
+    }
+  };
+
+  // 15) Loading Whopu
   if (loading) {
     return (
       <div className="whop-loading">
@@ -460,7 +520,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // 14) Chyba načtení Whopu
+  // 16) Chyba načtení Whopu
   if (error) {
     return (
       <div className="whop-error">
@@ -546,6 +606,10 @@ export default function WhopDashboard() {
           ) : (
             <>
               <h1 className="whop-title">{whopData.name}</h1>
+              {/* Zobrazení počtu členů whopu */}
+              <div className="whop-members-count">
+                <FaUsers /> {whopData.members_count} připojených uživatelů
+              </div>
               <p className="whop-description">{whopData.description}</p>
             </>
           )}
@@ -587,7 +651,7 @@ export default function WhopDashboard() {
           ) : null}
         </div>
 
-        {/* --- Akční tlačítka: Edit / Delete / Create Campaign / Join --- */}
+        {/* --- Akční tlačítka: Edit / Delete / Create Campaign / Join / Leave --- */}
         <div className="whop-action-btns">
           {isEditing ? (
             <>
@@ -614,13 +678,14 @@ export default function WhopDashboard() {
                 <FaPlus /> Create Campaign
               </button>
             </>
+          ) : whopData.is_member ? (
+            <>
+              <button className="whop-leave-btn" onClick={handleLeave}>
+                <FaSignOutAlt /> Leave
+              </button>
+            </>
           ) : (
-            <button
-              className="whop-join-btn"
-              onClick={() => {
-                /* Můžeš sem vložit logiku pro „Join Whop“ */
-              }}
-            >
+            <button className="whop-join-btn" onClick={handleJoin}>
               <FaUserPlus /> Join
             </button>
           )}
@@ -707,9 +772,9 @@ export default function WhopDashboard() {
             <div className="whop-features-grid">
               {whopData.features.map((feat, idx) => (
                 <div key={idx} className="whop-feature-card">
-                  {feat.imageUrl ? (
+                  {feat.image_url ? (
                     <img
-                      src={feat.imageUrl}
+                      src={feat.image_url}
                       alt={feat.title}
                       className="whop-feature-image"
                     />
@@ -743,6 +808,7 @@ export default function WhopDashboard() {
                 <div key={camp.id} className="whop-campaign-item">
                   <h3>{camp.campaign_name}</h3>
                   <p>Category: {camp.category}</p>
+                  <p>Type: {camp.type}</p>
                   <p>
                     Budget: {camp.currency}
                     {camp.budget.toLocaleString(undefined, {
