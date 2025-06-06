@@ -29,9 +29,7 @@
   color: var(--primary-color);
 }
 
-/* =========================== */
-/* Banner sekce                */
-/* =========================== */
+/* ========== Banner ========== */
 .whop-banner {
   width: 100%;
   background-color: var(--border-color);
@@ -64,7 +62,6 @@
   font-size: 1rem;
 }
 
-/* Edit mód banneru */
 .whop-banner-edit-wrapper {
   display: flex;
   flex-direction: column;
@@ -110,9 +107,7 @@
   color: var(--danger-color);
 }
 
-/* =========================== */
-/* Obsah pod bannerem          */
-/* =========================== */
+/* ========== Obsah pod banner ========== */
 .whop-content {
   flex: 1;
   max-width: 900px;
@@ -123,7 +118,7 @@
   gap: var(--spacing-lg);
 }
 
-/* Nadpis a popis (view + edit) */
+/* ========== Název a popis ========== */
 .whop-header {
   text-align: center;
 
@@ -170,41 +165,159 @@
   }
 }
 
-/* Tlačítka Edit / Join / Save */
+/* ========== Slug / Change Link ========== */
+.whop-slug-section {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-md);
+
+  .whop-slug-edit-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+
+    label {
+      font-family: var(--font-sans);
+      font-size: 0.875rem;
+      color: var(--text-color);
+    }
+
+    .whop-slug-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background-color: var(--surface-color);
+
+      .whop-slug-prefix {
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        color: var(--text-color);
+        white-space: nowrap;
+      }
+
+      .whop-slug-input {
+        flex: 1;
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        border: none;
+        background-color: transparent;
+        color: var(--text-color);
+        outline: none;
+      }
+    }
+
+    .whop-slug-error {
+      color: var(--danger-color);
+      font-size: 0.875rem;
+      margin-top: var(--spacing-xs);
+    }
+
+    .whop-slug-edit-btn,
+    .whop-slug-save-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: #fff;
+      padding: var(--spacing-xs) var(--spacing-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background var(--transition-default), transform var(--transition-default);
+    }
+
+    .whop-slug-edit-btn:hover,
+    .whop-slug-save-btn:hover {
+      background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ========== Tlačítka: Edit / Save / Delete / Join ========== */
 .whop-action-btns {
   display: flex;
   justify-content: center;
   gap: var(--spacing-md);
 
   .whop-edit-btn,
+  .whop-delete-btn,
   .whop-save-btn,
+  .whop-cancel-btn,
   .whop-join-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    padding: var(--spacing-sm) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.875rem;
     font-weight: 600;
-    border: none;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     cursor: pointer;
     text-transform: uppercase;
     transition: background var(--transition-default), transform var(--transition-default);
   }
-  .whop-edit-btn:hover,
-  .whop-save-btn:hover,
+
+  .whop-edit-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    border: none;
+  }
+  .whop-edit-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+    transform: translateY(-2px);
+  }
+
+  .whop-delete-btn {
+    background: var(--danger-color);
+    color: #000000;
+    border: 1px solid #000000;
+  }
+  .whop-delete-btn:hover {
+    background: var(--danger-dark);
+    transform: translateY(-2px);
+  }
+
+  .whop-save-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    border: none;
+  }
+  .whop-save-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+    transform: translateY(-2px);
+  }
+
+  .whop-cancel-btn {
+    background: var(--border-color);
+    color: var(--muted-color);
+    border: none;
+  }
+  .whop-cancel-btn:hover {
+    background: var(--border-color);
+    transform: none;
+  }
+
+  .whop-join-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: #fff;
+    border: none;
+  }
   .whop-join-btn:hover {
     background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
     transform: translateY(-2px);
   }
 }
 
-/* =========================== */
-/* Seznam features             */
-/* =========================== */
+/* ========== Seznam features ========== */
 .whop-features-section {
   display: flex;
   flex-direction: column;
@@ -218,7 +331,7 @@
   }
 }
 
-/* ========== View-only ========== */
+/* ===== View-only ===== */
 .whop-features-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -279,7 +392,7 @@
   margin: 0;
 }
 
-/* ========== Edit móд ========== */
+/* ===== Edit mód ===== */
 .feature-card-edit {
   background-color: var(--surface-color);
   border: 1px solid var(--border-color);
@@ -364,7 +477,6 @@
   }
 }
 
-/* Tlačítko pro smazání feature v editačním módu */
 .feature-remove-btn-edit {
   position: absolute;
   top: var(--spacing-sm);
@@ -383,7 +495,6 @@
   color: var(--danger-hover);
 }
 
-/* Tlačítko pro přidání nové feature */
 .feature-add-btn-edit {
   display: flex;
   align-items: center;
@@ -404,7 +515,7 @@
   color: #fff;
 }
 
-/* Stav Loading a Error */
+/* ===== Stav Loading a Error ===== */
 .whop-loading,
 .whop-error {
   display: flex;

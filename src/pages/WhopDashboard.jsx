@@ -1,7 +1,7 @@
 // src/pages/WhopDashboard.jsx
 
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   FaTrash,
   FaPlus,
@@ -9,22 +9,29 @@ import {
   FaEdit,
   FaArrowLeft,
   FaUserPlus,
+  FaLink,
 } from "react-icons/fa";
 import "../styles/whop-dashboard.scss";
 
-export default function WhopDashboard() {
-  const { slug } = useParams();
-  const navigate = useNavigate();
+// Přidáváme definice pro Cloudinary upload
+const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
+const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
+const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
 
-  // Stav pro data whopu (včetně is_owner)
+export default function WhopDashboard() {
+  const { slug: initialSlug } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Stav whopu (včetně is_owner)
   const [whopData, setWhopData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Stav, zda jsme v edit módu
+  // Stav edit módu
   const [isEditing, setIsEditing] = useState(false);
 
-  // Lokální editační stavy
+  // Lokální edit stavy
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBannerUrl, setEditBannerUrl] = useState("");
@@ -32,19 +39,26 @@ export default function WhopDashboard() {
   const [bannerError, setBannerError] = useState("");
 
   const [editFeatures, setEditFeatures] = useState([
-    /* Každý prvek: 
-       { id: číslo, title: string, subtitle: string, imageUrl: string, isUploading: boolean, error: string }
-    */
+    /* { id, title, subtitle, imageUrl, isUploading, error } */
   ]);
 
-  // Po načtení komponenty stáhneme data z get_whop.php
+  // Stav pro editaci slugu
+  const [isSlugEditing, setIsSlugEditing] = useState(false);
+  const [newSlugValue, setNewSlugValue] = useState("");
+  const [slugError, setSlugError] = useState("");
+
+  // Po načtení (i po změně slugu parametru) fetchneme whop
   useEffect(() => {
+    const slugToFetch = location.pathname.split("/c/")[1] || initialSlug;
+
     const fetchWhop = async () => {
       setLoading(true);
       setError("");
       try {
         const res = await fetch(
-          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slug)}`,
+          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+            slugToFetch
+          )}`,
           {
             method: "GET",
             credentials: "include",
@@ -67,16 +81,15 @@ export default function WhopDashboard() {
           return;
         }
 
-        // Uložíme data do stavu
-        setWhopData(json.data);
+        const data = json.data;
+        setWhopData(data);
 
         // Naplníme editační stavy
-        setEditName(json.data.name);
-        setEditDescription(json.data.description);
-        setEditBannerUrl(json.data.banner_url || "");
+        setEditName(data.name);
+        setEditDescription(data.description);
+        setEditBannerUrl(data.banner_url || "");
 
-        // Převedeme features do lokální podoby
-        const featArr = json.data.features.map((f, idx) => ({
+        const featArr = data.features.map((f, idx) => ({
           id: idx + 1,
           title: f.title,
           subtitle: f.subtitle,
@@ -85,6 +98,9 @@ export default function WhopDashboard() {
           error: "",
         }));
         setEditFeatures(featArr);
+
+        // Příprava pro edit slug (výchozí hodnota = aktuální slug)
+        setNewSlugValue(data.slug);
       } catch (err) {
         console.error("Chyba při fetch get_whop.php:", err);
         setError("Network error: " + err.message);
@@ -94,28 +110,120 @@ export default function WhopDashboard() {
     };
 
     fetchWhop();
-  }, [slug]);
+  }, [initialSlug, location.pathname]);
 
-  // ===== Handler pro tlačítko Back (v editačním módu) =====
+  // Handler Back v edit módu (vrací na onboarding)
   const handleBack = () => {
     navigate("/onboarding");
   };
 
-  // ===== Přepnutí do edit módu =====
+  // Toggle edit módu (vypne edit slug, pokud je aktivní)
   const handleEditToggle = () => {
     setIsEditing(true);
+    setIsSlugEditing(false);
     setError("");
     setBannerError("");
+    setSlugError("");
   };
 
-  // ===== Handler pro uložení změn (banner, name, description, features) =====
+  // ===========
+  //  DELETE WHOP
+  // ===========
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        "Opravdu chcete smazat celý tento Whop? Tato akce je nevratná."
+      )
+    ) {
+      return;
+    }
+    try {
+      const payload = { slug: whopData.slug };
+      const res = await fetch("https://app.byxbot.com/php/delete_whop.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        setError("Chyba při mazání: neplatná odpověď serveru.");
+        return;
+      }
+      if (!res.ok || json.status !== "success") {
+        setError(json.message || "Chyba při mazání Whopu.");
+        return;
+      }
+      // Po úspěšném smazání přesměrujeme na Onboarding
+      navigate("/onboarding");
+    } catch (err) {
+      console.error("Network error delete_whop.php:", err);
+      setError("Network error: " + err.message);
+    }
+  };
+
+  // ===========
+  //  UPDATE SLUG
+  // ===========
+  const handleSlugSave = async () => {
+    setSlugError("");
+    const trimmed = newSlugValue.trim();
+    if (!trimmed) {
+      setSlugError("Slug nesmí být prázdný.");
+      return;
+    }
+    // jednoduchá validace: pouze alfanumerické, pomlčka, podtržítko
+    if (!/^[a-zA-Z0-9-_]+$/.test(trimmed)) {
+      setSlugError(
+        "Slug může obsahovat pouze písmena, čísla, pomlčky a podtržítka."
+      );
+      return;
+    }
+    try {
+      const payload = {
+        oldSlug: whopData.slug,
+        newSlug: trimmed,
+      };
+      const res = await fetch(
+        "https://app.byxbot.com/php/update_whop_slug.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }
+      );
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        setSlugError("Chyba při zpracování odpovědi serveru.");
+        return;
+      }
+      if (!res.ok || json.status !== "success") {
+        setSlugError(json.message || "Chyba při aktualizaci slug.");
+        return;
+      }
+      // Úspěch – přesměrujeme na nový slug
+      navigate(`/c/${trimmed}`);
+    } catch (err) {
+      console.error("Network error update_whop_slug.php:", err);
+      setSlugError("Network error: " + err.message);
+    }
+  };
+
+  // ===========
+  //  SAVE WHOP (banner, name, description, features)
+  // ===========
   const handleSave = async () => {
-    // Validace: name a description nesmí být prázdné
     if (!editName.trim() || !editDescription.trim()) {
       setError("Název a popis nesmí být prázdné.");
       return;
     }
-    // Validace: alespoň 2 platné features (title + imageUrl)
     const validFeats = editFeatures.filter(
       (f) => f.title.trim() && f.imageUrl
     );
@@ -124,12 +232,11 @@ export default function WhopDashboard() {
       return;
     }
 
-    // Sestavíme payload pro update_whop.php
     const payload = {
-      slug: slug,
+      slug: whopData.slug,
       name: editName.trim(),
       description: editDescription.trim(),
-      bannerUrl: editBannerUrl.trim(), // banner_url se pošle sem
+      bannerUrl: editBannerUrl.trim(),
       features: validFeats.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
@@ -148,8 +255,7 @@ export default function WhopDashboard() {
       let json;
       try {
         json = JSON.parse(text);
-      } catch (parseErr) {
-        console.error("Nepodařilo se rozparsovat JSON z update_whop.php:", text);
+      } catch {
         setError("Chyba při zpracování odpovědi serveru.");
         return;
       }
@@ -158,12 +264,12 @@ export default function WhopDashboard() {
         return;
       }
 
-      // Po úspěšném uložení přepneme do view módu
+      // Přepneme do view módu a načteme znovu data
       setIsEditing(false);
-
-      // Znovu načteme data, aby se zobrazily aktualizované hodnoty
       const refreshRes = await fetch(
-        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slug)}`,
+        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+          whopData.slug
+        )}`,
         {
           method: "GET",
           credentials: "include",
@@ -194,16 +300,18 @@ export default function WhopDashboard() {
       setEditFeatures(newFeatArr);
       setError("");
       setBannerError("");
+      setSlugError("");
     } catch (err) {
-      console.error("Network/Fetch error při update_whop.php:", err);
+      console.error("Network error při update_whop.php:", err);
       setError("Network error: " + err.message);
     }
   };
 
-  // ===== Nahrávání banneru (Cloudinary) =====
+  // ===========
+  //  UPLOAD BANNER
+  // ===========
   const handleBannerUpload = async (file) => {
     if (!file) return;
-    // Validace: max 5 MB + musí být image/*
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setBannerError("Banner je příliš velký (max 5 MB).");
@@ -216,10 +324,6 @@ export default function WhopDashboard() {
 
     setIsUploadingBanner(true);
     setBannerError("");
-
-    const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
-    const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
-    const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -248,17 +352,21 @@ export default function WhopDashboard() {
     }
   };
 
-  // ===== Nahrávání obrázku pro features (Cloudinary) =====
+  // ===========
+  //  UPLOAD FEATURE IMAGE
+  // ===========
   const handleImageChange = async (id, file) => {
     if (!file) return;
-
-    // Validace: max 5 MB + musí být image/*
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, error: "Obrázek je příliš velký (max 5 MB).", isUploading: false }
+            ? {
+                ...f,
+                error: "Obrázek je příliš velký (max 5 MB).",
+                isUploading: false,
+              }
             : f
         )
       );
@@ -277,15 +385,9 @@ export default function WhopDashboard() {
 
     setEditFeatures((prev) =>
       prev.map((f) =>
-        f.id === id
-          ? { ...f, isUploading: true, error: "" }
-          : f
+        f.id === id ? { ...f, isUploading: true, error: "" } : f
       )
     );
-
-    const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
-    const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
-    const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -306,7 +408,12 @@ export default function WhopDashboard() {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, imageUrl: data.secure_url, isUploading: false, error: "" }
+            ? {
+                ...f,
+                imageUrl: data.secure_url,
+                isUploading: false,
+                error: "",
+              }
             : f
         )
       );
@@ -315,17 +422,25 @@ export default function WhopDashboard() {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, imageUrl: "", isUploading: false, error: "Chyba při nahrávání obrázku." }
+            ? {
+                ...f,
+                imageUrl: "",
+                isUploading: false,
+                error: "Chyba při nahrávání obrázku.",
+              }
             : f
         )
       );
     }
   };
 
-  // ===== Přidání nové prázdné feature (max 6) =====
+  // ===========
+  //  PŘIDÁNÍ FEATURE
+  // ===========
   const addFeature = () => {
     if (editFeatures.length >= 6) return;
-    const newId = editFeatures.length > 0 ? Math.max(...editFeatures.map((f) => f.id)) + 1 : 1;
+    const newId =
+      editFeatures.length > 0 ? Math.max(...editFeatures.map((f) => f.id)) + 1 : 1;
     setEditFeatures((prev) => [
       ...prev,
       { id: newId, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
@@ -333,28 +448,29 @@ export default function WhopDashboard() {
     setError("");
   };
 
-  // ===== Odstranění feature (minimálně 2 musí zůstat) =====
+  // ===========
+  //  ODEBRÁNÍ FEATURE
+  // ===========
   const removeFeature = (id) => {
     if (editFeatures.length <= 2) return;
     setEditFeatures((prev) => prev.filter((f) => f.id !== id));
     setError("");
   };
 
-  // ===== Změna title/subtitle =====
+  // ===========
+  //  ZMĚNA TITLE / SUBTITLE
+  // ===========
   const handleFeatChange = (id, field, value) => {
     setEditFeatures((prev) =>
       prev.map((f) =>
         f.id === id
-          ? {
-              ...f,
-              [field]: value,
-            }
+          ? { ...f, [field]: value }
           : f
       )
     );
   };
 
-  // ===== Pokud stále načítáme =====
+  // ===== Pokud načítáme =====
   if (loading) {
     return (
       <div className="whop-loading">
@@ -373,21 +489,21 @@ export default function WhopDashboard() {
     );
   }
 
-  // ===== Pokud data nejsou načtena =====
+  // ===== Pokud data nejsou =====
   if (!whopData) {
     return null;
   }
 
   return (
     <div className="whop-container">
-      {/* Tlačítko Back – viditelné jen v editačním módu */}
+      {/* Back button (pouze v edit módu) */}
       {isEditing && (
         <button className="whop-back-btn" onClick={handleBack} aria-label="Go back">
           <FaArrowLeft /> Back
         </button>
       )}
 
-      {/* Banner – view vs edit */}
+      {/* Banner */}
       <div className="whop-banner">
         {isEditing ? (
           <div className="whop-banner-edit-wrapper">
@@ -430,9 +546,9 @@ export default function WhopDashboard() {
         )}
       </div>
 
-      {/* Hlavní obsah */}
+      {/* Obsah pod bannerem */}
       <div className="whop-content">
-        {/* Název a popis (view vs edit) */}
+        {/* Název a popis */}
         <div className="whop-header">
           {isEditing ? (
             <>
@@ -457,16 +573,62 @@ export default function WhopDashboard() {
           )}
         </div>
 
-        {/* Tlačítko Edit (owner) / Join (ostatní) nebo Save (pokud je edit mód) */}
+        {/* Slug / link */}
+        <div className="whop-slug-section">
+          {isEditing || isSlugEditing ? (
+            <div className="whop-slug-edit-wrapper">
+              <label>Změň link:</label>
+              <div className="whop-slug-input-wrapper">
+                <span className="whop-slug-prefix">wrax.com/c/</span>
+                <input
+                  type="text"
+                  className="whop-slug-input"
+                  value={newSlugValue}
+                  onChange={(e) => setNewSlugValue(e.target.value)}
+                  disabled={!isSlugEditing}
+                />
+              </div>
+              {slugError && <div className="whop-slug-error">{slugError}</div>}
+              {isSlugEditing ? (
+                <button className="whop-slug-save-btn" onClick={handleSlugSave}>
+                  <FaSave /> Save Link
+                </button>
+              ) : (
+                <button
+                  className="whop-slug-edit-btn"
+                  onClick={() => {
+                    setIsSlugEditing(true);
+                    setIsEditing(false);
+                    setSlugError("");
+                  }}
+                >
+                  <FaLink /> Change Link
+                </button>
+              )}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Tlačítka pro události (Edit / Join / Delete / Save) */}
         <div className="whop-action-btns">
           {isEditing ? (
-            <button className="whop-save-btn" onClick={handleSave}>
-              <FaSave /> Save
-            </button>
+            <>
+              <button className="whop-save-btn" onClick={handleSave}>
+                <FaSave /> Save
+              </button>
+              <button className="whop-cancel-btn" onClick={() => setIsEditing(false)}>
+                Cancel
+              </button>
+            </>
           ) : whopData.is_owner ? (
-            <button className="whop-edit-btn" onClick={handleEditToggle}>
-              <FaEdit /> Edit
-            </button>
+            <>
+              <button className="whop-edit-btn" onClick={handleEditToggle}>
+                <FaEdit /> Edit
+              </button>
+              <button className="whop-delete-btn" onClick={handleDelete}>
+                <FaTrash /> Delete
+              </button>
+            </>
           ) : (
             <button className="whop-join-btn" onClick={() => { /* TODO: Join logic */ }}>
               <FaUserPlus /> Join
@@ -474,16 +636,17 @@ export default function WhopDashboard() {
           )}
         </div>
 
-        {/* Seznam features (view vs edit) */}
+        {/* Seznam features */}
         <div className="whop-features-section">
           <h2 className="features-section-title">Features</h2>
 
           {isEditing ? (
             <>
-              {/* Karty pro editaci features */}
               {editFeatures.map((feat, idx) => (
                 <div key={feat.id} className="feature-card-edit">
-                  <div className="feature-number-edit">Feature {idx + 1}</div>
+                  <div className="feature-number-edit">
+                    Feature {idx + 1}
+                  </div>
                   <div className="feature-field-edit">
                     <label>Title *</label>
                     <input
@@ -548,7 +711,6 @@ export default function WhopDashboard() {
                 </div>
               ))}
 
-              {/* Tlačítko pro přidání nové feature */}
               {editFeatures.length < 6 && (
                 <button className="feature-add-btn-edit" onClick={addFeature}>
                   <FaPlus /> Add Feature
@@ -556,30 +718,27 @@ export default function WhopDashboard() {
               )}
             </>
           ) : (
-            <>
-              {/* Zobrazení features (view only) */}
-              <div className="whop-features-grid">
-                {whopData.features.map((feat, idx) => (
-                  <div key={idx} className="whop-feature-card">
-                    {feat.image_url ? (
-                      <img
-                        src={feat.image_url}
-                        alt={feat.title}
-                        className="whop-feature-image"
-                      />
-                    ) : (
-                      <div className="whop-feature-image-placeholder" />
+            <div className="whop-features-grid">
+              {whopData.features.map((feat, idx) => (
+                <div key={idx} className="whop-feature-card">
+                  {feat.image_url ? (
+                    <img
+                      src={feat.image_url}
+                      alt={feat.title}
+                      className="whop-feature-image"
+                    />
+                  ) : (
+                    <div className="whop-feature-image-placeholder" />
+                  )}
+                  <div className="whop-feature-text">
+                    <h3 className="whop-feature-title">{feat.title}</h3>
+                    {feat.subtitle && (
+                      <p className="whop-feature-subtitle">{feat.subtitle}</p>
                     )}
-                    <div className="whop-feature-text">
-                      <h3 className="whop-feature-title">{feat.title}</h3>
-                      {feat.subtitle && (
-                        <p className="whop-feature-subtitle">{feat.subtitle}</p>
-                      )}
-                    </div>
                   </div>
-                ))}
-              </div>
-            </>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
