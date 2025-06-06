@@ -118,19 +118,19 @@ const App = () => {
         />
 
         {/* Chráněná: BannerSetup – čtvrtý krok (Upload Banner) */}
-       <Route
-        path="/setup/banner"
-        element={
-           <ProtectedRoute>
-             <div className="app-container">
-               <Sidebar />
-               <main className="main-content">
-                 <BannerSetup />
-               </main>
-             </div>
-           </ProtectedRoute>
-         }
-       />
+        <Route
+          path="/setup/banner"
+          element={
+            <ProtectedRoute>
+              <div className="app-container">
+                <Sidebar />
+                <main className="main-content">
+                  <BannerSetup />
+                </main>
+              </div>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Chráněná: Profile */}
         <Route

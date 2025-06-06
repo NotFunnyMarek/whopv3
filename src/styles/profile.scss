@@ -1,3 +1,5 @@
+/* src/styles/profile.scss */
+
 @import './variables';
 @import './theme';
 
@@ -72,6 +74,23 @@
 
       &:hover {
         background: var(--primary-color-dark);
+        transform: translateY(-1px);
+      }
+    }
+
+    .btn-withdraw {
+      margin-top: var(--spacing-xs);
+      background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
+      color: #fff;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition-default), transform var(--transition-default);
+
+      &:hover {
+        background: var(--accent-color-dark);
         transform: translateY(-1px);
       }
     }

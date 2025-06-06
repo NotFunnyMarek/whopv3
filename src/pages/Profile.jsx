@@ -1,6 +1,9 @@
+// src/pages/Profile.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DepositModal from '../components/DepositModal';
+import WithdrawModal from '../components/WithdrawModal';
 import '../styles/profile.scss';
 
 const Profile = () => {
@@ -24,6 +27,8 @@ const Profile = () => {
 
   // Stav pro Deposit Modal
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  // Stav pro Withdraw Modal
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   // ---- Načtení profilu po načtení komponenty ----
   useEffect(() => {
@@ -192,6 +197,14 @@ const Profile = () => {
     setIsDepositOpen(false);
   };
 
+  // ---- Handlery pro WithdrawModal ----
+  const openWithdraw = () => {
+    setIsWithdrawOpen(true);
+  };
+  const closeWithdraw = () => {
+    setIsWithdrawOpen(false);
+  };
+
   return (
     <div className="profile-container">
       <h2>Account settings</h2>
@@ -209,7 +222,7 @@ const Profile = () => {
           <h3>{form.name || 'Uživatel'}</h3>
           <p className="profile-sub">@{form.username || ''}</p>
 
-          {/* ===== TLAČÍTKO „Deposit“ ===== */}
+          {/* Deposit tlačítko */}
           <button
             type="button"
             className="btn-deposit"
@@ -218,7 +231,16 @@ const Profile = () => {
             Deposit
           </button>
 
-          {/* ===== TLAČÍTKO „Logout“ ===== */}
+          {/* Withdraw tlačítko */}
+          <button
+            type="button"
+            className="btn-withdraw"
+            onClick={openWithdraw}
+          >
+            Withdraw
+          </button>
+
+          {/* Logout tlačítko */}
           <button
             type="button"
             className="btn-logout"
@@ -324,8 +346,11 @@ const Profile = () => {
         </div>
       </form>
 
-      {/* ===== ZDE VLOŽTE DepositModal ===== */}
+      {/* Deposit modal */}
       <DepositModal isOpen={isDepositOpen} onClose={closeDeposit} />
+
+      {/* Withdraw modal */}
+      <WithdrawModal isOpen={isWithdrawOpen} onClose={closeWithdraw} />
     </div>
   );
 };
