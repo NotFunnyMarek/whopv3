@@ -3,15 +3,18 @@ import { Link } from 'react-router-dom';
 import '../styles/card.scss';
 
 export default function CardGrid({ cardsData }) {
+  // Zobrazíme pouze kampaně, které jsou aktivní (is_active === 1)
+  const activeCampaigns = cardsData.filter((camp) => camp.is_active === 1);
+
   return (
     <div className="card-container">
-      {!cardsData.length && (
+      {!activeCampaigns.length && (
         <div className="card-empty">Žádné kampaně k zobrazení.</div>
       )}
 
-      {cardsData.length > 0 && (
+      {activeCampaigns.length > 0 && (
         <div className="cards-grid">
-          {cardsData.map((camp) => (
+          {activeCampaigns.map((camp) => (
             <Link
               key={camp.id}
               to={`/c/${camp.whop_slug}`}

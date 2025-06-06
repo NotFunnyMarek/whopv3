@@ -182,15 +182,3 @@
     }
   }
 }
-
-/* =====================================
-   Skeleton‐loading pro karty
-   ===================================== */
-.card-skeleton {
-  background: var(--border-color);
-  border-radius: var(--radius-lg);
-  height: 200px;
-  position: relative;
-  overflow: hidden;
-  animation: shimmer var(--transition-default) infinite;
-}

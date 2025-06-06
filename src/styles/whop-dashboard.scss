@@ -1,574 +1,945 @@
 @import './variables';
 @import './theme';
 
-.whop-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  position: relative;
-}
-
-.whop-back-btn {
-  position: absolute;
-  top: var(--spacing-md);
-  left: var(--spacing-md);
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--text-color);
-  cursor: pointer;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  transition: color var(--transition-default);
-}
-.whop-back-btn:hover {
-  color: var(--primary-color);
-}
-
-/* ========== Banner ========== */
-.whop-banner {
-  width: 100%;
-  background-color: var(--border-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  position: relative;
-  height: 350px;
-}
-
-.whop-banner-image {
-  width: 100%;
-  height: 350px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-.whop-banner-image:hover {
-  transform: scale(1.02);
-}
-
-.whop-banner-placeholder {
-  width: 100%;
-  height: 350px;
-  background-color: var(--border-color);
+/* ------------------------------------------------- */
+/* == SPINNERY =================================================== */
+.whop-loading,
+.whop-error {
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted-color);
-  font-size: 1rem;
+
+  .spinner,
+  .spinner-small {
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+  }
+  .spinner-small {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }
 
-.whop-banner-edit-wrapper {
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------- */
+/* == ČLENSKÝ REŽIM - MEMBER VIEW =================================== */
+
+.member-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
+  height: calc(100vh - var(--bottombar-height));
+  background-color: var(--background-color);
 }
 
-.whop-banner-image-edit {
-  width: 100%;
-  max-width: 900px;
-  height: 250px;
-  object-fit: cover;
-  border-radius: var(--radius-base);
-  border: 1px solid var(--border-color);
-}
-
-.whop-banner-placeholder-edit {
-  width: 100%;
-  max-width: 900px;
-  height: 250px;
-  background-color: var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted-color);
-  font-size: 1rem;
-  border-radius: var(--radius-base);
-}
-
-.whop-banner-input-edit {
-  margin-top: var(--spacing-xs);
-  font-size: 0.875rem;
-}
-
-.banner-uploading {
-  font-size: 1rem;
-  color: var(--muted-color);
-}
-
-.whop-banner-error-edit {
-  font-size: 0.875rem;
-  color: var(--danger-color);
-}
-
-/* ========== Obsah pod banner ========== */
-.whop-content {
-  flex: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: calc(var(--spacing-lg) * 1.5) var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-/* ========== Název a popis ========== */
-.whop-header {
-  text-align: center;
-
-  .whop-title {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-xs);
-    color: var(--text-color);
-  }
-
-  .whop-description {
-    font-size: 1.125rem;
-    color: var(--muted-color);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .whop-input-name {
-    font-size: 2rem;
-    padding: var(--spacing-xs);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-base);
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
-
-  .whop-input-description {
-    font-size: 1rem;
-    padding: var(--spacing-xs);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-base);
-    width: 100%;
-    max-width: 600px;
-    margin: var(--spacing-sm) auto 0;
-    box-sizing: border-box;
-  }
-
-  .whop-input-name:focus,
-  .whop-input-description:focus {
-    outline: none;
-    border-color: var(--primary-color);
-  }
-}
-
-/* ========== Slug / Change Link ========== */
-.whop-slug-section {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--spacing-md);
-
-  .whop-slug-edit-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-sm);
-
-    label {
-      font-family: var(--font-sans);
-      font-size: 0.875rem;
-      color: var(--text-color);
-    }
-
-    .whop-slug-input-wrapper {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-base);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      background-color: var(--surface-color);
-
-      .whop-slug-prefix {
-        font-family: var(--font-sans);
-        font-size: 1rem;
-        color: var(--text-color);
-        white-space: nowrap;
-      }
-
-      .whop-slug-input {
-        flex: 1;
-        font-family: var(--font-sans);
-        font-size: 1rem;
-        border: none;
-        background-color: transparent;
-        color: var(--text-color);
-        outline: none;
-      }
-    }
-
-    .whop-slug-error {
-      color: var(--danger-color);
-      font-size: 0.875rem;
-      margin-top: var(--spacing-xs);
-    }
-
-    .whop-slug-edit-btn,
-    .whop-slug-save-btn {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-      color: #fff;
-      padding: var(--spacing-xs) var(--spacing-md);
-      font-size: 0.875rem;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: background var(--transition-default), transform var(--transition-default);
-    }
-
-    .whop-slug-edit-btn:hover,
-    .whop-slug-save-btn:hover {
-      background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-      transform: translateY(-2px);
-    }
-  }
-}
-
-/* ========== Tlačítka: Edit / Save / Delete / Join ========== */
-.whop-action-btns {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-md);
-
-  .whop-edit-btn,
-  .whop-delete-btn,
-  .whop-save-btn,
-  .whop-cancel-btn,
-  .whop-join-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: background var(--transition-default), transform var(--transition-default);
-  }
-
-  .whop-edit-btn {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    border: none;
-  }
-  .whop-edit-btn:hover {
-    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-    transform: translateY(-2px);
-  }
-
-  .whop-join-btn,
-.whop-leave-btn {
-  background-color: var(--primary-color);
-  color: #fff;
-  border: none;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-base);
-  cursor: pointer;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  transition: background-color var(--transition-default);
-
-  &:hover {
-    background-color: var(--primary-hover);
-  }
-}
-
-.whop-leave-btn {
-  background-color: var(--error-color);
-  &:hover {
-    background-color: var(--error-color-dark);
-  }
-}
-
-
-  .whop-delete-btn {
-    background: var(--danger-color);
-    color: #000000;
-    border: 1px solid #000000;
-  }
-  .whop-delete-btn:hover {
-    background: var(--danger-dark);
-    transform: translateY(-2px);
-  }
-
-  .whop-save-btn {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    border: none;
-  }
-  .whop-save-btn:hover {
-    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-    transform: translateY(-2px);
-  }
-
-  .whop-cancel-btn {
-    background: var(--border-color);
-    color: var(--muted-color);
-    border: none;
-  }
-  .whop-cancel-btn:hover {
-    background: var(--border-color);
-    transform: none;
-  }
-
-  .whop-join-btn {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    border: none;
-  }
-  .whop-join-btn:hover {
-    background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-    transform: translateY(-2px);
-  }
-}
-
-/* ========== Seznam features ========== */
-.whop-features-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-
-  .features-section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-color);
-  }
-}
-
-/* ===== View-only ===== */
-.whop-features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-}
-@media (min-width: 640px) {
-  .whop-features-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.whop-feature-card {
+/* ========== SIDEBAR ========== */
+.member-sidebar {
+  width: 18rem;
   background-color: var(--surface-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border-right: 1px solid var(--border-color);
   display: flex;
-  gap: var(--spacing-md);
+  flex-direction: column;
+  align-items: center;
   padding: var(--spacing-md);
-  align-items: flex-start;
-  transition: transform 0.2s ease;
-}
-.whop-feature-card:hover {
-  transform: translateY(-3px);
-}
-
-.whop-feature-image {
-  width: 90px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: var(--radius-base);
-  border: 1px solid var(--border-color);
-}
-
-.whop-feature-image-placeholder {
-  width: 90px;
-  height: 90px;
-  background-color: var(--border-color);
-  border-radius: var(--radius-base);
-}
-
-.whop-feature-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.whop-feature-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin: 0;
-}
-
-.whop-feature-subtitle {
-  font-size: 0.875rem;
-  color: var(--muted-color);
-  margin: 0;
-}
-
-/* ===== Edit mód ===== */
-.feature-card-edit {
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  position: relative;
-}
 
-.feature-number-edit {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-.feature-field-edit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-
-  label {
-    font-size: 0.875rem;
-    color: var(--text-color);
-  }
-
-  .feature-input-edit,
-  .feature-textarea-edit {
-    font-size: 1rem;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border: 1px solid var(--border-color);
+  /* Banner obrázek */
+  .member-banner {
+    width: 100%;
+    height: 12rem;
+    margin-bottom: var(--spacing-md);
+    overflow: hidden;
     border-radius: var(--radius-base);
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: border-color var(--transition-default);
-  }
-  .feature-input-edit:focus,
-  .feature-textarea-edit:focus {
-    outline: none;
-    border-color: var(--primary-color);
-  }
-  .feature-textarea-edit {
-    resize: vertical;
-  }
-}
-
-.feature-image-wrapper-edit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-
-  .feature-image-placeholder-edit,
-  .feature-image-uploading {
-    width: 120px;
-    height: 120px;
     background-color: var(--border-color);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .member-banner-placeholder {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--muted-color);
-    font-size: 0.875rem;
-    border-radius: var(--radius-base);
+    font-size: 0.9rem;
   }
 
-  .feature-image-preview-edit {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: var(--radius-base);
-    border: 1px solid var(--border-color);
+  /* Info o whopu: název, počet připojených */
+  .member-info {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+
+    .member-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-color);
+    }
+    .member-members-count {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      color: var(--muted-color);
+      font-size: 0.875rem;
+    }
   }
 
-  .feature-image-input-edit {
-    font-size: 0.875rem;
+  /* Navigační tlačítka (Home, Chat, Earn, Tools) */
+  .member-nav {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: auto;
+
+    .nav-button {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: var(--radius-base);
+      font-size: 1rem;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: background-color var(--transition-default);
+
+      &:hover {
+        background-color: var(--border-color);
+      }
+      &.active {
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+      svg {
+        font-size: 1.1rem;
+      }
+    }
   }
 
-  .feature-image-error-edit {
-    color: var(--danger-color);
-    font-size: 0.875rem;
+  /* Leave tlačítko */
+  .member-actions {
+    margin-top: var(--spacing-md);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    .leave-button {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      background-color: var(--error-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color var(--transition-default);
+
+      &:hover {
+        background-color: var(--error-color-dark);
+      }
+      svg {
+        font-size: 1rem;
+      }
+    }
   }
 }
 
-.feature-remove-btn-edit {
-  position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  background: none;
-  border: none;
-  color: var(--danger-color);
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  transition: color var(--transition-default);
-}
-.feature-remove-btn-edit:hover {
-  color: var(--danger-hover);
+/* ========== Hlavní obsah členů (Member) ========== */
+.member-main {
+  flex: 1;
+  background-color: var(--background-color);
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+
+  .member-tab-content {
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-color);
+    }
+    p {
+      font-size: 1rem;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+
+    /* ========== Earn tab ========== */
+    .no-campaign-msg {
+      text-align: center;
+      font-size: 1.125rem;
+      color: var(--muted-color);
+      margin-top: var(--spacing-lg);
+    }
+
+    .member-campaign-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-md);
+
+      /* =====================================
+         Aktivní (active) karty kampaní
+         ===================================== */
+      .member-campaign-card.active {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        position: relative;
+
+        .camp-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .camp-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            flex: 1;
+          }
+          .reward-label {
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-lg);
+            white-space: nowrap;
+          }
+        }
+
+        .author {
+          font-size: 0.875rem;
+          color: var(--muted-color);
+          margin: 0;
+          span.author-name {
+            color: var(--text-color);
+            font-weight: 500;
+          }
+        }
+
+        .paid-bar {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-xs);
+
+          .paid-info {
+            font-size: 0.875rem;
+            color: var(--text-color);
+          }
+          .progress-container {
+            width: 100%;
+            height: 0.5rem;
+            background-color: var(--border-color);
+            border-radius: var(--radius-base);
+            overflow: hidden;
+          }
+          .progress-fill {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: var(--radius-base);
+            transition: width 0.4s ease;
+          }
+          .percent-text {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            text-align: right;
+          }
+        }
+
+        .camp-details {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--spacing-xs);
+
+          li {
+            font-size: 0.875rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+
+            strong {
+              font-weight: 600;
+            }
+          }
+          /* Platform pills */
+          .platform-pill {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: var(--radius-lg);
+            margin-left: var(--spacing-xs);
+          }
+        }
+      }
+
+      /* =====================================
+         Expired karty kampaní
+         ===================================== */
+      .member-campaign-card.expired {
+        background-color: rgba(200, 0, 0, 0.05);
+        border: 1px solid var(--error-color);
+        border-radius: var(--radius-base);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        position: relative;
+        opacity: 0.8;
+
+        .camp-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .camp-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            flex: 1;
+          }
+          .expired-label {
+            background-color: var(--error-color);
+            color: #fff;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-lg);
+            white-space: nowrap;
+          }
+        }
+
+        .author {
+          font-size: 0.875rem;
+          color: var(--muted-color);
+          margin: 0;
+          span.author-name {
+            color: var(--text-color);
+            font-weight: 500;
+          }
+        }
+
+        .paid-bar {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-xs);
+
+          .paid-info {
+            font-size: 0.875rem;
+            color: var(--text-color);
+          }
+          .progress-container {
+            width: 100%;
+            height: 0.5rem;
+            background-color: var(--border-color);
+            border-radius: var(--radius-base);
+            overflow: hidden;
+          }
+          .progress-fill {
+            height: 100%;
+            background-color: var(--error-color);
+            border-radius: var(--radius-base);
+            transition: width 0.4s ease;
+          }
+          .percent-text {
+            font-size: 0.75rem;
+            color: var(--muted-color);
+            text-align: right;
+          }
+        }
+
+        .camp-details {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--spacing-xs);
+
+          li {
+            font-size: 0.875rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+
+            strong {
+              font-weight: 600;
+            }
+          }
+          /* Platform pills */
+          .platform-pill {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: var(--radius-lg);
+            margin-left: var(--spacing-xs);
+          }
+        }
+      }
+
+      /* Error text */
+      .member-error {
+        color: var(--error-color);
+        font-size: 1rem;
+        margin-top: var(--spacing-sm);
+        text-align: center;
+      }
+    }
+  }
 }
 
-.feature-add-btn-edit {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  background: none;
-  border: 2px dashed var(--primary-color);
-  color: var(--primary-color);
-  font-size: 1rem;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: background var(--transition-default), color var(--transition-default);
-  width: fit-content;
-  align-self: center;
-}
-.feature-add-btn-edit:hover {
-  background-color: var(--primary-hover-alt);
-  color: #fff;
-}
+/* ------------------------------------------------- */
+/* == OWNER DASHBOARD & NEPŘIPOJENÝ VIEW ================================ */
 
-/* ===== Stav Loading a Error ===== */
-.whop-loading,
-.whop-error {
+.whop-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  color: var(--text-color);
+  width: 100%;
+  height: calc(100vh - var(--bottombar-height));
+  overflow-y: auto;
+  background-color: var(--background-color);
 }
 
-.whop-error p {
-  color: var(--danger-color);
-  margin-bottom: var(--spacing-md);
-}
-
-.whop-error button {
-  background: var(--primary-color);
-  color: #fff;
-  padding: var(--spacing-xs) var(--spacing-md);
+/* Tlačítko Back v edit modu */
+.whop-back-btn {
+  margin: var(--spacing-md);
+  background: none;
   border: none;
-  border-radius: var(--radius-base);
-  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  font-size: 1rem;
   cursor: pointer;
-  transition: background var(--transition-default), transform var(--transition-default);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
-.whop-error button:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
+
+/* ======== BANNER ======== */
+.whop-banner {
+  width: 100%;
+  height: 300px;
+  background-color: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img.whop-banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .whop-banner-placeholder {
+    color: var(--muted-color);
+    font-size: 1rem;
+  }
+
+  /* Edit režim pro banner */
+  .whop-banner-edit-wrapper {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--border-color);
+  }
+
+  .whop-banner-image-edit {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .whop-banner-placeholder-edit {
+    color: var(--muted-color);
+    font-size: 1rem;
+  }
+  .banner-uploading {
+    font-size: 1rem;
+    color: var(--primary-color);
+  }
+  .whop-banner-input-edit {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .whop-banner-error-edit {
+    position: absolute;
+    bottom: var(--spacing-sm);
+    left: var(--spacing-sm);
+    color: var(--error-color);
+  }
+}
+
+/* Obsah pod bannerem (owner i nepřipojený) */
+.whop-content {
+  padding: var(--spacing-md);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Header */
+.whop-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+
+  &-view {
+    text-align: center;
+  }
+  .whop-title {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--text-color);
+  }
+  .whop-members-count {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--muted-color);
+    margin-top: var(--spacing-xs);
+    font-size: 0.875rem;
+  }
+  .whop-description {
+    margin-top: var(--spacing-xs);
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+
+  /* Edit režim názvu a popisu */
+  .whop-input-name,
+  .whop-input-description {
+    width: 100%;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-xs);
+    background-color: #fff;
+    color: var(--text-color);
+  }
+  .whop-input-name {
+    font-size: 1.5rem;
+  }
+}
+
+/* Slug section */
+.whop-slug-section {
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .whop-slug-edit-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+
+    label {
+      font-size: 1rem;
+      color: var(--text-color);
+    }
+    .whop-slug-input-wrapper {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      overflow: hidden;
+      background-color: #fff;
+    }
+    .whop-slug-prefix {
+      background-color: var(--border-color);
+      padding: var(--spacing-xs);
+      font-size: 0.9rem;
+      color: var(--muted-color);
+    }
+    .whop-slug-input {
+      border: none;
+      padding: var(--spacing-xs);
+      font-size: 1rem;
+      width: 200px;
+      background-color: transparent;
+      color: var(--text-color);
+    }
+    .whop-slug-error {
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-left: var(--spacing-xs);
+    }
+    .whop-slug-save-btn,
+    .whop-slug-edit-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color var(--transition-default);
+
+      &:hover {
+        background-color: var(--primary-hover);
+      }
+    }
+  }
+}
+
+/* Action buttons */
+.whop-action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color var(--transition-default);
+
+    &:hover {
+      background-color: var(--primary-hover);
+    }
+
+    &.whop-delete-btn {
+      background-color: var(--error-color);
+      &:hover {
+        background-color: var(--error-color-dark);
+      }
+    }
+    &.whop-join-btn {
+      background-color: var(--secondary-color);
+      &:hover {
+        background-color: var(--secondary-hover);
+      }
+    }
+  }
+}
+
+/* Features section */
+.whop-features-section {
+  margin-top: var(--spacing-lg);
+
+  .features-section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    color: var(--text-color);
+  }
+
+  /* Grid pro zobrazení feature karet */
+  .whop-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--spacing-md);
+    justify-items: center;
+  }
+
+  .whop-feature-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    max-width: 14rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+
+    .whop-feature-image {
+      width: 100%;
+      height: 8rem;
+      object-fit: cover;
+      background-color: var(--border-color);
+    }
+    .whop-feature-image-placeholder {
+      width: 100%;
+      height: 8rem;
+      background-color: var(--border-color);
+    }
+    .whop-feature-text {
+      padding: var(--spacing-sm);
+
+      .whop-feature-title {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--text-color);
+      }
+      .whop-feature-subtitle {
+        margin-top: var(--spacing-xs);
+        font-size: 0.875rem;
+        color: var(--muted-color);
+      }
+    }
+  }
+
+  /* EDIT MODE */
+  .feature-card-edit {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-sm);
+    background-color: var(--surface-color);
+    margin-bottom: var(--spacing-md);
+
+    .feature-number-edit {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--text-color);
+    }
+    .feature-field-edit {
+      margin-bottom: var(--spacing-sm);
+
+      label {
+        display: block;
+        font-size: 0.875rem;
+        margin-bottom: var(--spacing-xs);
+        color: var(--text-color);
+      }
+      .feature-input-edit,
+      .feature-textarea-edit {
+        width: 100%;
+        padding: var(--spacing-xs);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        font-size: 0.875rem;
+        background-color: #fff;
+        color: var(--text-color);
+      }
+      .feature-image-wrapper-edit {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        position: relative;
+      }
+      .feature-image-preview-edit {
+        width: 4rem;
+        height: 4rem;
+        object-fit: cover;
+        border-radius: var(--radius-base);
+      }
+      .feature-image-placeholder-edit {
+        width: 4rem;
+        height: 4rem;
+        background-color: var(--border-color);
+        border-radius: var(--radius-base);
+      }
+      .feature-image-uploading {
+        font-size: 0.875rem;
+        color: var(--primary-color);
+      }
+      .feature-image-input-edit {
+        flex: 1;
+        opacity: 0;
+        position: absolute;
+        cursor: pointer;
+      }
+      .feature-image-error-edit {
+        color: var(--error-color);
+        font-size: 0.75rem;
+        margin-top: var(--spacing-xs);
+      }
+    }
+    .feature-remove-btn-edit {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      background-color: var(--error-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color var(--transition-default);
+      margin-top: var(--spacing-xs);
+
+      &:hover {
+        background-color: var(--error-color-dark);
+      }
+    }
+  }
+  .feature-add-btn-edit {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color var(--transition-default);
+    margin: var(--spacing-md) auto; /* centrované tlačítko */
+
+    &:hover {
+      background-color: var(--primary-hover);
+    }
+  }
+}
+
+/* Campaigns section for owner */
+.whop-campaigns-section {
+  margin-top: var(--spacing-lg);
+
+  .campaigns-section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    color: var(--text-color);
+  }
+  .campaigns-error {
+    color: var(--error-color);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-xs);
+    text-align: center;
+  }
+  .whop-campaigns-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--spacing-md);
+    justify-items: center;
+    margin-top: var(--spacing-md);
+
+    .whop-campaign-item {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: var(--spacing-sm);
+      box-shadow: var(--shadow-sm);
+      width: 100%;
+      max-width: 14rem;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        margin-bottom: var(--spacing-xs);
+        text-align: center;
+        color: var(--text-color);
+      }
+      p {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        margin: var(--spacing-xs) 0;
+        text-align: center;
+      }
+    }
+  }
+}
+
+/* Modal override (pokud je potřeba doladit) */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-content {
+  background-color: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  max-width: 60rem;
+  width: 90%;
+}
+
+/* ------------------------------------------------- */
+
+/* ------------------------------------------------- */
+/* == STYL PRO OWNER SEKCI „KAMPANĚ“ ================== */
+
+.whop-campaigns-section {
+  .whop-campaigns-list {
+    .whop-campaign-item {
+      position: relative;
+      padding-bottom: var(--spacing-md);
+
+      /* Status řádek (Active / Expire button) */
+      .campaign-status-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-xs);
+
+        .active-label {
+          background-color: var(--primary-color);
+          color: #fff;
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--radius-lg);
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .expired-label {
+          background-color: var(--error-color);
+          color: #fff;
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--radius-lg);
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+        .expire-btn {
+          margin-left: auto;
+          background-color: var(--error-color);
+          color: #fff;
+          border: none;
+          border-radius: var(--radius-lg);
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+          cursor: pointer;
+          transition: background-color var(--transition-default);
+          &:hover {
+            background-color: var(--error-color-dark);
+          }
+        }
+      }
+    }
+  }
 }
