@@ -1,175 +1,122 @@
 // src/components/DepositModal.jsx
 
 import React, { useState, useEffect } from 'react';
-import Modal from './Modal';
 import '../styles/deposit-modal.scss';
 
-/**
- * DepositModal
- *
- * Props:
- *   - isOpen    : boolean, zda je modal otevřený
- *   - onClose   : funkce (bez parametrů), volá se, když chceme modal zavřít
- *
- * Tento komponent stáhne z backendu deposit_address a balance.
- * Také zavolá CoinGecko, aby zjistil aktuální cenu SOL v USD (testnet cenu používáme stejnou),
- * a ukáže uživateli, kolik USD je hodnota 1 SOL.
- *
- * Obsahuje:
- *   - Zobrazení adresy pro vklad
- *   - Možnost překopírování adresy do schránky
- *   - Ukázku aktuálního zůstatku (v USD) a instrukce
- */
 export default function DepositModal({ isOpen, onClose }) {
-  const [depositAddress, setDepositAddress] = useState('');
-  const [balance, setBalance] = useState('0.00000000');
-  const [solPrice, setSolPrice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [depositAddress, setDepositAddress] = useState('');
+  const [priceUsd, setPriceUsd] = useState(null);
 
-  // ---- 1) Načíst deposit_address a balance z backendu ----
-  useEffect(() => {
-    if (!isOpen) return; // když se modal zavře, nebudeme dále fetchovat
-    async function fetchDepositInfo() {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch('https://app.byxbot.com/php/deposit.php', {
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (res.status === 401) {
-          throw new Error('Uživatel není přihlášen. Přihlaste se prosím.');
-        }
-        if (!res.ok) {
-          throw new Error(`Chyba při načítání: ${res.status}`);
-        }
-        const body = await res.json();
-        if (body.status !== 'success') {
-          throw new Error(body.message || 'Neznámá chyba při načítání');
-        }
-        setDepositAddress(body.data.deposit_address || '');
-        setBalance(body.data.balance || '0.00000000');
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDepositInfo();
-  }, [isOpen]);
-
-  // ---- 2) Načíst cenu SOL z CoinGecko ----
   useEffect(() => {
     if (!isOpen) return;
-    async function fetchSolPrice() {
-      try {
-        const res = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'
-        );
-        if (!res.ok) {
-          throw new Error('Nelze získat cenu SOL');
-        }
-        const data = await res.json();
-        if (data.solana && data.solana.usd) {
-          setSolPrice(data.solana.usd);
+
+    setLoading(true);
+    setError('');
+    setDepositAddress('');
+    setPriceUsd(null);
+
+    // 1) Načteme deposit_address z deposit.php
+    fetch('https://app.byxbot.com/php/deposit.php', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (data.status === 'success') {
+          setDepositAddress(data.data.deposit_address);
+          // 2) Po úspěšném načtení adresy spustíme načtení ceny SOL z CoinGecko
+          return fetch(
+            'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'
+          );
         } else {
-          setSolPrice(null);
+          throw new Error(data.message || 'Chyba při načítání deposit dat');
         }
-      } catch {
-        setSolPrice(null);
-      }
-    }
-    fetchSolPrice();
+      })
+      .then((res) => {
+        if (!res.ok) throw new Error(`CoinGecko HTTP error: ${res.status}`);
+        return res.json();
+      })
+      .then((priceData) => {
+        if (
+          priceData &&
+          priceData.solana &&
+          typeof priceData.solana.usd === 'number'
+        ) {
+          setPriceUsd(priceData.solana.usd);
+        } else {
+          setPriceUsd(null);
+        }
+      })
+      .catch((err) => {
+        console.error('Chyba při načítání deposit nebo ceny SOL:', err);
+        setError('Nepodařilo se načíst data pro deposit');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [isOpen]);
 
-  // ---- 3) Kopírování do schránky ----
-  const copyToClipboard = () => {
+  const handleCopy = () => {
     if (!depositAddress) return;
     navigator.clipboard.writeText(depositAddress).catch(() => {});
   };
 
-  // ---- RENDER ----
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="dm-container">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="dm-container" onClick={(e) => e.stopPropagation()}>
         <h2>Deposit SOL (Testnet)</h2>
 
-        {loading && <div className="dm-loading">Načítám informace…</div>}
-
-        {!loading && error && (
-          <div className="dm-error">Chyba: {error}</div>
-        )}
+        {loading && <div className="dm-loading">Načítám…</div>}
+        {error && <div className="dm-error">{error}</div>}
 
         {!loading && !error && (
           <>
             <div className="dm-section">
-              <strong>Váš vklad (deposit) adres:</strong>
-              {depositAddress ? (
-                <div className="dm-address-row">
-                  <input
-                    type="text"
-                    readOnly
-                    value={depositAddress}
-                    className="dm-address-input"
-                  />
-                  <button
-                    type="button"
-                    className="dm-copy-btn"
-                    onClick={copyToClipboard}
-                  >
-                    Kopírovat
-                  </button>
-                </div>
-              ) : (
-                <div>Adresa pro deposit zatím není dostupná.</div>
-              )}
+              <strong>Solana Adresa:</strong>
+              <div className="dm-address-row">
+                <input
+                  type="text"
+                  className="dm-address-input"
+                  readOnly
+                  value={depositAddress}
+                />
+                <button className="dm-copy-btn" onClick={handleCopy}>
+                  Copy
+                </button>
+              </div>
             </div>
 
             <div className="dm-section">
-              <strong>Váš zůstatek v USD:</strong>
-              <div className="dm-balance">${Number(balance).toFixed(2)}</div>
-            </div>
-
-            <div className="dm-section">
-              <strong>Instrukce:</strong>
+              <strong>Postup:</strong>
               <ul className="dm-instructions">
                 <li>
-                  Přepněte si peněženku na <code>Solana Testnet</code>.
+                  Přihlašte se do své Solana testnet peněženky (Phantom apod.) a
+                  zašlete SOL na výše uvedenou adresu.
                 </li>
                 <li>
-                  Pošlete SOL na výše uvedenou adresu.
+                  1 SOL ≈ $
+                  {priceUsd !== null ? priceUsd.toFixed(2) : '–'} USD
                 </li>
-                <li>
-                  Do pole „Memo“ (poznámka) napište své <strong>user_id</strong>.
-                  <br />
-                  (Např. pokud je vaše user_id <code>42</code>, napište v Memo <code>42</code>.)
-                </li>
-                <li>
-                  Jakmile transakce proběhne, systém deposit zachytí a připíše
-                  ekvivalent v USD na váš účet.
-                </li>
+                <li>Čekejte přibližně 30 s na zpracování transakce.</li>
               </ul>
             </div>
 
-            <div className="dm-section">
-              <strong>1 SOL ≈</strong>{' '}
-              {solPrice !== null ? `$${solPrice.toFixed(2)} USD` : '…'}
-            </div>
-
             <div className="dm-close-row">
-              <button
-                type="button"
-                className="dm-close-btn"
-                onClick={onClose}
-              >
-                Zavřít
+              <button className="dm-close-btn" onClick={onClose}>
+                Close
               </button>
             </div>
           </>
         )}
       </div>
-    </Modal>
+    </div>
   );
 }

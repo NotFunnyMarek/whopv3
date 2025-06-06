@@ -1,13 +1,31 @@
-/* src/styles/deposit-modal.scss */
+// src/styles/deposit-modal.scss
 
 @import './variables';
 @import './theme';
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .dm-container {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
   padding: var(--spacing-lg);
+  background-color: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 101;
 
   h2 {
     margin-bottom: var(--spacing-md);
@@ -64,12 +82,6 @@
           background: var(--primary-color-dark);
         }
       }
-    }
-
-    .dm-balance {
-      margin-top: var(--spacing-xs);
-      font-size: 1.25rem;
-      color: var(--primary-color);
     }
 
     .dm-instructions {

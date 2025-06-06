@@ -1,5 +1,3 @@
-/* src/styles/profile.scss */
-
 @import './variables';
 @import './theme';
 
@@ -10,6 +8,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  color: var(--text-color);
+}
+
+.profile-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-md);
   color: var(--text-color);
 }
 
@@ -61,7 +65,8 @@
       font-size: 0.875rem;
     }
 
-    .btn-deposit {
+    .btn-deposit,
+    .btn-withdraw {
       margin-top: var(--spacing-md);
       background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
       color: #fff;
@@ -79,19 +84,10 @@
     }
 
     .btn-withdraw {
-      margin-top: var(--spacing-xs);
       background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
-      color: #fff;
-      border-radius: var(--radius-base);
-      padding: var(--spacing-xs) var(--spacing-md);
-      font-size: 0.875rem;
-      font-weight: 600;
-      box-shadow: var(--shadow-sm);
-      transition: background var(--transition-default), transform var(--transition-default);
 
       &:hover {
         background: var(--accent-color-dark);
-        transform: translateY(-1px);
       }
     }
 

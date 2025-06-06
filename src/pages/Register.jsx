@@ -1,3 +1,5 @@
+// src/pages/Register.jsx
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/register.scss';
@@ -21,13 +23,20 @@ const Register = () => {
       });
 
       if (res.ok) {
-        setMessage('Registrace proběhla úspěšně. Přihlaste se.');
+        const data = await res.json();
+        setMessage(data.message || 'Registrace proběhla úspěšně. Přihlaste se.');
         setUsername('');
         setEmail('');
         setPassword('');
         setTimeout(() => navigate('/login'), 1500);
       } else {
-        setMessage(`Chyba při registraci (HTTP ${res.status}).`);
+        // Zkusíme přečíst chybovou JSON odpověď, pokud existuje
+        let errText = `Chyba při registraci (HTTP ${res.status})`;
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errText = errJson.message;
+        } catch {}
+        setMessage(errText);
       }
     } catch (err) {
       setMessage('Chyba: ' + err.message);

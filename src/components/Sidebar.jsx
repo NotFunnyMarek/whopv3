@@ -1,8 +1,10 @@
+// src/components/Sidebar.jsx
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import '../styles/sidebar.scss';
 import Logo from '../assets/logo.png';
-import { FiHome, FiSearch, FiMessageSquare, FiBell } from 'react-icons/fi';
+import { FiHome, FiSearch, FiMessageSquare, FiBell, FiBarChart2, FiUser } from 'react-icons/fi';
 
 const Sidebar = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -13,7 +15,7 @@ const Sidebar = () => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include'
+      credentials: 'include',
     })
       .then((res) => {
         if (res.status === 401) {
@@ -40,7 +42,6 @@ const Sidebar = () => {
         <img src={Logo} alt="Logo platformy" />
       </div>
 
-      {/** Volitelně: zobrazíme saldo nad menu */}
       <div className="sidebar__balance-display">
         ${balance.toFixed(2)}
       </div>
@@ -53,18 +54,23 @@ const Sidebar = () => {
             </NavLink>
           </li>
           <li className="sidebar__nav-item">
-            <NavLink to="/" className="sidebar__link">
+            <NavLink to="/search" className="sidebar__link">
               <FiSearch className="sidebar__icon" />
             </NavLink>
           </li>
           <li className="sidebar__nav-item">
-            <NavLink to="/" className="sidebar__link">
+            <NavLink to="/messages" className="sidebar__link">
               <FiMessageSquare className="sidebar__icon" />
             </NavLink>
           </li>
           <li className="sidebar__nav-item">
-            <NavLink to="/" className="sidebar__link">
+            <NavLink to="/notifications" className="sidebar__link">
               <FiBell className="sidebar__icon" />
+            </NavLink>
+          </li>
+          <li className="sidebar__nav-item">
+            <NavLink to="/balances" className="sidebar__link">
+              <FiBarChart2 className="sidebar__icon" />
             </NavLink>
           </li>
           <li className="sidebar__nav-item">
@@ -76,7 +82,7 @@ const Sidebar = () => {
                   className="sidebar__profile-img"
                 />
               ) : (
-                <FiHome className="sidebar__icon" />
+                <FiUser className="sidebar__icon" />
               )}
             </NavLink>
           </li>

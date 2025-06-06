@@ -6,19 +6,17 @@ import Sidebar from './components/Sidebar';
 import BottomBar from './components/BottomBar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
-import Intro from './pages/Intro';
-import Onboarding from './pages/Onboarding';
-import Setup from './pages/Setup';
-import ChooseLink from './pages/ChooseLink';
-import FeaturesSetup from './pages/FeaturesSetup';
-import BannerSetup from './pages/BannerSetup';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import Balances from './pages/Balances'; // ← import nové stránky
 
-// Import globální styly pro profil a deposit modal
-import './styles/profile.scss';
+// Globální styly
+import './styles/sidebar.scss';
+import './styles/balances.scss';
 import './styles/deposit-modal.scss';
+import './styles/withdraw-modal.scss';
+import './styles/profile.scss';
 
 const App = () => {
   return (
@@ -28,20 +26,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Veřejná cesta: Intro */}
-        <Route
-          path="/intro"
-          element={
-            <div className="app-container">
-              <Sidebar />
-              <main className="main-content">
-                <Intro />
-              </main>
-            </div>
-          }
-        />
-
-        {/* Chráněná: Home */}
+        {/* Chráněná cesta: Home */}
         <Route
           path="/"
           element={
@@ -57,82 +42,7 @@ const App = () => {
           }
         />
 
-        {/* Chráněná: Onboarding */}
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
-                  <Onboarding />
-                </main>
-              </div>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Chráněná: Setup pro nový dashboard */}
-        <Route
-          path="/setup"
-          element={
-            <ProtectedRoute>
-              <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
-                  <Setup />
-                </main>
-              </div>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Chráněná: ChooseLink (druhý krok – tvorba unikátního slugu) */}
-        <Route
-          path="/setup/link"
-          element={
-            <ProtectedRoute>
-              <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
-                  <ChooseLink />
-                </main>
-              </div>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Chráněná: FeaturesSetup – třetí krok (Features) */}
-        <Route
-          path="/setup/features"
-          element={
-            <ProtectedRoute>
-              <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
-                  <FeaturesSetup />
-                </main>
-              </div>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Chráněná: BannerSetup – čtvrtý krok (Upload Banner) */}
-        <Route
-          path="/setup/banner"
-          element={
-            <ProtectedRoute>
-              <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
-                  <BannerSetup />
-                </main>
-              </div>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Chráněná: Profile */}
+        {/* Chráněná cesta: Profile */}
         <Route
           path="/profile"
           element={
@@ -147,7 +57,22 @@ const App = () => {
           }
         />
 
-        {/* Přesměrování neznámých cest */}
+        {/* Chráněná cesta: Balances */}
+        <Route
+          path="/balances"
+          element={
+            <ProtectedRoute>
+              <div className="app-container">
+                <Sidebar />
+                <main className="main-content">
+                  <Balances />
+                </main>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Neznámé cesty → přesměrování na / */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
