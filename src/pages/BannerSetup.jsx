@@ -130,10 +130,6 @@ export default function BannerSetup() {
       bannerUrl: bannerUrl,
     };
 
-    console.log("=== WHOP PAYLOAD PŘED ODESLÁNÍM ===");
-    console.log(whopPayload);
-    console.log("====================================");
-
     try {
       const res = await fetch("https://app.byxbot.com/php/whop.php", {
         method: "POST",
@@ -142,16 +138,8 @@ export default function BannerSetup() {
         body: JSON.stringify(whopPayload),
       });
 
-      const text = await res.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch (parseErr) {
-        console.error("Nepodařilo se rozparsovat JSON z whop.php:", text);
-        setError("Chyba při zpracování odpovědi serveru.");
-        return;
-      }
-
+      // Přímo parsujeme JSON – funguje i v případě chyby (např. 400/409 atp.)
+      const json = await res.json();
       if (!res.ok || json.status !== "success") {
         setError(json.message || "Unknown error");
         return;
@@ -159,7 +147,8 @@ export default function BannerSetup() {
 
       // Úspěšné uložení – vymazání cookie a navigace na /c/:slug
       clearWhopSetupCookie();
-      navigate(`/c/${json.slug}`);
+      const newSlug = json.data.slug;
+      navigate(`/c/${newSlug}`);
     } catch (err) {
       console.error("Network/Fetch error při volání whop.php:", err);
       setError("Network error: " + err.message);
@@ -175,10 +164,11 @@ export default function BannerSetup() {
 
       <div className="banner-setup-content">
         <p className="banner-setup-subtitle">
-          Toto bude banner, který se zobrazí v horní části tvého whopu. Doporučená velikost: 1200 × 300 px.
+          Toto bude banner, který se zobrazí v horní části tvého whopu. Doporučená
+          velikost: 1200 × 300 px.
         </p>
 
-        {/* Náhled bytebanneru nebo stav uploadu */}
+        {/* Náhled banneru nebo stav uploadu */}
         <div className="banner-input-wrapper">
           {isUploading ? (
             <div className="banner-uploading">Nahrávám…</div>

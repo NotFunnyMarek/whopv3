@@ -32,7 +32,11 @@ import './styles/setup.scss';
 import './styles/choose-link.scss';
 import './styles/features-setup.scss';
 import './styles/banner-setup.scss';
-import './styles/whop-dashboard.scss'; // ujistěte se, že máte i tento import
+import './styles/whop-dashboard.scss';
+import './styles/card-form.scss';
+import './styles/card.scss';
+import './styles/modal.scss';
+import './styles/home.scss';
 
 const App = () => {
   return (
@@ -130,7 +134,7 @@ const App = () => {
           }
         />
 
-        {/* NOVÉ: WhopDashboard – nyní pod /c/:slug */}
+        {/* Nový: WhopDashboard (po dokončení setupu a pro existující whopy) */}
         <Route
           path="/c/:slug"
           element={

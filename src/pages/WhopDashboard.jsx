@@ -11,54 +11,61 @@ import {
   FaUserPlus,
   FaLink,
 } from "react-icons/fa";
+import Modal from "../components/Modal";
+import CardForm from "../components/CardForm"; // Komponenta pro vytvoření kampaně
 import "../styles/whop-dashboard.scss";
 
-// Přidáváme definice pro Cloudinary upload
 const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
 const CLOUDINARY_UPLOAD_PRESET = "unsigned_profile_avatars";
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+
+// API URL pro kampaně
+const CAMPAIGN_API_URL = "https://app.byxbot.com/php/campaign.php";
 
 export default function WhopDashboard() {
   const { slug: initialSlug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Stav whopu (včetně is_owner)
   const [whopData, setWhopData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Stav edit módu
+  // Edit Whopu
   const [isEditing, setIsEditing] = useState(false);
-
-  // Lokální edit stavy
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBannerUrl, setEditBannerUrl] = useState("");
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [bannerError, setBannerError] = useState("");
+  const [editFeatures, setEditFeatures] = useState([]);
 
-  const [editFeatures, setEditFeatures] = useState([
-    /* { id, title, subtitle, imageUrl, isUploading, error } */
-  ]);
-
-  // Stav pro editaci slugu
+  // Edit Slugu
   const [isSlugEditing, setIsSlugEditing] = useState(false);
   const [newSlugValue, setNewSlugValue] = useState("");
   const [slugError, setSlugError] = useState("");
 
-  // Po načtení (i po změně slugu parametru) fetchneme whop
+  // Modal pro kampaně
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+
+  // Kampaně stavy
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(false);
+  const [campaignsError, setCampaignsError] = useState("");
+
+  // 1) Po načtení / změně slugu načti Whop → potom i kampaně
   useEffect(() => {
-    const slugToFetch = location.pathname.split("/c/")[1] || initialSlug;
+    const slugToFetch = location.pathname.startsWith("/c/")
+      ? location.pathname.split("/c/")[1]
+      : initialSlug;
 
     const fetchWhop = async () => {
       setLoading(true);
       setError("");
+
       try {
         const res = await fetch(
-          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
-            slugToFetch
-          )}`,
+          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slugToFetch)}`,
           {
             method: "GET",
             credentials: "include",
@@ -68,14 +75,14 @@ export default function WhopDashboard() {
         let json;
         try {
           json = JSON.parse(text);
-        } catch (parseErr) {
+        } catch {
           console.error("Neplatný JSON z get_whop.php:", text);
           setError("Chyba při zpracování odpovědi serveru.");
           setLoading(false);
           return;
         }
         if (!res.ok || json.status !== "success") {
-          const msg = json.message || "Nepodařilo se načíst data";
+          const msg = json.message || "Nepodařilo se načíst data Whopu.";
           setError(msg);
           setLoading(false);
           return;
@@ -84,7 +91,7 @@ export default function WhopDashboard() {
         const data = json.data;
         setWhopData(data);
 
-        // Naplníme editační stavy
+        // Naplníme stavy pro edit
         setEditName(data.name);
         setEditDescription(data.description);
         setEditBannerUrl(data.banner_url || "");
@@ -93,31 +100,56 @@ export default function WhopDashboard() {
           id: idx + 1,
           title: f.title,
           subtitle: f.subtitle,
-          imageUrl: f.image_url,
+          imageUrl: f.imageUrl,
           isUploading: false,
           error: "",
         }));
         setEditFeatures(featArr);
 
-        // Příprava pro edit slug (výchozí hodnota = aktuální slug)
         setNewSlugValue(data.slug);
+
+        // Načteme kampaně pro tento whop.id
+        await fetchCampaigns(data.id);
       } catch (err) {
         console.error("Chyba při fetch get_whop.php:", err);
-        setError("Network error: " + err.message);
+        setError("Síťová chyba: " + err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchWhop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSlug, location.pathname]);
 
-  // Handler Back v edit módu (vrací na onboarding)
+  // 2) fetchCampaigns – vybere kampaně podle whopId
+  const fetchCampaigns = async (whopId) => {
+    setCampaignsLoading(true);
+    setCampaignsError("");
+    try {
+      const res = await fetch(`${CAMPAIGN_API_URL}?whop_id=${whopId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Chyba při načítání kampaní: ${res.status}`);
+      }
+      const data = await res.json();
+      setCampaigns(data);
+    } catch (err) {
+      console.error("Chyba fetchCampaigns:", err);
+      setCampaignsError("Nelze načíst kampaně: " + err.message);
+    } finally {
+      setCampaignsLoading(false);
+    }
+  };
+
+  // 3) Back do Onboardingu (v edit módu)
   const handleBack = () => {
     navigate("/onboarding");
   };
 
-  // Toggle edit módu (vypne edit slug, pokud je aktivní)
+  // 4) Toggle edit módu Whopu
   const handleEditToggle = () => {
     setIsEditing(true);
     setIsSlugEditing(false);
@@ -126,15 +158,9 @@ export default function WhopDashboard() {
     setSlugError("");
   };
 
-  // ===========
-  //  DELETE WHOP
-  // ===========
+  // 5) Smazání Whopu
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Opravdu chcete smazat celý tento Whop? Tato akce je nevratná."
-      )
-    ) {
+    if (!window.confirm("Opravdu chcete smazat celý tento Whop? Tato akce je nevratná.")) {
       return;
     }
     try {
@@ -157,17 +183,14 @@ export default function WhopDashboard() {
         setError(json.message || "Chyba při mazání Whopu.");
         return;
       }
-      // Po úspěšném smazání přesměrujeme na Onboarding
       navigate("/onboarding");
     } catch (err) {
       console.error("Network error delete_whop.php:", err);
-      setError("Network error: " + err.message);
+      setError("Síťová chyba: " + err.message);
     }
   };
 
-  // ===========
-  //  UPDATE SLUG
-  // ===========
+  // 6) Uložení nového slugu
   const handleSlugSave = async () => {
     setSlugError("");
     const trimmed = newSlugValue.trim();
@@ -175,11 +198,8 @@ export default function WhopDashboard() {
       setSlugError("Slug nesmí být prázdný.");
       return;
     }
-    // jednoduchá validace: pouze alfanumerické, pomlčka, podtržítko
-    if (!/^[a-zA-Z0-9-_]+$/.test(trimmed)) {
-      setSlugError(
-        "Slug může obsahovat pouze písmena, čísla, pomlčky a podtržítka."
-      );
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+      setSlugError("Slug může obsahovat pouze písmena, čísla, pomlčky a podtržítka.");
       return;
     }
     try {
@@ -187,15 +207,12 @@ export default function WhopDashboard() {
         oldSlug: whopData.slug,
         newSlug: trimmed,
       };
-      const res = await fetch(
-        "https://app.byxbot.com/php/update_whop_slug.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch("https://app.byxbot.com/php/update_whop_slug.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
       const text = await res.text();
       let json;
       try {
@@ -208,25 +225,21 @@ export default function WhopDashboard() {
         setSlugError(json.message || "Chyba při aktualizaci slug.");
         return;
       }
-      // Úspěch – přesměrujeme na nový slug
+      // Přesměrujeme na nový slug
       navigate(`/c/${trimmed}`);
     } catch (err) {
       console.error("Network error update_whop_slug.php:", err);
-      setSlugError("Network error: " + err.message);
+      setSlugError("Síťová chyba: " + err.message);
     }
   };
 
-  // ===========
-  //  SAVE WHOP (banner, name, description, features)
-  // ===========
+  // 7) Uložení změn Whopu (name, description, banner, features)
   const handleSave = async () => {
     if (!editName.trim() || !editDescription.trim()) {
       setError("Název a popis nesmí být prázdné.");
       return;
     }
-    const validFeats = editFeatures.filter(
-      (f) => f.title.trim() && f.imageUrl
-    );
+    const validFeats = editFeatures.filter((f) => f.title.trim() && f.imageUrl);
     if (validFeats.length < 2) {
       setError("Musíš mít alespoň 2 platné features (title + obrázek).");
       return;
@@ -264,12 +277,10 @@ export default function WhopDashboard() {
         return;
       }
 
-      // Přepneme do view módu a načteme znovu data
+      // Po úspěšném uložení přepneme z edit módu a načteme aktualizovaná data
       setIsEditing(false);
       const refreshRes = await fetch(
-        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
-          whopData.slug
-        )}`,
+        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(whopData.slug)}`,
         {
           method: "GET",
           credentials: "include",
@@ -293,7 +304,7 @@ export default function WhopDashboard() {
         id: idx + 1,
         title: f.title,
         subtitle: f.subtitle,
-        imageUrl: f.image_url,
+        imageUrl: f.imageUrl,
         isUploading: false,
         error: "",
       }));
@@ -303,13 +314,11 @@ export default function WhopDashboard() {
       setSlugError("");
     } catch (err) {
       console.error("Network error při update_whop.php:", err);
-      setError("Network error: " + err.message);
+      setError("Síťová chyba: " + err.message);
     }
   };
 
-  // ===========
-  //  UPLOAD BANNER
-  // ===========
+  // 8) Upload banneru do Cloudinary
   const handleBannerUpload = async (file) => {
     if (!file) return;
     const maxSize = 5 * 1024 * 1024;
@@ -352,9 +361,7 @@ export default function WhopDashboard() {
     }
   };
 
-  // ===========
-  //  UPLOAD FEATURE IMAGE
-  // ===========
+  // 9) Upload obrázku pro feature do Cloudinary
   const handleImageChange = async (id, file) => {
     if (!file) return;
     const maxSize = 5 * 1024 * 1024;
@@ -362,11 +369,7 @@ export default function WhopDashboard() {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? {
-                ...f,
-                error: "Obrázek je příliš velký (max 5 MB).",
-                isUploading: false,
-              }
+            ? { ...f, error: "Obrázek je příliš velký (max 5 MB).", isUploading: false }
             : f
         )
       );
@@ -384,9 +387,7 @@ export default function WhopDashboard() {
     }
 
     setEditFeatures((prev) =>
-      prev.map((f) =>
-        f.id === id ? { ...f, isUploading: true, error: "" } : f
-      )
+      prev.map((f) => (f.id === id ? { ...f, isUploading: true, error: "" } : f))
     );
 
     const formData = new FormData();
@@ -408,12 +409,7 @@ export default function WhopDashboard() {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? {
-                ...f,
-                imageUrl: data.secure_url,
-                isUploading: false,
-                error: "",
-              }
+            ? { ...f, imageUrl: data.secure_url, isUploading: false, error: "" }
             : f
         )
       );
@@ -422,21 +418,14 @@ export default function WhopDashboard() {
       setEditFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? {
-                ...f,
-                imageUrl: "",
-                isUploading: false,
-                error: "Chyba při nahrávání obrázku.",
-              }
+            ? { ...f, imageUrl: "", isUploading: false, error: "Chyba při nahrávání obrázku." }
             : f
         )
       );
     }
   };
 
-  // ===========
-  //  PŘIDÁNÍ FEATURE
-  // ===========
+  // 10) Přidání nové feature
   const addFeature = () => {
     if (editFeatures.length >= 6) return;
     const newId =
@@ -448,29 +437,21 @@ export default function WhopDashboard() {
     setError("");
   };
 
-  // ===========
-  //  ODEBRÁNÍ FEATURE
-  // ===========
+  // 11) Odebrání feature
   const removeFeature = (id) => {
     if (editFeatures.length <= 2) return;
     setEditFeatures((prev) => prev.filter((f) => f.id !== id));
     setError("");
   };
 
-  // ===========
-  //  ZMĚNA TITLE / SUBTITLE
-  // ===========
+  // 12) Změna title/subtitle ve features
   const handleFeatChange = (id, field, value) => {
     setEditFeatures((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? { ...f, [field]: value }
-          : f
-      )
+      prev.map((f) => (f.id === id ? { ...f, [field]: value } : f))
     );
   };
 
-  // ===== Pokud načítáme =====
+  // 13) Loading Whopu
   if (loading) {
     return (
       <div className="whop-loading">
@@ -479,7 +460,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // ===== Pokud je chyba =====
+  // 14) Chyba načtení Whopu
   if (error) {
     return (
       <div className="whop-error">
@@ -489,21 +470,20 @@ export default function WhopDashboard() {
     );
   }
 
-  // ===== Pokud data nejsou =====
   if (!whopData) {
     return null;
   }
 
   return (
     <div className="whop-container">
-      {/* Back button (pouze v edit módu) */}
+      {/* Back button (pouze v edit módu Whopu) */}
       {isEditing && (
         <button className="whop-back-btn" onClick={handleBack} aria-label="Go back">
           <FaArrowLeft /> Back
         </button>
       )}
 
-      {/* Banner */}
+      {/* ======== BANNER ======== */}
       <div className="whop-banner">
         {isEditing ? (
           <div className="whop-banner-edit-wrapper">
@@ -529,9 +509,7 @@ export default function WhopDashboard() {
                 handleBannerUpload(file);
               }}
             />
-            {bannerError && (
-              <div className="whop-banner-error-edit">{bannerError}</div>
-            )}
+            {bannerError && <div className="whop-banner-error-edit">{bannerError}</div>}
           </div>
         ) : whopData.banner_url ? (
           <img
@@ -546,9 +524,9 @@ export default function WhopDashboard() {
         )}
       </div>
 
-      {/* Obsah pod bannerem */}
+      {/* ======== OBSAH POD BANNEREM ======== */}
       <div className="whop-content">
-        {/* Název a popis */}
+        {/* --- Název a popis Whopu --- */}
         <div className="whop-header">
           {isEditing ? (
             <>
@@ -573,7 +551,7 @@ export default function WhopDashboard() {
           )}
         </div>
 
-        {/* Slug / link */}
+        {/* --- Slug / Link Whopu --- */}
         <div className="whop-slug-section">
           {isEditing || isSlugEditing ? (
             <div className="whop-slug-edit-wrapper">
@@ -609,7 +587,7 @@ export default function WhopDashboard() {
           ) : null}
         </div>
 
-        {/* Tlačítka pro události (Edit / Join / Delete / Save) */}
+        {/* --- Akční tlačítka: Edit / Delete / Create Campaign / Join --- */}
         <div className="whop-action-btns">
           {isEditing ? (
             <>
@@ -628,15 +606,27 @@ export default function WhopDashboard() {
               <button className="whop-delete-btn" onClick={handleDelete}>
                 <FaTrash /> Delete
               </button>
+              {/* Tlačítko pro vytvoření kampaně (pouze vlastníkem) */}
+              <button
+                className="whop-create-camp-btn"
+                onClick={() => setIsCampaignModalOpen(true)}
+              >
+                <FaPlus /> Create Campaign
+              </button>
             </>
           ) : (
-            <button className="whop-join-btn" onClick={() => { /* TODO: Join logic */ }}>
+            <button
+              className="whop-join-btn"
+              onClick={() => {
+                /* Můžeš sem vložit logiku pro „Join Whop“ */
+              }}
+            >
               <FaUserPlus /> Join
             </button>
           )}
         </div>
 
-        {/* Seznam features */}
+        {/* --- Sekce Features --- */}
         <div className="whop-features-section">
           <h2 className="features-section-title">Features</h2>
 
@@ -644,18 +634,14 @@ export default function WhopDashboard() {
             <>
               {editFeatures.map((feat, idx) => (
                 <div key={feat.id} className="feature-card-edit">
-                  <div className="feature-number-edit">
-                    Feature {idx + 1}
-                  </div>
+                  <div className="feature-number-edit">Feature {idx + 1}</div>
                   <div className="feature-field-edit">
                     <label>Title *</label>
                     <input
                       type="text"
                       className="feature-input-edit"
                       value={feat.title}
-                      onChange={(e) =>
-                        handleFeatChange(feat.id, "title", e.target.value)
-                      }
+                      onChange={(e) => handleFeatChange(feat.id, "title", e.target.value)}
                     />
                   </div>
                   <div className="feature-field-edit">
@@ -721,9 +707,9 @@ export default function WhopDashboard() {
             <div className="whop-features-grid">
               {whopData.features.map((feat, idx) => (
                 <div key={idx} className="whop-feature-card">
-                  {feat.image_url ? (
+                  {feat.imageUrl ? (
                     <img
-                      src={feat.image_url}
+                      src={feat.imageUrl}
                       alt={feat.title}
                       className="whop-feature-image"
                     />
@@ -741,7 +727,49 @@ export default function WhopDashboard() {
             </div>
           )}
         </div>
+
+        {/* ===== Sekce s existujícími kampaněmi ===== */}
+        <div className="whop-campaigns-section">
+          <h2 className="campaigns-section-title">Kampaně</h2>
+          {campaignsLoading ? (
+            <p>Načítám kampaně…</p>
+          ) : campaignsError ? (
+            <p className="campaigns-error">{campaignsError}</p>
+          ) : campaigns.length === 0 ? (
+            <p>Žádné kampaně k zobrazení.</p>
+          ) : (
+            <div className="whop-campaigns-list">
+              {campaigns.map((camp) => (
+                <div key={camp.id} className="whop-campaign-item">
+                  <h3>{camp.campaign_name}</h3>
+                  <p>Category: {camp.category}</p>
+                  <p>
+                    Budget: {camp.currency}
+                    {camp.budget.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ===== Modální okno pro vytvoření kampaně ===== */}
+      <Modal
+        isOpen={isCampaignModalOpen}
+        onClose={() => setIsCampaignModalOpen(false)}
+      >
+        <CardForm
+          whopId={whopData.id}
+          onClose={() => setIsCampaignModalOpen(false)}
+          onRefresh={() => {
+            fetchCampaigns(whopData.id);
+          }}
+        />
+      </Modal>
     </div>
   );
 }

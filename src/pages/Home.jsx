@@ -1,28 +1,21 @@
-// src/pages/Home.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';            // ← už je tu import Link
+import { Link } from 'react-router-dom';
 import CardGrid from '../components/CardGrid';
-import CardForm from '../components/CardForm';
-import Modal from '../components/Modal';
 import '../styles/home.scss';
 
+// Pokud chceme na Home vracet všechny kampaně, donastavíme PHP tak, aby GET bez ?whop_id vrátil vše.
+// Zde proto pořád voláme jen `campaign.php` bez parametru.
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
 const Home = () => {
-  // Stav všech karet
   const [cardsData, setCardsData] = useState([]);
-  // Stav načítání
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
-  // Stav otevření/zavření modálního okna (pro tlačítko Create)
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Filtry a řazení
-  const [filterType, setFilterType] = useState('All');
-  const [filterCategory, setFilterCategory] = useState('All');
+  const [filterType, setFilterType] = useState('All');       // nyní odpovídá c.type
+  const [filterCategory, setFilterCategory] = useState('All'); // nyní odpovídá c.category
   const [sortOption, setSortOption] = useState('Nejvyšší rozpočet');
 
-  // 1) Načteme kampaně po prvním vykreslení
   useEffect(() => {
     fetchCampaigns();
   }, []);
@@ -40,7 +33,6 @@ const Home = () => {
         throw new Error(`Chyba ${res.status}`);
       }
       const data = await res.json();
-      // Předpokládáme, že server vrací už "normalized" pole
       setCardsData(data);
     } catch (error) {
       setErrorMsg('Nelze načíst kampaně: ' + error.message);
@@ -49,21 +41,18 @@ const Home = () => {
     }
   };
 
-  // Callback: voláme po úspěšném vytvoření kampaně
-  const handleRefresh = () => {
-    fetchCampaigns();
-  };
-
-  // Filtrování podle typu a kategorie, řazení (useMemo pro výkon)
   const filteredData = useMemo(() => {
     let arr = [...cardsData];
+
+    // filtr Type (resp. c.type)
     if (filterType !== 'All') {
-      arr = arr.filter((c) => c.category === filterType);
+      arr = arr.filter((c) => c.type === filterType);
     }
+    // filtr Category (resp. c.category)
     if (filterCategory !== 'All') {
-      arr = arr.filter((c) => c.type === filterCategory);
+      arr = arr.filter((c) => c.category === filterCategory);
     }
-    // Řazení
+
     switch (sortOption) {
       case 'Nejvyšší rozpočet':
         arr.sort((a, b) => b.budget - a.budget);
@@ -72,10 +61,14 @@ const Home = () => {
         arr.sort((a, b) => a.budget - b.budget);
         break;
       case 'Nejnovější':
-        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        arr.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
         break;
       case 'Nejstarší':
-        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        arr.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
         break;
       default:
         break;
@@ -85,12 +78,10 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* HLAVIČKA */}
       <div className="home-header">
         <h1 className="home-title">Content Rewards</h1>
         <p className="home-subtitle">
           Post content on social media and get paid for the views you generate. Pokud chcete spustit kampaň{' '}
-          {/* ZMĚNA: místo <button> otevírajícího modál použijeme <Link to="/intro"> */}
           <Link className="home-link" to="/intro">
             klikněte sem
           </Link>
@@ -98,7 +89,6 @@ const Home = () => {
         </p>
       </div>
 
-      {/* KONTROLY (počet, filtry, tlačítko Create, sort) */}
       <div className="home-controls">
         <div className="home-count">
           {loading ? 'Načítám kampaně…' : `${filteredData.length} live kampaní`}
@@ -133,13 +123,6 @@ const Home = () => {
           </label>
         </div>
 
-        <button
-          className="home-create-btn"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create
-        </button>
-
         <label className="home-sort">
           Řadit podle:
           <select
@@ -155,17 +138,10 @@ const Home = () => {
         </label>
       </div>
 
-      {/* MODÁLNÍ OKNO S FORMULÁŘEM pro tlačítko Create */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <CardForm onClose={() => setIsModalOpen(false)} onRefresh={handleRefresh} />
-      </Modal>
-
-      {/* GRID S KAMPANĚMI NEBO SKELETON-LOADING */}
       <div className="home-grid">
         {errorMsg && <div className="home-error">{errorMsg}</div>}
 
         {loading ? (
-          /* Skeleton loading: zobrazíme třeba 8 prázdných bloků */
           <div className="cards-grid">
             {Array.from({ length: 8 }).map((_, idx) => (
               <div key={idx} className="card-item card-skeleton" />

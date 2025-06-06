@@ -1,27 +1,26 @@
+// src/pages/Onboarding.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaGlobe, FaPlus, FaCheckCircle } from "react-icons/fa";
+import { FaGlobe, FaPlus, FaCheckCircle, FaArrowLeft } from "react-icons/fa";
 import "../styles/onboarding.scss";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState("");
   const [userWhops, setUserWhops] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading]    = useState(true);
+  const [error, setError]        = useState("");
 
   useEffect(() => {
     const fetchUserWhops = async () => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(
-          "https://app.byxbot.com/php/get_user_whops.php",
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
+        const res = await fetch("https://app.byxbot.com/php/get_user_whops.php", {
+          method: "GET",
+          credentials: "include",
+        });
         const text = await res.text();
         let json;
         try {
@@ -58,14 +57,12 @@ export default function Onboarding() {
     if (selectedOption === "new") {
       navigate("/setup");
     } else {
-      // Přebíráme existing whop slug → navigujeme na /c/:slug
       navigate(`/c/${selectedOption}`);
     }
   };
 
   const handleBack = () => {
-    // Např. na homepage nebo login
-    navigate("/");
+    navigate("/"); // např. na homepage
   };
 
   if (loading) {
@@ -80,35 +77,31 @@ export default function Onboarding() {
     return (
       <div className="onboarding-error">
         <p>{error}</p>
-        <button onClick={handleBack}>← Back</button>
+        <button onClick={handleBack}>
+          <FaArrowLeft /> Back
+        </button>
       </div>
     );
   }
 
   return (
     <div className="onboarding-container">
-      {/* HLAVIČKA */}
       <div className="onboarding-header">
         <h1 className="onboarding-title">Onboarding</h1>
       </div>
 
-      {/* OBSAH */}
       <div className="onboarding-content">
         <h2 className="onboarding-question">
-          Which dashboard would you like to create your whop in?
+          Který dashboard chcete použít?
         </h2>
         <p className="onboarding-subtitle">
-          We only recommend creating a new dashboard if you are starting a
-          different business with a separate team or bank account.
+          Pokud chcete vytvořit nový Whop, vyberte „+ Create new whop“. Pokud máte existující Whop, vyberte jej a budete přesměrováni na jeho Dashboard.
         </p>
 
-        {/* MOŽNOSTI */}
         <div className="onboarding-options">
-          {/* 1) Vytvořit nový whop */}
+          {/* 1) + Create new whop */}
           <div
-            className={
-              selectedOption === "new" ? "option-card selected" : "option-card"
-            }
+            className={selectedOption === "new" ? "option-card selected" : "option-card"}
             onClick={handleSelectNew}
           >
             <div className="option-radio">
@@ -148,10 +141,9 @@ export default function Onboarding() {
           ))}
         </div>
 
-        {/* Tlačítka Back a Continue */}
         <div className="onboarding-buttons">
           <button className="back-button" onClick={handleBack}>
-            ← Back
+            <FaArrowLeft /> Back
           </button>
           <button
             className="onboarding-button"
