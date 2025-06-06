@@ -1,0 +1,183 @@
+/* src/styles/choose-link.scss */
+
+@import './variables';
+@import './theme';
+
+/* ===========================
+   Kontejner celé stránky
+   =========================== */
+.choose-link-container {
+  max-width: 1200px;                     /* vsadíme na stejnou šířku jako Home/Setup */
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  background-color: var(--bg-color);     /* bílé pozadí */
+  box-sizing: border-box;
+}
+
+/* ===========================
+   Hlavička s nadpisem
+   =========================== */
+.choose-link-header {
+  margin-bottom: var(--spacing-md);
+
+  .choose-link-title {
+    font-family: var(--font-sans);
+    font-size: 2rem;                     /* stejná velikost jako .home-title */
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+}
+
+/* ===========================
+   Obsah stránky
+   =========================== */
+.choose-link-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+/* Podnadpis / popisek pod nadpisem */
+.choose-link-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1rem;                       /* shodně s ostatními podnadpisy */
+  color: var(--muted-color);
+  margin: 0;
+  max-width: 600px;                      /* omezení šířky pro lepší čitelnost */
+  line-height: 1.5;
+}
+
+/* =======================================
+   Wrapper kolem prefixu a samotného inputu
+   ======================================= */
+.choose-link-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--surface-color);
+
+  .choose-link-prefix {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--text-color);
+    white-space: nowrap;                 /* prefix se nevysazuje */
+  }
+
+  .choose-link-input {
+    flex: 1;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    outline: none;
+  }
+}
+
+/* Počítadlo znaků, zobrazené přímo pod input-wrapper */
+.choose-link-charcount {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;                   /* menší font, jako u Home */
+  color: var(--muted-color);
+  margin-top: var(--spacing-xs);
+  margin-left: calc(var(--spacing-xs) + var(--spacing-xs) + var(--spacing-sm));  
+  /* odsazení tak, aby počítadlo bylo pod inputem: 
+     var(--spacing-xs) (vertical margin) + šířka borderu wrapperu atd. */
+}
+
+/* ===========================
+   Tlačítko Continue
+   =========================== */
+.choose-link-button {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;                   /* stejně jako ostatní tlačítka */
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+}
+
+.choose-link-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
+.choose-link-button:disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =====================================
+   Responsivní úpravy (tablet & mobil)
+   ===================================== */
+@media (max-width: 768px) {
+  .choose-link-title {
+    font-size: 1.75rem;
+  }
+  .choose-link-subtitle {
+    font-size: 0.95rem;
+    max-width: 100%;
+  }
+  .choose-link-input-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-xs);
+  }
+  .choose-link-prefix {
+    font-size: 0.95rem;
+  }
+  .choose-link-input {
+    font-size: 0.95rem;
+  }
+  .choose-link-charcount {
+    font-size: 0.8rem;
+    margin-left: var(--spacing-sm);
+  }
+  .choose-link-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .choose-link-title {
+    font-size: 1.5rem;
+  }
+  .choose-link-subtitle {
+    font-size: 0.9rem;
+  }
+  .choose-link-input-wrapper {
+    padding: var(--spacing-xs);
+  }
+  .choose-link-prefix {
+    font-size: 0.9rem;
+  }
+  .choose-link-input {
+    font-size: 0.9rem;
+  }
+  .choose-link-charcount {
+    font-size: 0.75rem;
+    margin-left: var(--spacing-xs);
+  }
+  .choose-link-button {
+    width: 100%;
+    padding: var(--spacing-xs) 0;
+    font-size: 0.85rem;
+  }
+}

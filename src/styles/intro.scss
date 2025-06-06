@@ -1,0 +1,181 @@
+/* src/styles/intro.scss */
+
+@import './variables';
+@import './theme';
+
+/* ================================
+   Kontejner celé Intro stránky
+   ================================ */
+.intro-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  background-color: var(--bg-color);       /* bílé pozadí podobně jako Home */
+  box-sizing: border-box;
+}
+
+/* ================================
+   Vnitřní wrapper (vycentrovaný obsah)
+   ================================ */
+.intro-content {
+  width: 100%;
+  max-width: 900px;                        /* podobné omezení šířky jako Home */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-md);
+}
+
+/* ================================
+   Sekce pro video / obrázek
+   ================================ */
+.intro-media {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.intro-video {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-base);       /* zaoblené rohy jako v Home */
+  box-shadow: var(--shadow-sm);            /* stín podobně jako Home */
+  object-fit: cover;
+}
+
+/* ================================
+   Hlavní nadpis a emoji
+   ================================ */
+.intro-title {
+  font-family: var(--font-sans);
+  font-size: 2rem;                         /* stejná velikost jako .home-title */
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.intro-emoji {
+  display: inline-block;
+  margin-left: var(--spacing-xs);
+}
+
+/* ================================
+   Podnadpis / popisek
+   ================================ */
+.intro-subtitle {
+  font-family: var(--font-sans);
+  font-size: 1rem;                         /* shodné s .home-subtitle */
+  color: var(--muted-color);
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.5;
+  max-width: 700px;
+}
+
+/* ================================
+   Hlavní tlačítko „Create your whop“
+   ================================ */
+.intro-button {
+  font-family: var(--font-sans);
+  padding: var(--spacing-xs) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: #fff;
+  font-size: 0.875rem;                     /* stejná velikost jako .home-create-btn */
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background var(--transition-default), transform var(--transition-default);
+  margin-bottom: var(--spacing-lg);
+}
+
+.intro-button:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
+  transform: translateY(-2px);
+}
+
+.intro-button:active {
+  transform: translateY(0);
+}
+
+/* ================================
+   Volitelné dolní metriky
+   ================================ */
+.intro-metrics {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.metric-item {
+  text-align: center;
+}
+
+.metric-value {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.metric-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--muted-color);
+  margin-top: var(--spacing-xs);
+}
+
+/* ================================
+   Responsivní úpravy (tablet a mobil)
+   ================================ */
+@media (max-width: 768px) {
+  .intro-title {
+    font-size: 1.75rem;
+  }
+  .intro-subtitle {
+    font-size: 0.95rem;
+    max-width: 100%;
+  }
+  .intro-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.85rem;
+  }
+  .intro-metrics {
+    gap: var(--spacing-lg);
+  }
+  .metric-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .intro-title {
+    font-size: 1.5rem;
+  }
+  .intro-subtitle {
+    font-size: 0.9rem;
+  }
+  .intro-button {
+    width: 100%;
+    padding: var(--spacing-xs) 0;
+    font-size: 0.85rem;
+  }
+  .intro-metrics {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .metric-value {
+    font-size: 1.1rem;
+  }
+  .metric-label {
+    font-size: 0.7rem;
+  }
+}

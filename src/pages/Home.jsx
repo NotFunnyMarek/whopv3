@@ -1,4 +1,6 @@
+// src/pages/Home.jsx
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';            // ← už je tu import Link
 import CardGrid from '../components/CardGrid';
 import CardForm from '../components/CardForm';
 import Modal from '../components/Modal';
@@ -12,7 +14,7 @@ const Home = () => {
   // Stav načítání
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
-  // Stav otevření/zavření modálního okna
+  // Stav otevření/zavření modálního okna (pro tlačítko Create)
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filtry a řazení
@@ -52,7 +54,7 @@ const Home = () => {
     fetchCampaigns();
   };
 
-  // Filtrování podle typu a kategorie
+  // Filtrování podle typu a kategorie, řazení (useMemo pro výkon)
   const filteredData = useMemo(() => {
     let arr = [...cardsData];
     if (filterType !== 'All') {
@@ -88,7 +90,11 @@ const Home = () => {
         <h1 className="home-title">Content Rewards</h1>
         <p className="home-subtitle">
           Post content on social media and get paid for the views you generate. Pokud chcete spustit kampaň{' '}
-          <button onClick={() => setIsModalOpen(true)}>klikněte sem</button>.
+          {/* ZMĚNA: místo <button> otevírajícího modál použijeme <Link to="/intro"> */}
+          <Link className="home-link" to="/intro">
+            klikněte sem
+          </Link>
+          .
         </p>
       </div>
 
@@ -149,7 +155,7 @@ const Home = () => {
         </label>
       </div>
 
-      {/* MODÁLNÍ OKNO S FORMULÁŘEM */}
+      {/* MODÁLNÍ OKNO S FORMULÁŘEM pro tlačítko Create */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <CardForm onClose={() => setIsModalOpen(false)} onRefresh={handleRefresh} />
       </Modal>
