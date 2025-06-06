@@ -1,5 +1,3 @@
-/* src/styles/profile.scss */
-
 @import './variables';
 @import './theme';
 
@@ -13,12 +11,6 @@
   color: var(--text-color);
 }
 
-.profile-container h2 {
-  font-size: 1.5rem;
-  margin-bottom: var(--spacing-md);
-  color: var(--text-color);
-}
-
 .profile-error {
   color: var(--error-color);
 }
@@ -27,158 +19,32 @@
   color: var(--success-color);
 }
 
-/* ===== Nové: Balance / Deposit ===== */
-.profile-balance-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-
-  strong {
-    font-size: 1.125rem;
-    color: var(--text-color);
-  }
-  .btn-deposit {
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-base);
-    cursor: pointer;
-    font-weight: 600;
-    transition: background var(--transition-default), transform var(--transition-default);
-    &:hover {
-      background: var(--accent-color-dark);
-      transform: translateY(-1px);
-    }
-  }
-}
-
-/* Deposit modal overlay */
-.deposit-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
-}
-.deposit-modal-content {
-  background-color: var(--surface-color);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  position: relative;
-  width: 90%;
-  max-width: 400px;
-  color: var(--text-color);
-
-  h3 {
-    margin-top: 0;
-    color: var(--text-color);
-  }
-  p {
-    font-size: 0.9rem;
-    color: var(--text-color);
-    line-height: 1.4;
-  }
-  code.deposit-address {
-    display: block;
-    margin: var(--spacing-sm) 0;
-    padding: var(--spacing-xs);
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-base);
-    font-family: monospace;
-    word-break: break-all;
-  }
-
-  .deposit-modal-close-btn {
-    position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-sm);
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-    color: var(--muted-color);
-    transition: color var(--transition-default);
-    &:hover {
-      color: var(--error-color);
-    }
-  }
-  .deposit-modal-ok-btn {
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-dark));
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-base);
-    cursor: pointer;
-    font-weight: 600;
-    transition: background var(--transition-default), transform var(--transition-default);
-    &:hover {
-      background: var(--accent-color-dark);
-      transform: translateY(-1px);
-    }
-  }
-}
-
-/* ===== Zbytek stylů zůstává beze změn ===== */
-
 .profile-form {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: var(--spacing-lg);
 
+  .profile-left,
+  .profile-right {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-md);
+  }
+
   .profile-left {
-    flex: 0 0 240px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
 
-    .profile-avatar-container {
-      position: relative;
+    .profile-avatar {
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      overflow: hidden;
-      cursor: pointer;
-      background-color: var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      img.profile-avatar {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-
-      &.placeholder {
-        background-color: #e0e0e0;
-      }
-
-      .avatar-uploading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: var(--text-color-dark);
-        z-index: 2;
-      }
+      object-fit: cover;
+      border: 2px solid var(--border-color);
     }
 
     h3 {
@@ -193,6 +59,23 @@
       font-size: 0.875rem;
     }
 
+    .btn-deposit {
+      margin-top: var(--spacing-md);
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+      color: #fff;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition-default), transform var(--transition-default);
+
+      &:hover {
+        background: var(--primary-color-dark);
+        transform: translateY(-1px);
+      }
+    }
+
     .btn-logout {
       margin-top: var(--spacing-md);
       background: linear-gradient(135deg, var(--error-color), var(--error-color-dark));
@@ -203,8 +86,7 @@
       font-weight: 600;
       box-shadow: var(--shadow-sm);
       transition: background var(--transition-default), transform var(--transition-default);
-      border: none;
-      cursor: pointer;
+
       &:hover {
         background: var(--error-color-dark);
         transform: translateY(-1px);
@@ -213,7 +95,6 @@
   }
 
   .profile-right {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
@@ -235,9 +116,9 @@
         color: var(--text-color);
         background-color: var(--surface-color);
         transition: border-color var(--transition-default);
+
         &:focus {
           border-color: var(--primary-color);
-          outline: none;
         }
       }
 
@@ -298,12 +179,12 @@
       font-weight: 600;
       box-shadow: var(--shadow-sm);
       transition: background var(--transition-default), transform var(--transition-default);
-      border: none;
-      cursor: pointer;
+
       &:hover:enabled {
         background: var(--accent-color-dark);
         transform: translateY(-1px);
       }
+
       &:disabled {
         background-color: var(--border-color);
         color: var(--muted-color);

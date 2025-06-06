@@ -48,7 +48,7 @@ const dbConfig = {
 const connection = new Connection(clusterApiUrl('testnet'), 'confirmed');
 
 // Vaše centrální (sweep) peněženka – privátní klíč v Base58
-const CENTRAL_SECRET_BASE58 = 'VAŠ_PRIVÁTNÍ_KLÍČ_CENTRÁLNÍ_PENĚŽENKY_V_BASE58';
+const CENTRAL_SECRET_BASE58 = '3tbU6bmmc3XCNs5m8RFMK2DRw7cdeRLq2zrbcao2E5cMEEm2urpsbr3buKXvXiTFDav5HgRvBLRiP5mDSCGBbLwo';
 let centralKeypair;
 let CENTRAL_PUBLIC_KEY = '';
 try {

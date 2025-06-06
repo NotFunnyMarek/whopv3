@@ -1,0 +1,108 @@
+// src/styles/deposit-modal.scss
+
+@import './variables';
+@import './theme';
+
+.dm-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+
+  h2 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .dm-loading,
+  .dm-error {
+    text-align: center;
+    margin: var(--spacing-md) 0;
+    color: var(--muted-color);
+  }
+
+  .dm-error {
+    color: var(--error-color);
+  }
+
+  .dm-section {
+    margin-bottom: var(--spacing-md);
+
+    strong {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    .dm-address-row {
+      display: flex;
+      gap: var(--spacing-xs);
+
+      .dm-address-input {
+        flex: 1;
+        padding: var(--spacing-xs);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        background-color: var(--surface-color);
+        color: var(--text-color);
+        font-family: monospace;
+      }
+
+      .dm-copy-btn {
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-base);
+        padding: var(--spacing-xs) var(--spacing-md);
+        cursor: pointer;
+        transition: background var(--transition-default);
+
+        &:hover {
+          background: var(--primary-color-dark);
+        }
+      }
+    }
+
+    .dm-balance {
+      margin-top: var(--spacing-xs);
+      font-size: 1.25rem;
+      color: var(--primary-color);
+    }
+
+    .dm-instructions {
+      list-style: disc inside;
+      margin: var(--spacing-xs) 0 var(--spacing-sm) 0;
+      color: var(--text-color);
+      font-size: 0.9rem;
+
+      code {
+        background-color: var(--surface-color);
+        padding: 0 var(--spacing-xs);
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+      }
+    }
+  }
+
+  .dm-close-row {
+    text-align: center;
+    margin-top: var(--spacing-md);
+
+    .dm-close-btn {
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-lg);
+      cursor: pointer;
+      transition: background var(--transition-default);
+
+      &:hover {
+        background: var(--accent-color-dark);
+      }
+    }
+  }
+}
