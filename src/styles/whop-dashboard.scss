@@ -64,7 +64,7 @@
   font-size: 1rem;
 }
 
-/* Edit móд banneru */
+/* Edit mód banneru */
 .whop-banner-edit-wrapper {
   display: flex;
   flex-direction: column;
@@ -170,14 +170,15 @@
   }
 }
 
-/* Tlačítka Edit / Save */
+/* Tlačítka Edit / Join / Save */
 .whop-action-btns {
   display: flex;
   justify-content: center;
   gap: var(--spacing-md);
 
   .whop-edit-btn,
-  .whop-save-btn {
+  .whop-save-btn,
+  .whop-join-btn {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
@@ -194,7 +195,8 @@
     transition: background var(--transition-default), transform var(--transition-default);
   }
   .whop-edit-btn:hover,
-  .whop-save-btn:hover {
+  .whop-save-btn:hover,
+  .whop-join-btn:hover {
     background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
     transform: translateY(-2px);
   }

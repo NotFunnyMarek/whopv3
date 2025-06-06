@@ -2,14 +2,21 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaTrash, FaPlus, FaSave, FaEdit, FaArrowLeft } from "react-icons/fa";
+import {
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaEdit,
+  FaArrowLeft,
+  FaUserPlus,
+} from "react-icons/fa";
 import "../styles/whop-dashboard.scss";
 
 export default function WhopDashboard() {
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  // Stav pro data whopu
+  // Stav pro data whopu (včetně is_owner)
   const [whopData, setWhopData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,14 +24,15 @@ export default function WhopDashboard() {
   // Stav, zda jsme v edit módu
   const [isEditing, setIsEditing] = useState(false);
 
-  // Lokální editovatelné stavy
+  // Lokální editační stavy
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBannerUrl, setEditBannerUrl] = useState("");
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [bannerError, setBannerError] = useState("");
+
   const [editFeatures, setEditFeatures] = useState([
-    /* Každý prvek má: 
+    /* Každý prvek: 
        { id: číslo, title: string, subtitle: string, imageUrl: string, isUploading: boolean, error: string }
     */
   ]);
@@ -58,14 +66,16 @@ export default function WhopDashboard() {
           setLoading(false);
           return;
         }
+
+        // Uložíme data do stavu
         setWhopData(json.data);
 
-        // Předvyplníme editační stavy:
+        // Naplníme editační stavy
         setEditName(json.data.name);
         setEditDescription(json.data.description);
         setEditBannerUrl(json.data.banner_url || "");
 
-        // Převedeme features do lokální podoby s id:
+        // Převedeme features do lokální podoby
         const featArr = json.data.features.map((f, idx) => ({
           id: idx + 1,
           title: f.title,
@@ -86,19 +96,19 @@ export default function WhopDashboard() {
     fetchWhop();
   }, [slug]);
 
-  // Handler pro tlačítko „Back“ (z editačního módu zpět na /onboarding)
+  // ===== Handler pro tlačítko Back (v editačním módu) =====
   const handleBack = () => {
     navigate("/onboarding");
   };
 
-  // Přepnutí do edit módu
+  // ===== Přepnutí do edit módu =====
   const handleEditToggle = () => {
     setIsEditing(true);
     setError("");
     setBannerError("");
   };
 
-  // Handler pro uložení změn
+  // ===== Handler pro uložení změn (banner, name, description, features) =====
   const handleSave = async () => {
     // Validace: name a description nesmí být prázdné
     if (!editName.trim() || !editDescription.trim()) {
@@ -148,9 +158,10 @@ export default function WhopDashboard() {
         return;
       }
 
-      // Po úspěšném uložení přepneme z edit módu do view módu
+      // Po úspěšném uložení přepneme do view módu
       setIsEditing(false);
-      // Znovu načteme data z get_whop.php, aby se zobrazily aktualizované hodnoty
+
+      // Znovu načteme data, aby se zobrazily aktualizované hodnoty
       const refreshRes = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slug)}`,
         {
@@ -189,7 +200,7 @@ export default function WhopDashboard() {
     }
   };
 
-  // ==== Nahrávání banneru (Cloudinary) ====
+  // ===== Nahrávání banneru (Cloudinary) =====
   const handleBannerUpload = async (file) => {
     if (!file) return;
     // Validace: max 5 MB + musí být image/*
@@ -237,7 +248,7 @@ export default function WhopDashboard() {
     }
   };
 
-  // ==== Nahrávání obrázku pro features (Cloudinary) ====
+  // ===== Nahrávání obrázku pro features (Cloudinary) =====
   const handleImageChange = async (id, file) => {
     if (!file) return;
 
@@ -311,7 +322,7 @@ export default function WhopDashboard() {
     }
   };
 
-  // Přidání nové prázdné feature (max 6)
+  // ===== Přidání nové prázdné feature (max 6) =====
   const addFeature = () => {
     if (editFeatures.length >= 6) return;
     const newId = editFeatures.length > 0 ? Math.max(...editFeatures.map((f) => f.id)) + 1 : 1;
@@ -322,14 +333,14 @@ export default function WhopDashboard() {
     setError("");
   };
 
-  // Odstranění feature (minimálně 2 musí zůstat)
+  // ===== Odstranění feature (minimálně 2 musí zůstat) =====
   const removeFeature = (id) => {
     if (editFeatures.length <= 2) return;
     setEditFeatures((prev) => prev.filter((f) => f.id !== id));
     setError("");
   };
 
-  // Změna title/subtitle
+  // ===== Změna title/subtitle =====
   const handleFeatChange = (id, field, value) => {
     setEditFeatures((prev) =>
       prev.map((f) =>
@@ -343,7 +354,7 @@ export default function WhopDashboard() {
     );
   };
 
-  // Pokud stále načítáme
+  // ===== Pokud stále načítáme =====
   if (loading) {
     return (
       <div className="whop-loading">
@@ -352,7 +363,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // Pokud je chyba
+  // ===== Pokud je chyba =====
   if (error) {
     return (
       <div className="whop-error">
@@ -362,7 +373,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // Pokud data nejsou načtena
+  // ===== Pokud data nejsou načtena =====
   if (!whopData) {
     return null;
   }
@@ -446,15 +457,19 @@ export default function WhopDashboard() {
           )}
         </div>
 
-        {/* Tlačítko Edit / Save */}
+        {/* Tlačítko Edit (owner) / Join (ostatní) nebo Save (pokud je edit mód) */}
         <div className="whop-action-btns">
           {isEditing ? (
             <button className="whop-save-btn" onClick={handleSave}>
               <FaSave /> Save
             </button>
-          ) : (
+          ) : whopData.is_owner ? (
             <button className="whop-edit-btn" onClick={handleEditToggle}>
               <FaEdit /> Edit
+            </button>
+          ) : (
+            <button className="whop-join-btn" onClick={() => { /* TODO: Join logic */ }}>
+              <FaUserPlus /> Join
             </button>
           )}
         </div>
