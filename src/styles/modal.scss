@@ -1,28 +1,33 @@
 @import './variables';
-@import './theme';
+@import './_theme.scss';
+
+// =============================
+// Základní styl pro modální okna
+// =============================
 
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  inset: 0; // top:0; right:0; bottom:0; left:0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  animation: fadeIn var(--transition-default);
+  animation: fadeIn var(--transition);
 }
 
 .modal-content {
   position: relative;
-  background-color: var(--surface-color);
-  border-radius: 15px 0 0 15px;
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-lg);
-  animation: slideIn var(--transition-default);
+  box-shadow: var(--shadow-soft);
+  animation: slideIn var(--transition);
 }
 
 .modal-close-btn {
@@ -32,23 +37,39 @@
   background: var(--error-color);
   border: none;
   color: #fff;
-  width: 1rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6rem;
-  transition: background-color var(--transition-default), transform var(--transition-default);
+  font-size: 0.875rem;
+  transition: background-color var(--transition), transform var(--transition);
+
   &:hover {
-    background-color: var(--error-color-dark);
+    background-color: var(--error-hover);
     transform: scale(1.1);
   }
 }
 
-/* Klíčové animace */
+// Klíčové animace
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

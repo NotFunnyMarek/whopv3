@@ -1,3 +1,5 @@
+// src/styles/bottombar.scss
+
 @import './variables';
 @import './theme';
 
@@ -16,33 +18,36 @@
   justify-content: flex-start;
   box-shadow: var(--shadow-sm);
 
-  &__left {
-    position: relative;
+  .bottombar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 
-    &-button {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      border: none;
-      border-radius: var(--radius-lg);
-      color: #fff;
-      font-size: 0.875rem;
-      font-weight: 500;
-      box-shadow: var(--shadow-sm);
-      transition: background var(--transition-default), transform var(--transition-default);
+  &-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: background var(--transition-default), transform var(--transition-default);
 
-      &:hover {
-        background: linear-gradient(135deg, var(--primary-hover), var(--accent-color));
-        transform: translateY(-2px);
-      }
-
-      svg {
-        width: var(--icon-size);
-        height: var(--icon-size);
-      }
+    &:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
     }
+
+    svg {
+      width: var(--icon-size);
+      height: var(--icon-size);
+    }
+  }
 
     &-dropdown {
       position: absolute;
@@ -149,24 +154,24 @@
     }
   }
 
-  &__center-icons {
+   &__center-icons {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: flex-end;
     gap: var(--spacing-md);
-    height: 100%;
   }
 
   &__center-icon {
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 50%;
+    border-radius: 25%;
     background-color: var(--surface-color);
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.356);
     position: relative;
     overflow: hidden;
     cursor: pointer;
@@ -178,8 +183,9 @@
     }
 
     .bottombar__center-img {
-      width: 100%;
-      height: 100%;
+      width: 95%;
+      border-radius: 25%;
+      height: 95%;
       object-fit: cover;
     }
   }

@@ -1,5 +1,9 @@
 @import './variables';
-@import './theme';
+@import './_theme.scss';
+
+/* ======================
+   Stránka Home
+   ====================== */
 
 .home-container {
   max-width: 1200px;
@@ -26,13 +30,10 @@
     color: var(--muted-color);
     margin-top: var(--spacing-xs);
 
-    button {
-      background: none;
-      border: none;
+    .home-link {
       color: var(--primary-color);
       font-weight: 500;
-      cursor: pointer;
-      transition: color var(--transition-default);
+      transition: color var(--transition);
       &:hover {
         color: var(--primary-hover);
       }
@@ -47,10 +48,11 @@
   justify-content: space-between;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
 
   .home-count {
     font-size: 0.875rem;
@@ -59,7 +61,7 @@
 
   .home-filters {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
 
     .home-filter-item {
       display: flex;
@@ -71,32 +73,19 @@
       .home-select {
         margin-left: var(--spacing-xs);
         padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 0.875rem;
+        background: var(--surface-color);
+        backdrop-filter: blur(12px);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-base);
-        background-color: var(--bg-color);
+        font-size: 0.875rem;
         color: var(--text-color);
         cursor: pointer;
-        transition: border-color var(--transition-default);
+        transition: border-color var(--transition);
+
         &:focus {
           border-color: var(--primary-color);
         }
       }
-    }
-  }
-
-  .home-create-btn {
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: #fff;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: background var(--transition-default), transform var(--transition-default);
-    &:hover {
-      background: linear-gradient(135deg, var(--primary-hover), var(--accent-color-dark));
-      transform: translateY(-2px);
     }
   }
 
@@ -110,20 +99,45 @@
     .home-select {
       margin-left: var(--spacing-xs);
       padding: var(--spacing-xs) var(--spacing-sm);
-      font-size: 0.875rem;
+      background: var(--surface-color);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-base);
-      background-color: var(--bg-color);
+      font-size: 0.875rem;
       color: var(--text-color);
       cursor: pointer;
-      transition: border-color var(--transition-default);
+      transition: border-color var(--transition);
+
       &:focus {
         border-color: var(--primary-color);
       }
     }
   }
+
+  .home-create-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--radius-lg);
+    box-shadow:  4px 4px 12px rgba(0,0,0,0.1),
+                 -4px -4px 12px rgba(255,255,255,0.7);
+    transition: transform var(--transition);
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
 }
 
 .home-grid {
-  /* Skeleton nebo skutečné karty, styl se bere z card.scss */
+  /* Karty se stylují přes card.scss */
+}
+
+.home-error {
+  color: var(--error-color);
+  font-size: 1rem;
+  text-align: center;
+  margin-top: var(--spacing-md);
 }

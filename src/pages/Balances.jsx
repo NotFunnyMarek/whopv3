@@ -3,27 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import DepositModal from '../components/DepositModal';
 import WithdrawModal from '../components/WithdrawModal';
-
-// Všechny styly této stránky + modals
 import '../styles/balances.scss';
-import '../styles/deposit-modal.scss';
-import '../styles/withdraw-modal.scss';
 
 export default function Balances() {
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance]           = useState(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [errorBalance, setErrorBalance] = useState('');
 
-  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isDepositOpen, setIsDepositOpen]   = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
-  // 'deposits' | 'withdrawals'
-  const [activeTab, setActiveTab] = useState('deposits');
-  const [historyData, setHistoryData] = useState([]);
+  const [activeTab, setActiveTab]       = useState('deposits');
+  const [historyData, setHistoryData]   = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [errorHistory, setErrorHistory] = useState('');
 
-  // 1) Načíst aktuální balance z profile.php
   useEffect(() => {
     setLoadingBalance(true);
     setErrorBalance('');
@@ -52,7 +46,6 @@ export default function Balances() {
       });
   }, []);
 
-  // 2) Načíst historii (deposits / withdrawals)
   useEffect(() => {
     setLoadingHistory(true);
     setErrorHistory('');
@@ -197,10 +190,7 @@ export default function Balances() {
         )}
       </div>
 
-      {/* DepositModal */}
       <DepositModal isOpen={isDepositOpen} onClose={closeDeposit} />
-
-      {/* WithdrawModal */}
       <WithdrawModal isOpen={isWithdrawOpen} onClose={closeWithdraw} />
     </div>
   );

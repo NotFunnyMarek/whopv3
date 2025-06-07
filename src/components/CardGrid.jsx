@@ -56,26 +56,18 @@ export default function CardGrid({ cardsData }) {
                   </div>
 
                   <ul className="card-info-list">
-                    <li>
-                      <strong>Type:</strong> {camp.type}
-                    </li>
-                    <li>
-                      <strong>Category:</strong> {camp.category}
-                    </li>
+                    <li><strong>Type:</strong> {camp.type}</li>
+                    <li><strong>Category:</strong> {camp.category}</li>
                     <li>
                       <strong>Platforms:</strong>{' '}
                       {camp.platforms.map((p, i) => (
-                        <span key={i} className="platform-pill">
-                          {p}
-                        </span>
+                        <span key={i} className="platform-pill">{p}</span>
                       ))}
                     </li>
                     <li>
                       <strong>Views:</strong>{' '}
                       {camp.reward_per_thousand > 0
-                        ? Math.round(
-                            (camp.paid_out / camp.reward_per_thousand) * 1000
-                          )
+                        ? Math.round((camp.paid_out / camp.reward_per_thousand) * 1000)
                         : 0}
                     </li>
                   </ul>

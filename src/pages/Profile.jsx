@@ -4,38 +4,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/profile.scss';
 
-// Vaše Cloudinary údaje
 const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
 const CLOUDINARY_UPLOAD_PRESET = 'unsigned_profile_avatars';
 const CLOUDINARY_UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
 
-const Profile = () => {
+export default function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
-    name:        '',
-    bio:         '',
-    username:    '',
-    email:       '',
-    phone:       '',
-    avatar_url:  '',
-    showJoined:  false,
-    showOwned:   false,
-    showLocation:false,
+    name:         '',
+    bio:          '',
+    username:     '',
+    email:        '',
+    phone:        '',
+    avatar_url:   '',
+    showJoined:   false,
+    showOwned:    false,
+    showLocation: false,
   });
   const [initialForm, setInitialForm] = useState(null);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // -------------- Načtení profilu --------------
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include'
+      credentials: 'include',
     })
       .then((res) => {
         if (res.status === 401) {
@@ -49,15 +47,15 @@ const Profile = () => {
         if (!data) return;
         if (data.status === 'success') {
           const loaded = {
-            name:        data.data.name       || '',
-            bio:         data.data.bio        || '',
-            username:    data.data.username   || '',
-            email:       data.data.email      || '',
-            phone:       data.data.phone      || '',
-            avatar_url:  data.data.avatar_url || '',
-            showJoined:  false,
-            showOwned:   false,
-            showLocation:false
+            name:         data.data.name        || '',
+            bio:          data.data.bio         || '',
+            username:     data.data.username    || '',
+            email:        data.data.email       || '',
+            phone:        data.data.phone       || '',
+            avatar_url:   data.data.avatar_url  || '',
+            showJoined:   false,
+            showOwned:    false,
+            showLocation: false,
           };
           setForm(loaded);
           setInitialForm(loaded);
@@ -72,7 +70,6 @@ const Profile = () => {
       });
   }, [navigate]);
 
-  // -------------- Změna polí v profilu --------------
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setError('');
@@ -98,14 +95,12 @@ const Profile = () => {
     });
   };
 
-  // -------------- Klik na avatar – otevře file input --------------
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // -------------- Uloží avatar_url do DB --------------
   const saveAvatarToDb = async (avatarUrl) => {
     try {
       const payload = { avatar_url: avatarUrl };
@@ -113,26 +108,23 @@ const Profile = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (res.status === 401) {
         navigate('/login');
         return;
       }
       if (!res.ok) {
-        // Pokud je odpověď textová nebo prázdná, pokusíme se to zpracovat
         const text = await res.text();
         let errMsg = `HTTP ${res.status}`;
         try {
           const errJson = JSON.parse(text || '{}');
           errMsg = errJson.message || errMsg;
         } catch {
-          // Nepodařilo se parsovat JSON – necháme původní errMsg
+          // ignore
         }
         throw new Error(errMsg);
       }
-
-      // Úspěch (pravděpodobně prázdná odpověď nebo validní JSON, který nepotřebujeme číst)
       setMessage('Avatar byl uložen v profilu.');
       setInitialForm((prev) => ({
         ...prev,
@@ -145,12 +137,10 @@ const Profile = () => {
     }
   };
 
-  // -------------- Po výběru souboru nahrajeme na Cloudinary --------------
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validace velikosti/typu
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError('Avatar je příliš velký (max. 5 MB).');
@@ -182,12 +172,10 @@ const Profile = () => {
       .then((data) => {
         if (data.secure_url) {
           const newUrl = data.secure_url;
-          // Aktualizujeme UI
           setForm((prev) => ({
             ...prev,
             avatar_url: newUrl
           }));
-          // Hned uložíme do DB
           saveAvatarToDb(newUrl);
         } else {
           setError('Nepodařilo se získat URL z Cloudinary.');
@@ -202,19 +190,18 @@ const Profile = () => {
       });
   };
 
-  // -------------- Odeslání ostatních polí profilu (jméno, bio, uživatelské jméno, telefon) --------------
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     setMessage('Ukládám…');
 
     const payload = {
-      name:       form.name,
-      bio:        form.bio,
-      username:   form.username,
-      email:      form.email,
-      phone:      form.phone,
-      avatar_url: form.avatar_url  // avatar_url pošleme i zde, pro případ úplné změny i tady
+      name:        form.name,
+      bio:         form.bio,
+      username:    form.username,
+      email:       form.email,
+      phone:       form.phone,
+      avatar_url:  form.avatar_url,
     };
 
     fetch('https://app.byxbot.com/php/profile.php', {
@@ -235,7 +222,6 @@ const Profile = () => {
       })
       .then((result) => {
         if (result === null) return;
-        // Pokud server vrací objekt { status: "error", message: "..." }
         try {
           const parsed = JSON.parse(result);
           if (parsed.status === 'error') {
@@ -244,7 +230,7 @@ const Profile = () => {
             return;
           }
         } catch {
-          // Prázdný text nebo jiný text – předpokládáme úspěch
+          // assume success
         }
         setMessage('Vše bylo úspěšně uloženo.');
         setError('');
@@ -258,7 +244,6 @@ const Profile = () => {
       });
   };
 
-  // -------------- Logout --------------
   const handleLogout = () => {
     fetch('https://app.byxbot.com/php/logout.php', {
       method: 'POST',
@@ -284,7 +269,6 @@ const Profile = () => {
       {message && !error && <p className="profile-success">{message}</p>}
 
       <form onSubmit={handleSubmit} className="profile-form">
-        {/* Levá část (avatar + logout) */}
         <div className="profile-left">
           <input
             type="file"
@@ -326,7 +310,6 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* Pravá část (ostatní pole) */}
         <div className="profile-right">
           <label>
             Name
@@ -424,6 +407,4 @@ const Profile = () => {
       </form>
     </div>
   );
-};
-
-export default Profile;
+}

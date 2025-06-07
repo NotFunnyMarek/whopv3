@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/bottombar.scss';
-import { FiMenu, FiSettings, FiUser, FiBell } from 'react-icons/fi';
+import { FiMenu, FiSettings, FiUser, FiBell, FiSun, FiMoon } from 'react-icons/fi';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
@@ -9,35 +9,34 @@ export default function BottomBar() {
   const { theme, setLight, setDark } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hoveredX, setHoveredX] = useState(null);
+  const [joinedWhops, setJoinedWhops] = useState([]);
+  const [loadingWhops, setLoadingWhops] = useState(true);
   const iconsContainerRef = useRef(null);
   const navigate = useNavigate();
 
-  // Stav pro whopy, ke kterým je přihlášen aktuální uživatel
-  const [joinedWhops, setJoinedWhops] = useState([]);
-
-  // Načíst joined whops při mountu
   useEffect(() => {
     fetchJoinedWhops();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchJoinedWhops = async () => {
+    setLoadingWhops(true);
     try {
       const res = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`Chyba ${res.status}`);
-      const data = await res.json();
-      // Data musí mít pole objektů: { id, slug, banner_url }
+      const data = await res.json(); // očekává pole objektů { id, slug, banner_url }
       setJoinedWhops(data);
     } catch (err) {
       console.error('Chyba při načítání připojených whopů:', err);
       setJoinedWhops([]);
+    } finally {
+      setLoadingWhops(false);
     }
   };
 
-  // Menu dropdown
   const handleMenuClick = () => {
     setDropdownOpen((prev) => !prev);
   };
@@ -94,7 +93,7 @@ export default function BottomBar() {
         >
           {/* Přepínač tématu */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-theme">
-            <div>
+            <label className="theme-toggle">
               <input
                 type="radio"
                 id="theme-light"
@@ -103,9 +102,9 @@ export default function BottomBar() {
                 checked={theme === 'light'}
                 onChange={handleThemeChange}
               />
-              <span>Světlé</span>
-            </div>
-            <div>
+              <FiSun /> Světlé
+            </label>
+            <label className="theme-toggle">
               <input
                 type="radio"
                 id="theme-dark"
@@ -114,13 +113,13 @@ export default function BottomBar() {
                 checked={theme === 'dark'}
                 onChange={handleThemeChange}
               />
-              <span>Tmavé</span>
-            </div>
+              <FiMoon /> Tmavé
+            </label>
           </div>
 
           {/* What's New */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-whatsnew">
-            Whats New <span>6/6/25</span>
+            What's New <span>06/06/2025</span>
           </div>
 
           {/* Need help? */}
@@ -141,7 +140,7 @@ export default function BottomBar() {
             type="button"
             role="menuitem"
           >
-            Odhlásit
+            <FaSignOutAlt /> Odhlásit
           </button>
         </div>
       </div>
@@ -153,54 +152,58 @@ export default function BottomBar() {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {joinedWhops.map((whop, idx) => {
-          // pokud myš není nad bar: normální zobrazení
-          if (hoveredX === null) {
-            return (
-              <div
-                key={whop.id}
-                className="bottombar__center-icon"
-                onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
-              >
-                <img
-                  src={whop.banner_url}
-                  alt={`Banner ${whop.slug}`}
-                  className="bottombar__center-img"
-                />
-              </div>
-            );
-          }
+        {loadingWhops
+          ? /* Skeleton placeholders: 5 kruhů */
+            Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="bottombar__center-icon skeleton-circle" />
+            ))
+          : joinedWhops.map((whop, idx) => {
+              if (hoveredX === null) {
+                return (
+                  <div
+                    key={whop.id}
+                    className="bottombar__center-icon"
+                    onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
+                  >
+                    <img
+                      src={whop.banner_url}
+                      alt={`Banner ${whop.slug}`}
+                      className="bottombar__center-img"
+                    />
+                  </div>
+                );
+              }
+              const container = iconsContainerRef.current;
+              const { left, width } = container.getBoundingClientRect();
+              const segment = width / joinedWhops.length;
+              const iconCenterX = left + segment * (idx + 0.5);
+              const dx = Math.abs(hoveredX - iconCenterX);
+              const maxRadius = segment * 2;
+              let t = 1 - dx / maxRadius;
+              if (t < 0) t = 0;
+              const translateY = -t * 12;
 
-          // když je hover, počítáme výšku zvednutí podle vzdálenosti
-          const container = iconsContainerRef.current;
-          const { left, width } = container.getBoundingClientRect();
-          const segment = width / joinedWhops.length;
-          const iconCenterX = left + segment * (idx + 0.5);
-          const dx = Math.abs(hoveredX - iconCenterX);
-          const maxRadius = segment * 2;
-          let t = 1 - dx / maxRadius;
-          if (t < 0) t = 0;
-          const translateY = -t * 12;
-
-          return (
-            <div
-              key={whop.id}
-              className="bottombar__center-icon"
-              style={{
-                transform: `translateY(${translateY}px)`,
-                transition: 'transform var(--transition-default)',
-              }}
-              onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
-            >
-              <img
-                src={whop.banner_url}
-                alt={`Banner ${whop.slug}`}
-                className="bottombar__center-img"
-              />
-            </div>
-          );
-        })}
+              return (
+                <div
+                  key={whop.id}
+                  className="bottombar__center-icon"
+                  style={{
+                    transform: `translateY(${translateY}px)`,
+                    transition: 'transform var(--transition-default)',
+                  }}
+                  onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
+                >
+                  <img
+                    src={whop.banner_url}
+                    alt={`Banner ${whop.slug}`}
+                    className="bottombar__center-img"
+                  />
+                </div>
+              );
+            })}
       </div>
+
+    
     </div>
   );
 }

@@ -1,20 +1,20 @@
+// src/pages/Home.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import CardGrid from '../components/CardGrid';
 import '../styles/home.scss';
 
-// Pokud chceme na Home vracet všechny kampaně, donastavíme PHP tak, aby GET bez ?whop_id vrátil vše.
-// Zde proto pořád voláme jen `campaign.php` bez parametru.
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
-const Home = () => {
-  const [cardsData, setCardsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState('');
+export default function Home() {
+  const [cardsData, setCardsData]       = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [errorMsg, setErrorMsg]         = useState('');
 
-  const [filterType, setFilterType] = useState('All');       // nyní odpovídá c.type
-  const [filterCategory, setFilterCategory] = useState('All'); // nyní odpovídá c.category
-  const [sortOption, setSortOption] = useState('Nejvyšší rozpočet');
+  const [filterType, setFilterType]         = useState('All');
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [sortOption, setSortOption]         = useState('Nejvyšší rozpočet');
 
   useEffect(() => {
     fetchCampaigns();
@@ -29,9 +29,7 @@ const Home = () => {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        throw new Error(`Chyba ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Chyba ${res.status}`);
       const data = await res.json();
       setCardsData(data);
     } catch (error) {
@@ -44,11 +42,9 @@ const Home = () => {
   const filteredData = useMemo(() => {
     let arr = [...cardsData];
 
-    // filtr Type (resp. c.type)
     if (filterType !== 'All') {
       arr = arr.filter((c) => c.type === filterType);
     }
-    // filtr Category (resp. c.category)
     if (filterCategory !== 'All') {
       arr = arr.filter((c) => c.category === filterCategory);
     }
@@ -61,14 +57,10 @@ const Home = () => {
         arr.sort((a, b) => a.budget - b.budget);
         break;
       case 'Nejnovější':
-        arr.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
       case 'Nejstarší':
-        arr.sort(
-          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
+        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         break;
       default:
         break;
@@ -153,6 +145,4 @@ const Home = () => {
       </div>
     </div>
   );
-};
-
-export default Home;
+}

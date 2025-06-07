@@ -15,7 +15,7 @@ export default function Intro() {
       <div className="intro-content">
         <div className="intro-media">
           <img
-            src="https://via.placeholder.com/800x450.png?text=Intro+Video+Placeholder"
+            src="https://i.ibb.co/0jGtPCHm/Frame-5959.png"
             alt="Intro video placeholder"
             className="intro-video"
           />

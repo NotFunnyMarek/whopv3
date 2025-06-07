@@ -1,79 +1,126 @@
-/* ======================
-   Definice CSS proměnných pro světlé a tmavé téma
-   ====================== */
+/* ============================================
+   _theme.scss
+   Globální proměnné + reset + font Inter
+   ============================================ */
 
-.theme-light {
-  --bg-color:            #{$color-bg-light};
-  --surface-color:       #{$color-surface-light};
-  --text-color:          #{$color-text-light};
-  --muted-color:         #{$color-muted-light};
-  --border-color:        #{$color-border-light};
+/* Import Google Font (Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  --primary-color:       #{$color-primary};
-  --primary-hover:       #{$color-primary-dark};
-  --secondary-color:     #{$color-secondary};
-  --accent-color:        #{$color-accent};
-  --accent-color-dark:   #{$color-accent-dark};
-  --error-color:         #{$color-error};
-  --error-color-dark:    #{$color-error-dark};
-  --success-color:       #{$color-success};
-  --success-color-dark:  #{$color-success-dark};
+:root {
+  /* TYPOGRAFIE */
+  --font-family:          'Inter', sans-serif;
 
-  --radius-base:         #{$radius-base};
-  --radius-lg:           #{$radius-lg};
-  --spacing-xxs:         #{$spacing-xxs};
-  --spacing-xs:          #{$spacing-xs};
-  --spacing-sm:          #{$spacing-sm};
-  --spacing-md:          #{$spacing-md};
-  --spacing-lg:          #{$spacing-lg};
-  --spacing-xl:          #{$spacing-xl};
+  /* BARVY */
+  --bg-color:            rgba(255, 255, 255, 0.75);
+  --surface-color:       rgba(255, 255, 255, 0.55);
 
-  --transition-default:  #{$transition-default};
-  --shadow-sm:           #{$shadow-sm};
-  --shadow-md:           #{$shadow-md};
-  --shadow-lg:           #{$shadow-lg};
+  --text-color:          #111827;
+  --muted-color:         #6B7280;
 
-  --sidebar-width:       #{$sidebar-width};
-  --bottombar-height:    #{$bottombar-height};
-  --icon-size:           #{$icon-size-base};
+  --primary-color:       #0d1d25;
+  --primary-hover:       #18181a;
+  --secondary-color:     #0d1d25;
+  --secondary-hover:     #18181a;
+  --accent-color:        #0c1214;
+  --accent-color-dark:   #0c1214;
 
-  --font-sans:           'Inter', sans-serif;
+  --error-color:         #E86644;
+  --error-hover:         #FF008D;
+  --success-color:       #00876D;
+
+  --border-color:        rgba(0, 0, 0, 0.08);
+  --shadow-soft:         0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow:              0 8px 20px rgba(0, 0, 0, 0.1);
+
+  --radius-sm:           8px;
+  --radius-base:         12px;
+  --radius-lg:           16px;
+
+  --spacing-xs:          4px;
+  --spacing-sm:          8px;
+  --spacing-md:          16px;
+  --spacing-lg:          24px;
+
+  --transition:          0.3s ease;
+
+  --icon-size:           20px;
+  --bottombar-height:    60px;
 }
 
-.theme-dark {
-  --bg-color:            #{$color-bg-dark};
-  --surface-color:       #{$color-surface-dark};
-  --text-color:          #{$color-text-dark};
-  --muted-color:         #{$color-muted-dark};
-  --border-color:        #{$color-border-dark};
+/* RESET + GLOBÁLNÍ NASTAVENÍ */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--font-family);
+  background: var(--bg-color);
+  color: var(--text-color);
+  scroll-behavior: smooth;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+a:hover {
+  color: var(--primary-hover);
+}
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 500;
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-soft);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+button:disabled {
+  background: var(--border-color);
+  color: var(--muted-color);
+  cursor: not-allowed;
+  transform: none;
+}
 
-  --primary-color:       #{$color-primary};
-  --primary-hover:       #{$color-primary-dark};
-  --secondary-color:     #{$color-secondary};
-  --accent-color:        #{$color-accent};
-  --accent-color-dark:   #{$color-accent-dark};
-  --error-color:         #{$color-error};
-  --error-color-dark:    #{$color-error-dark};
-  --success-color:       #{$color-success};
-  --success-color-dark:  #{$color-success-dark};
+input, select, textarea {
+  font-family: var(--font-family);
+  background: var(--surface-color);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-base);
+  color: var(--text-color);
+  font-size: 1rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  transition: border-color var(--transition);
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
 
-  --radius-base:         #{$radius-base};
-  --radius-lg:           #{$radius-lg};
-  --spacing-xxs:         #{$spacing-xxs};
-  --spacing-xs:          #{$spacing-xs};
-  --spacing-sm:          #{$spacing-sm};
-  --spacing-md:          #{$spacing-md};
-  --spacing-lg:          #{$spacing-lg};
-  --spacing-xl:          #{$spacing-xl};
-
-  --transition-default:  #{$transition-default};
-  --shadow-sm:           #{$shadow-sm};
-  --shadow-md:           #{$shadow-md};
-  --shadow-lg:           #{$shadow-lg};
-
-  --sidebar-width:       #{$sidebar-width};
-  --bottombar-height:    #{$bottombar-height};
-  --icon-size:           #{$icon-size-base};
-
-  --font-sans:           'Inter', sans-serif;
+/* Scrollbar (WebKit) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: var(--radius-base);
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
 }

@@ -1,75 +1,87 @@
 @import './variables';
-@import './theme';
+@import './_theme.scss';
 
-/* ======================
-   Google Font import – ujistěte se, že v index.html máte link do Google Fonts (Inter)
-   ====================== */
-html,
-body {
+// ======================
+// Globální reset a základní layout
+// ======================
+
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
   background-color: var(--bg-color);
   color: var(--text-color);
-  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-/* Reset box‐model */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Odkazy */
+// Glassmorphism: aplikujeme na kontejner, background-color + blur
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  backdrop-filter: blur(12px);
+}
+
+// Odkazy
 a {
   color: var(--primary-color);
   text-decoration: none;
-  transition: color var(--transition-default);
+  transition: color var(--transition);
 }
 a:hover {
   color: var(--primary-hover);
 }
 
-/* Globální styl tlačítek */
+// Tlačítka – neumorfismus + gradient akcent
 button {
   font-family: inherit;
+  font-size: 1rem;
   cursor: pointer;
   border: none;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--primary-color);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   color: #fff;
   font-weight: 500;
-  border-radius: var(--radius-base);
-  transition: background-color var(--transition-default), transform var(--transition-default);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow:  8px 8px 20px rgba(0,0,0,0.05),
+               -8px -8px 20px rgba(255,255,255,0.6);
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 button:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow:  4px 4px 12px rgba(0,0,0,0.1),
+               -4px -4px 12px rgba(255,255,255,0.7);
 }
 button:disabled {
   background-color: var(--border-color);
   color: var(--muted-color);
   cursor: not-allowed;
+  box-shadow: none;
   transform: none;
 }
 
-/* Input/Select/Textarea */
+// Input/Select/Textarea – glassmorphism bordery + blur
 input,
 select,
 textarea {
   font-family: inherit;
-  background-color: var(--surface-color);
+  font-size: 1rem;
+  color: var(--text-color);
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-base);
-  color: var(--text-color);
-  font-size: 1rem;
   padding: var(--spacing-xs) var(--spacing-sm);
-  transition: border-color var(--transition-default);
+  transition: border-color var(--transition), box-shadow var(--transition);
   width: 100%;
 }
 input:focus,
@@ -77,9 +89,10 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-hover), 0.2);
 }
 
-/* Scrollbar styl */
+// Scrollbar styl
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -89,39 +102,12 @@ textarea:focus {
   border-radius: var(--radius-base);
 }
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background: transparent;
 }
 
-/* Hlavní kontejner */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--surface-color);
-}
-
-/* Obsah vedle sidebaru */
+// Hlavní obsah vedle sidebaru
 .main-content {
   flex: 1;
   padding: var(--spacing-lg);
   overflow-y: auto;
-}
-
-/* Skeleton‐loading – animace „shimmer“ */
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-.skeleton {
-  background: linear-gradient(
-    to right,
-    var(--border-color) 0%,
-    var(--surface-color) 50%,
-    var(--border-color) 100%
-  );
-  background-size: 200px 100%;
-  animation: shimmer 3s infinite;
 }

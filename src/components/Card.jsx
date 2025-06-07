@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import '../styles/card.scss';
+import { FiPlusCircle, FiTrash2 } from 'react-icons/fi';
 
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
@@ -24,56 +25,60 @@ export default function Card() {
     tiktok:    false,
     youtube:   false,
   });
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [newContentLink, setNewContentLink] = useState('');
-  const [contentLinks, setContentLinks]     = useState([]);
-  const [newRequirement, setNewRequirement] = useState('');
-  const [requirements, setRequirements]     = useState([]);
+  const [thumbnailUrl, setThumbnailUrl]         = useState('');
+  const [newContentLink, setNewContentLink]     = useState('');
+  const [contentLinks, setContentLinks]         = useState([]);
+  const [newRequirement, setNewRequirement]     = useState('');
+  const [requirements, setRequirements]         = useState([]);
 
   // ==== 1) Načtení všech kampaní (GET) po prvním vykreslení ====
   useEffect(() => {
-    async function fetchCampaigns() {
-      try {
-        const res = await fetch(API_URL, {
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!res.ok) {
-          throw new Error(`Chyba ${res.status}`);
-        }
-        const data = await res.json();
-        // Normalizace: JSON decode a převod na čísla
-        const normalized = data.map((camp) => ({
-          ...camp,
-          id:                  Number(camp.id),
-          user_id:             Number(camp.user_id),
-          username:            camp.username,
-          campaign_name:       camp.campaign_name,
-          category:            camp.category,
-          budget:              Number(camp.budget),
-          currency:            camp.currency,
-          reward_per_thousand: Number(camp.reward_per_thousand),
-          min_payout:          camp.min_payout   !== null ? Number(camp.min_payout)   : null,
-          max_payout:          camp.max_payout   !== null ? Number(camp.max_payout)   : null,
-          platforms:           Array.isArray(camp.platforms)     ? camp.platforms     : [],
-          thumbnail_url:       camp.thumbnail_url,
-          content_links:       Array.isArray(camp.content_links) ? camp.content_links : [],
-          requirements:        Array.isArray(camp.requirements)  ? camp.requirements  : [],
-          paid_out:            Number(camp.paid_out),
-          total_paid_out:      Number(camp.total_paid_out),
-          paid_percent:        Number(camp.paid_percent),
-          created_at:          camp.created_at
-        }));
-        setCardsData(normalized);
-      } catch (error) {
-        setErrorMsg('Nelze načíst kampaně: ' + error.message);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(API_URL, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) {
+        throw new Error(`Chyba ${res.status}`);
+      }
+      const data = await res.json();
+      // Normalizace: JSON decode a převod na čísla
+      const normalized = data.map((camp) => ({
+        ...camp,
+        id:                  Number(camp.id),
+        user_id:             Number(camp.user_id),
+        username:            camp.username,
+        campaign_name:       camp.campaign_name,
+        category:            camp.category,
+        budget:              Number(camp.budget),
+        currency:            camp.currency,
+        reward_per_thousand: Number(camp.reward_per_thousand),
+        min_payout:          camp.min_payout   !== null ? Number(camp.min_payout)   : null,
+        max_payout:          camp.max_payout   !== null ? Number(camp.max_payout)   : null,
+        platforms:           Array.isArray(camp.platforms)     ? camp.platforms     : [],
+        thumbnail_url:       camp.thumbnail_url,
+        content_links:       Array.isArray(camp.content_links) ? camp.content_links : [],
+        requirements:        Array.isArray(camp.requirements)  ? camp.requirements  : [],
+        paid_out:            Number(camp.paid_out),
+        total_paid_out:      Number(camp.total_paid_out),
+        paid_percent:        Number(camp.paid_percent),
+        created_at:          camp.created_at,
+        is_active:           Number(camp.is_active),
+      }));
+      setCardsData(normalized);
+    } catch (error) {
+      setErrorMsg('Nelze načíst kampaně: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Pomocná funkce: znovu načte všechny kampaně
   const refreshCampaigns = async () => {
@@ -104,7 +109,8 @@ export default function Card() {
         paid_out:            Number(camp.paid_out),
         total_paid_out:      Number(camp.total_paid_out),
         paid_percent:        Number(camp.paid_percent),
-        created_at:          camp.created_at
+        created_at:          camp.created_at,
+        is_active:           Number(camp.is_active),
       }));
       setCardsData(normalized);
     } catch (e) {
@@ -221,7 +227,7 @@ export default function Card() {
         onClick={() => setIsModalOpen(true)}
         type="button"
       >
-        Create
+        <FiPlusCircle /> Create
       </button>
 
       {/* ====== MODAL S FORMULÁŘEM ===== */}
@@ -337,9 +343,6 @@ export default function Card() {
                     checked={platforms[name]}
                     onChange={handlePlatformChange}
                   />
-                  {name === 'instagram' && <FiStar className="cf-icon-instagram" />}
-                  {name === 'tiktok' && <FiStar className="cf-icon-tiktok" />}
-                  {name === 'youtube' && <FiStar className="cf-icon-youtube" />}
                   <span className="cf-platform-text">{name}</span>
                 </label>
               ))}
@@ -372,7 +375,7 @@ export default function Card() {
                 className="list-add-btn cf-list-add-button"
                 onClick={addContentLink}
               >
-                ➕
+                <FiPlusCircle />
               </button>
             </div>
             <ul className="list-container cf-list-container">
@@ -390,7 +393,7 @@ export default function Card() {
                     className="list-delete-btn cf-list-delete-button"
                     onClick={() => removeContentLink(idx)}
                   >
-                    🗑
+                    <FiTrash2 />
                   </button>
                 </li>
               ))}
@@ -412,7 +415,7 @@ export default function Card() {
                 className="list-add-btn cf-list-add-button"
                 onClick={addRequirement}
               >
-                ➕
+                <FiPlusCircle />
               </button>
             </div>
             <ul className="list-container cf-list-container">
@@ -424,7 +427,7 @@ export default function Card() {
                     className="list-delete-btn cf-list-delete-button"
                     onClick={() => removeRequirement(idx)}
                   >
-                    🗑
+                    <FiTrash2 />
                   </button>
                 </li>
               ))}
@@ -440,33 +443,55 @@ export default function Card() {
 
       {/* ===== Grid s kampaněmi ===== */}
       <div className="cards-grid">
-        {loading && <div>Loading campaigns…</div>}
-        {!loading && cardsData.length === 0 && <div>No campaigns yet.</div>}
-        {!loading && cardsData.length > 0 &&
+        {loading && (
+          <>
+            {/* Zobrazíme 4 skeleton karty */}
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="card-item card-skeleton" />
+            ))}
+          </>
+        )}
+        {!loading && cardsData.length === 0 && (
+          <div className="card-empty">Žádné kampaně k zobrazení.</div>
+        )}
+        {!loading &&
+          cardsData.length > 0 &&
           cardsData.map((camp) => (
             <div key={camp.id} className="card-item">
               <div className="card-header">
+                <div className="card-icon">
+                  {camp.thumbnail_url ? (
+                    <img src={camp.thumbnail_url} alt="Thumb" />
+                  ) : (
+                    camp.username.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <h3>{camp.campaign_name}</h3>
                 <span className="card-tag">
-                  ${camp.reward_per_thousand.toFixed(2)} / 1K
+                  {camp.currency}
+                  {camp.reward_per_thousand.toFixed(2)} / 1K
                 </span>
               </div>
+
               <div className="card-body">
                 {/* Vypíšeme autora */}
                 <div className="card-author">
                   <strong>Author:</strong> {camp.username}
                 </div>
                 <div className="card-line">
-                  ${camp.paid_out.toFixed(2)} of ${camp.total_paid_out.toFixed(2)} paid out
+                  {camp.currency}
+                  {camp.paid_out.toFixed(2)} of {camp.currency}
+                  {camp.total_paid_out.toFixed(2)} paid out
                   <span className="card-percent">{camp.paid_percent}%</span>
                 </div>
                 <div className="card-progress-bar">
                   <div
                     className="card-progress-fill"
                     style={{ width: `${camp.paid_percent}%` }}
-                  ></div>
+                  />
                 </div>
                 <ul className="card-info-list">
+                  <li><strong>Type:</strong> {camp.type}</li>
                   <li><strong>Category:</strong> {camp.category}</li>
                   <li>
                     <strong>Platforms:</strong>{' '}
@@ -483,8 +508,7 @@ export default function Card() {
                 </ul>
               </div>
             </div>
-          ))
-        }
+          ))}
       </div>
     </div>
   );

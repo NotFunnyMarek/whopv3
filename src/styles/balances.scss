@@ -1,7 +1,9 @@
-// src/styles/balances.scss
-
 @import './variables';
-@import './theme';
+@import './_theme.scss';
+
+// =============================
+// Stránka „Balances“
+// =============================
 
 .balances-container {
   max-width: 900px;
@@ -15,7 +17,6 @@
   h2 {
     font-size: 1.75rem;
     margin-bottom: var(--spacing-md);
-    color: var(--text-color);
   }
 }
 
@@ -54,23 +55,25 @@
       font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background var(--transition-default), transform var(--transition-default);
+      box-shadow: var(--shadow-soft);
+      transition: transform var(--transition), background var(--transition);
 
       &.bal-deposit {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
-        color: #070707;
-        border: 1px solid black;
+        background: var(--primary-color);
+        color: #fff;
+
         &:hover {
-          background: var(--primary-color-dark);
+          background: var(--primary-hover);
           transform: translateY(-1px);
         }
       }
 
       &.bal-withdraw {
-        background:  var(--accent-color-dark);
+        background: var(--secondary-color);
         color: #fff;
+
         &:hover {
-          background: black;
+          background: var(--secondary-hover);
           transform: translateY(-1px);
         }
       }
@@ -90,11 +93,11 @@
     cursor: pointer;
     font-size: 1rem;
     color: var(--muted-color);
-    transition: color var(--transition-default), border-bottom var(--transition-default);
+    transition: color var(--transition), border-bottom var(--transition);
 
     &.active {
       color: var(--text-color);
-      border-bottom: 2px solid var(--primary-color);
+      border-bottom: 3px solid var(--primary-color);
     }
 
     &:hover {
@@ -120,7 +123,8 @@
     font-size: 0.9rem;
 
     thead {
-      background-color: var(--surface-color);
+      background: var(--surface-color);
+      backdrop-filter: blur(12px);
       border-bottom: 2px solid var(--border-color);
 
       th {
@@ -133,10 +137,11 @@
     tbody {
       tr {
         &:nth-child(even) {
-          background-color: var(--surface-color);
+          background: var(--surface-color);
+          backdrop-filter: blur(12px);
         }
         &:nth-child(odd) {
-          background-color: #f9f9f9;
+          background: rgba(255, 255, 255, 0.05);
         }
       }
 
@@ -153,21 +158,22 @@
       }
 
       .status-completed {
-        color: #27ae60;
+        color: var(--success-color);
         font-weight: 600;
       }
       .status-pending {
-        color: #f39c12;
+        color: var(--secondary-color);
         font-weight: 600;
       }
       .status-failed {
-        color: #e74c3c;
+        color: var(--error-color);
         font-weight: 600;
       }
     }
   }
 }
 
+// Responsivní úpravy
 @media (max-width: 600px) {
   .balances-header {
     flex-direction: column;
@@ -179,7 +185,7 @@
     }
   }
 
-  .balances-history .hist-table {
+  .hist-table {
     font-size: 0.8rem;
   }
 }

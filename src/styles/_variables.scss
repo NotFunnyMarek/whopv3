@@ -1,49 +1,52 @@
-/* ======================
-   Základní proměnné (barvy, rozměry, stíny, přechody)
-   ====================== */
+// ======================
+// Základní proměnné pro design
+// ======================
 
-// Barvy
-$color-primary:         #427077d8 !default;
-$color-primary-dark:    #000000d8 !default;
-$color-secondary:       #1a3438d8 !default;
-$color-accent:          #191a1ad8 !default;
-$color-accent-dark:     darken($color-accent, 10%) !default;
-$color-error:           #cecdcd !default;
-$color-error-dark:      darken($color-error, 10%) !default;
-$color-success:         #22C55E !default;
-$color-success-dark:    darken($color-success, 10%) !default;
+// 1) Pastelní gradient pro akcenty
+$gradient-start:     #6e8efb !default;
+$gradient-end:       #a777e3 !default;
 
-$color-bg-light:        #F9FAFB !default;
-$color-surface-light:   #FFFFFF !default;
-$color-border-light:    #E5E7EB !default;
-$color-text-light:      #111827 !default;
-$color-muted-light:     #6B7280 !default;
+// 2) Barvy pro světlé a tmavé téma (glassmorphism)
+// – používáme jemně průhledné „glass“ barvy + blur
+$color-bg-light:      rgba(255, 255, 255, 0.4) !default;
+$color-surface-light: rgba(255, 255, 255, 0.4) !default;
+$color-border-light:  rgba(200, 200, 200, 0.3) !default;
+$color-text-light:    #2c2c2c !default;
+$color-muted-light:   #555555 !default;
 
-$color-bg-dark:         #1F2937 !default;
-$color-surface-dark:    #111827 !default;
-$color-border-dark:     #374151 !default;
-$color-text-dark:       #F9FAFB !default;
-$color-muted-dark:      #9CA3AF !default;
+$color-bg-dark:       rgba(20, 20, 30, 0.4) !default;
+$color-surface-dark:  rgba(20, 20, 30, 0.4) !default;
+$color-border-dark:   rgba( 80,  80, 100, 0.3) !default;
+$color-text-dark:     #e0e0e0 !default;
+$color-muted-dark:    #888888 !default;
 
-// Radius a rozestupy
-$radius-base:           0.5rem !default;
-$radius-lg:             1rem !default;
-$spacing-xxs:           0.25rem !default;
-$spacing-xs:            0.5rem !default;
-$spacing-sm:            1rem !default;
-$spacing-md:            1.5rem !default;
-$spacing-lg:            2rem !default;
-$spacing-xl:            3rem !default;
+// 3) Akcentní barvy
+$color-primary:        $gradient-start !default;
+$color-primary-hover:  darken($gradient-start, 5%) !default;
+$color-secondary:      $gradient-end !default;
+$color-secondary-hover: darken($gradient-end, 5%) !default;
+$color-success:        #22c55e !default;
+$color-success-dark:   darken($color-success, 10%) !default;
+$color-error:          #e02424 !default;
+$color-error-dark:     darken($color-error, 10%) !default;
 
-// Přechody a stíny
-$transition-default:    0.2s ease-in-out !default;
-$shadow-sm:             0 1px 2px rgba(0, 0, 0, 0.05) !default;
-$shadow-md:             0 4px 6px rgba(0, 0, 0, 0.1) !default;
-$shadow-lg:             0 10px 15px rgba(0, 0, 0, 0.15) !default;
+// 4) Neumorfismus a stíny
+$radius-base:         12px !default;
+$radius-lg:           16px !default;
+$spacing-xs:          4px !default;
+$spacing-sm:          8px !default;
+$spacing-md:          16px !default;
+$spacing-lg:          24px !default;
+$spacing-xl:          32px !default;
 
-// Sidebar / Bottombar
-$sidebar-width:         4.5rem !default;
-$bottombar-height:      4rem !default;
+$shadow-soft:         0 8px 20px rgba(0, 0, 0, 0.05) !default;
+$shadow-inset-light:  inset 4px 4px 8px rgba(255,255,255,0.6), inset -4px -4px 8px rgba(0,0,0,0.1) !default;
+$shadow-inset-dark:   inset 4px 4px 8px rgba(0,0,0,0.4), inset -4px -4px 8px rgba(50,50,60,0.6) !default;
 
-// Ikony
-$icon-size-base:        1.25rem !default;
+// 5) Typografie
+$font-family-sans:    'Inter', 'Helvetica Neue', Arial, sans-serif !default;
+$font-size-base:      16px !default;
+$line-height-base:    1.5 !default;
+
+// 6) Přechody
+$transition-default:  0.3s ease-in-out !default;

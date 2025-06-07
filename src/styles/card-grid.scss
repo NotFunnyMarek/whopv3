@@ -1,5 +1,6 @@
-@import './variables';
-@import './theme';
+// src/styles/card-grid.scss
+
+@import './_theme.scss';
 
 .cards-grid {
   display: grid;
@@ -7,11 +8,21 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
+/* Skeleton pro načítání */
 .card-skeleton {
-  background-color: var(--border-color);
+  background: var(--border-color);
   border-radius: var(--radius-lg);
   height: 200px;
   position: relative;
   overflow: hidden;
-  animation: shimmer 3s infinite;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
 }

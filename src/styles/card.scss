@@ -1,68 +1,93 @@
 @import './variables';
-@import './theme';
+@import './_theme.scss';
+
+/* ======================
+   Karty (Card) a Grid
+   ====================== */
 
 .card-container {
-  margin: var(--spacing-md) 0;
+  margin: var(--spacing-lg) 0;
+
+  .card-error {
+    background-color: var(--error-color);
+    color: #fff;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-base);
+    font-size: 0.875rem;
+    text-align: center;
+  }
 }
 
-/* Chybová hláška */
-.card-error {
-  background-color: var(--error-color);
-  color: #fff;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-base);
-  font-size: 0.875rem;
-}
-
-/* Grid s kampaněmi */
 .cards-grid {
   display: grid;
   gap: var(--spacing-md);
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   margin-top: var(--spacing-md);
 }
 
+/* Skeleton pro načítání */
+.card-skeleton {
+  background: var(--border-color);
+  border-radius: var(--radius-lg);
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Animace shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
 /* =====================================
-   Karta kampaně
+   Jednotlivá karta (.card-item)
    ===================================== */
 .card-item {
-  background-color: var(--surface-color);
+  background: var(--surface-color);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-soft);
   overflow: hidden;
   display: flex;
-  border: solid 1px rgba(0, 0, 0, 0.116);
   flex-direction: column;
-  transition: transform var(--transition-default), box-shadow var(--transition-default);
-  position: relative;
+  transition: transform var(--transition), box-shadow var(--transition);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
   }
 
-  /* --- HLAVIČKA --- */
+  /* HLAVIČKA */
   .card-header {
     position: relative;
-    background-color: var(--bg-color);
     padding: var(--spacing-md);
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
 
-    /* Ikona / thumbnail vlevo */
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: #fff;
+
     .card-icon {
       flex-shrink: 0;
-      width: 2rem;
-      height: 2rem;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      background-color: var(--primary-color);
+      background: rgba(255,255,255,0.2);
       display: flex;
       align-items: center;
+      border: 1px solid rgba(0, 0, 0, 0.199);
       justify-content: center;
-      font-size: 1rem;
-      color: #fff;
+      font-size: 1.25rem;
       overflow: hidden;
+
       img {
         width: 100%;
         height: 100%;
@@ -72,38 +97,37 @@
 
     h3 {
       margin: 0;
-      font-size: 1.125rem;
-      color: var(--text-color);
+      font-size: 1.25rem;
       font-weight: 600;
       flex: 1;
+      color: black;
     }
 
-    /* Štítek s cenou vpravo nahoře */
     .card-tag {
       position: absolute;
       top: var(--spacing-xs);
       right: var(--spacing-xs);
-      background-color: var(--primary-color);
+      background: rgba(53, 52, 52, 0.897);
       color: #fff;
-      padding: var(--spacing-xxs) var(--spacing-sm);
+      padding: 0.25rem 0.5rem;
       border-radius: var(--radius-base);
       font-size: 0.75rem;
       font-weight: 500;
-      transition: background-color var(--transition-default);
+      transition: background var(--transition);
+
       &:hover {
-        background-color: var(--primary-hover);
+        background: rgba(255, 255, 255, 0.3);
       }
     }
   }
 
-  /* --- TĚLO KARTY --- */
+  /* TĚLO KARTY */
   .card-body {
     padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
 
-    /* Autor a stav vyplaceno */
     .card-author {
       font-size: 0.875rem;
       color: var(--muted-color);
@@ -118,11 +142,10 @@
 
       .card-percent {
         font-weight: 600;
-        color: var(--accent-color);
+        color: var(--secondary-color);
       }
     }
 
-    /* Progres bar */
     .card-progress-bar {
       background-color: var(--border-color);
       border-radius: var(--radius-base);
@@ -131,14 +154,13 @@
       margin-top: var(--spacing-xs);
 
       .card-progress-fill {
-        background-color: var(--accent-color);
+        background-color: var(--secondary-color);
         height: 100%;
-        width: 0; /* dynamicky v JS */
-        transition: width var(--transition-default);
+        width: 0; /* dynamicky JS */
+        transition: width var(--transition);
       }
     }
 
-    /* Seznam detailů */
     .card-info-list {
       list-style: none;
       margin: var(--spacing-sm) 0 0 0;
@@ -154,7 +176,6 @@
         align-items: center;
         gap: var(--spacing-xs);
 
-        /* Tečka („bulka“) jako černý disc */
         &::before {
           content: '•';
           color: var(--muted-color);
@@ -167,18 +188,32 @@
           display: inline-block;
         }
 
-        /* Pill tagy pro platformy */
         .platform-pill {
           display: inline-block;
-          background-color: var(--surface-color);
-          color: var(--text-color);
+          background: var(--surface-color);
           border: 1px solid var(--border-color);
+          color: var(--text-color);
           font-size: 0.75rem;
-          padding: var(--spacing-xxs) var(--spacing-xs);
+          padding: 0.2rem 0.4rem;
           border-radius: var(--radius-lg);
           margin-right: var(--spacing-xs);
         }
       }
+    }
+  }
+}
+
+/* =====================================
+   CardGrid komponenta (link karty)
+   ===================================== */
+.card-item-link {
+  text-decoration: none;
+
+  .card-item {
+    transition: transform var(--transition);
+
+    &:hover {
+      transform: translateY(-4px);
     }
   }
 }
