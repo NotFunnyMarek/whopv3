@@ -23,8 +23,8 @@
   max-width: 500px;
   margin: 0 auto;
   padding: var(--spacing-lg);
-  background: var(--surface-color);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.932);
+  backdrop-filter: blur(5px);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
   position: relative;

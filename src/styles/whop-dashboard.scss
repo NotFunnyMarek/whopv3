@@ -1,4 +1,3 @@
-// src/styles/whop-dashboard.scss
 @import './_theme.scss';
 
 /* -------------------------------------------------
@@ -19,6 +18,45 @@
     transform: translateY(0);
   }
 }
+
+/* ==== Přidáno pro fullscreen loading + fade-out ==== */
+.join-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 5, 5, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.5s ease; /* Fade-out trvá 0.5 s */
+
+  .spinner {
+    border: 3px solid #d1d1d1;
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: 1rem;
+    color: white;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+}
+
+.join-loading-overlay.fade-out {
+  opacity: 0; /* Fade-out: opacity 1 → 0 */
+}
+/* ==== Konec přidání pro fullscreen loading + fade-out ==== */
 
 /* -------------------------------------------------
    A) OBALUJÍCÍ KONTEJNER:
@@ -176,13 +214,67 @@
       font-size: 1.5rem;
       margin-bottom: var(--spacing-md);
       color: var(--text-color);
+      text-align: center;
     }
+
+    .whop-features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+      gap: var(--spacing-md);
+      justify-content: center;
+
+      .whop-feature-card {
+        background: var(--surface-color);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        transition: transform var(--transition), box-shadow var(--transition);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow);
+        }
+
+        .whop-feature-image {
+          width: 100%;
+          height: 10rem;
+          object-fit: cover;
+          background: var(--border-color);
+        }
+        .whop-feature-image-placeholder {
+          width: 100%;
+          height: 10rem;
+          background: var(--border-color);
+        }
+        .whop-feature-text {
+          padding: var(--spacing-sm);
+
+          .whop-feature-title {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-color);
+          }
+          .whop-feature-subtitle {
+            margin-top: var(--spacing-xs);
+            font-size: 0.875rem;
+            color: var(--muted-color);
+          }
+        }
+      }
+    }
+
     & > p {
       font-size: 1rem;
       color: var(--text-color);
       line-height: 1.5;
       max-width: 600px;
       margin-bottom: var(--spacing-lg);
+      text-align: center;
     }
 
     .no-campaign-msg {
@@ -434,7 +526,7 @@
 .whop-landing {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* Centruje všechny potomky */
   justify-content: center;
   padding: var(--spacing-lg);
   background: var(--bg-color);
@@ -449,7 +541,7 @@
     background: var(--border-color);
     overflow: hidden;
     backdrop-filter: blur(8px);
-    margin-bottom: var(--spacing-lg);
+    margin: 0 auto var(--spacing-lg); /* Horizontální vystředění + spodní mezera */
 
     img.whop-landing-banner-img {
       width: 100%;
@@ -470,9 +562,10 @@
   .whop-landing-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; /* Centrovaný obsah */
     gap: var(--spacing-md);
-    max-width: 600px;
+    max-width: 800px;
+    width: 100%;
   }
 
   .whop-landing-title {
@@ -480,11 +573,22 @@
     color: var(--text-color);
     margin: 0;
   }
+  .whop-members-count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 1rem;
+    color: var(--muted-color);
+    svg {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+  }
   .whop-landing-description {
     font-size: 1rem;
     color: var(--text-color);
     line-height: 1.5;
-    max-width: 500px;
+    max-width: 700px;
   }
   .whop-landing-join-btn {
     display: inline-flex;
@@ -509,6 +613,71 @@
       background: var(--border-color);
       color: var(--muted-color);
       cursor: not-allowed;
+    }
+  }
+
+  /* Zobrazit Features i na landing page */
+  .features-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-align: center;
+    margin: var(--spacing-lg) auto var(--spacing-md);
+    max-width: 800px;
+  }
+  .whop-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--spacing-lg);
+    justify-content: center; /* Centrovaní karet */
+    margin: 0 auto var(--spacing-lg); /* Vystředěný grid + spodní mezera */
+    max-width: 1000px;
+    width: 100%;
+
+    .whop-feature-card {
+      background: var(--surface-color);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      transition: transform var(--transition), box-shadow var(--transition);
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+      }
+
+      .whop-feature-image {
+        width: 100%;
+        height: 10rem;
+        object-fit: cover;
+        background: var(--border-color);
+      }
+      .whop-feature-image-placeholder {
+        width: 100%;
+        height: 10rem;
+        background: var(--border-color);
+      }
+      .whop-feature-text {
+        padding: var(--spacing-sm);
+
+        .whop-feature-title {
+          margin: 0;
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: var(--text-color);
+        }
+        .whop-feature-subtitle {
+          margin-top: var(--spacing-xs);
+          font-size: 0.9rem;
+          color: var(--muted-color);
+          line-height: 1.4;
+        }
+      }
     }
   }
 }
@@ -539,7 +708,10 @@
     display: grid;
     gap: var(--spacing-md);
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    margin-top: var(--spacing-md);
+    justify-content: center;      /* Centrovaný grid */
+    margin: 0 auto;               /* Grid vystředěn */
+    max-width: 1000px;
+    width: 100%;
 
     .whop-campaign-item {
       background: var(--surface-color);
@@ -623,7 +795,9 @@
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   gap: var(--spacing-md);
   justify-content: center;
-  margin-top: var(--spacing-lg);
+  margin: var(--spacing-lg) auto;
+  max-width: 1000px;
+  width: 100%;
 
   .whop-feature-card {
     background: var(--surface-color);
@@ -818,6 +992,122 @@
   }
 }
 
+/* -------------------------------------------------
+   Dodatečné styly pro tlačítko „View as Member“ a návrat zpět
+   ------------------------------------------------- */
+.whop-action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  margin: var(--spacing-md) auto;
+  max-width: 800px;
+  width: 100%;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-soft);
+    transition: background var(--transition), transform var(--transition);
+
+    &:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+    &:disabled {
+      background: var(--border-color);
+      color: var(--muted-color);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    &.whop-delete-btn {
+      background: var(--error-color);
+      &:hover {
+        background: var(--error-hover);
+      }
+    }
+    &.whop-join-btn {
+      background: var(--secondary-color);
+      color: var(--text-color);
+      &:hover {
+        background: var(--secondary-hover);
+      }
+    }
+    &.whop-view-member-btn {
+      background: var(--secondary-color);
+      color: white;
+      &:hover {
+        background: var(--secondary-hover);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+.view-as-member-back {
+  margin: var(--spacing-md);
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: background var(--transition), transform var(--transition);
+
+  &:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+  }
+
+  svg {
+    font-size: 1rem;
+  }
+}
+
+/* -------------------------------------------------
+   Dodatečné styly: whop-back-button
+   ------------------------------------------------- */
+.whop-back-button {
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: background var(--transition), transform var(--transition);
+  margin: var(--spacing-md);
+
+  &:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+  }
+
+  svg {
+    font-size: 1rem;
+  }
+}
+
+/* ====== Popis Whopu ====== */
 .whop-title {
   font-size: 2.5rem;
   font-weight: 700;
@@ -826,16 +1116,6 @@
   margin: var(--spacing-lg) auto var(--spacing-md);
   max-width: 800px;
   line-height: 1.2;
-}
-
-/* ====== Popis Whopu ====== */
-.whop-description {
-  font-size: 1rem;
-  color: var(--muted-color);
-  text-align: center;
-  margin: 0 auto var(--spacing-lg);
-  max-width: 700px;
-  line-height: 1.5;
 }
 
 /* ====== Počet členů ====== */
@@ -850,136 +1130,21 @@
   font-size: 0.9rem;
   color: var(--muted-color);
   margin-top: var(--spacing-xs);
-  
+
   svg {
     color: var(--primary-color);
     font-size: 1.1rem;
   }
 }
 
-
-/* ====== Akční tlačítka (Edit, Join, Join atd.) ====== */
-.whop-action-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  justify-content: center;
-  margin: var(--spacing-md) auto;
-  max-width: 800px;
-  
-  button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    background: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: 1rem;
-    font-weight: 600;
-    box-shadow: var(--shadow-soft);
-    transition: background var(--transition), transform var(--transition);
-    
-    &:hover {
-      background: var(--primary-hover);
-      transform: translateY(-2px);
-    }
-    &:disabled {
-      background: var(--border-color);
-      color: var(--muted-color);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    &.whop-delete-btn {
-      background: var(--error-color);
-      &:hover {
-        background: var(--error-hover);
-      }
-    }
-    &.whop-join-btn {
-      background: var(--secondary-color);
-      color: var(--text-color);
-      &:hover {
-        background: var(--secondary-hover);
-      }
-    }
-  }
-}
-
-/* ====== Nadpis sekce Features ====== */
-.features-section-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-color);
-  text-align: center;
-  margin: var(--spacing-lg) auto var(--spacing-md);
-  max-width: 800px;
-}
-
-/* ====== Grid pro feature karty ====== */
-.whop-features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  gap: var(--spacing-lg);
-  justify-content: center;
-  margin: 0 auto var(--spacing-lg);
-  max-width: 1000px;
-  
-  /* Jednotlivé karty */
-  .whop-feature-card {
-    background: var(--surface-color);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform var(--transition), box-shadow var(--transition);
-    
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-    
-    .whop-feature-image,
-    .whop-feature-image-placeholder {
-      width: 100%;
-      height: 10rem;
-      background: var(--border-color);
-      object-fit: cover;
-    }
-    .whop-feature-text {
-      padding: var(--spacing-sm);
-      
-      .whop-feature-title {
-        margin: 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-color);
-      }
-      .whop-feature-subtitle {
-        margin-top: var(--spacing-xs);
-        font-size: 0.9rem;
-        color: var(--muted-color);
-        line-height: 1.4;
-      }
-    }
-  }
-}
-
+/* -------------------------------------------------
+   H) OWNER – BANNER (středěné)
+   ------------------------------------------------- */
 .whop-banner {
-  /* Z původních width: 100% a height: 300px ponecháme jen height */
+  width: 100%;
+  max-width: 800px;        /* omezuje maximální šířku banneru na 800px */
   height: 300px;
-
-  /* Přidáme maximální šířku a centrování */
-  max-width: 800px;
-  margin: 0 auto;      /* horizontální centrování */
-  width: 100%;         /* aby se banner zmenšoval na menších obrazovkách */
-  
+  margin: 0 auto var(--spacing-lg); /* vystředí banner a přidá spodní mezeru */
   background-color: var(--border-color);
   display: flex;
   align-items: center;
@@ -987,8 +1152,7 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   backdrop-filter: blur(8px);
-  
-  /* Pokud máte obrázek uvnitř: */
+
   img.whop-banner-image {
     width: 100%;
     height: 100%;
@@ -996,105 +1160,52 @@
   }
 }
 
+/* -------------------------------------------------
+   I) OWNER – HLAVNÍ OBSAH (středění)
+   ------------------------------------------------- */
+.whop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centrování uvnitř obsahu pro ownera */
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--spacing-md);
+}
+
+.whop-slug-section,
+.whop-features-section,
 .whop-campaigns-section {
-  margin-top: var(--spacing-lg);
+  width: 100%;
+}
 
-  .campaigns-section-title {
+.whop-action-btns {
+  width: 100%;
+}
+
+/* -------------------------------------------------
+   G) RESPONSIVNÍ ÚPRAVY (opakováno kvůli H):
+   ------------------------------------------------- */
+@media (max-width: 768px) {
+  .whop-banner {
+    height: 160px;
+  }
+  .whop-banner img {
+    object-position: center;
+  }
+  .whop-landing-banner {
+    height: 180px;
+  }
+  .whop-title {
     font-size: 1.5rem;
-    text-align: center;
-    color: var(--text-color);
-    margin-bottom: var(--spacing-md);
   }
-
-  .campaigns-loading,
-  .campaigns-error,
-  .campaigns-empty {
-    text-align: center;
-    font-size: 1rem;
-    color: var(--muted-color);
-    margin-bottom: var(--spacing-xs);
+  .member-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: column;
   }
-
-  /* ====== Upravené styly pro vystředění kampaní ====== */
-  .whop-campaigns-list {
-    display: grid;
-    gap: var(--spacing-md);
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    justify-content: center;      /* centrování gridu */
-    margin: 0 auto;               /* aby se grid kontejner vystředil v rodiči */
-    max-width: 1000px;            /* volitelná maximální šířka, podle potřeby */
-    width: 100%;                  /* umožní gridu ubírat 100 % šířky rodiče */
-
-    .whop-campaign-item {
-      background: var(--surface-color);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-      transition: transform var(--transition), box-shadow var(--transition);
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow);
-      }
-
-      .campaign-item-title {
-        margin: var(--spacing-sm);
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--text-color);
-        text-align: center;
-      }
-      .campaign-item-detail {
-        margin: 0 var(--spacing-sm) var(--spacing-xs);
-        font-size: 0.9rem;
-        color: var(--text-color);
-        text-align: center;
-      }
-
-      .campaign-status-row {
-        margin: var(--spacing-xs) var(--spacing-sm) var(--spacing-md);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
-
-        .active-label {
-          background: var(--primary-color);
-          color: #fff;
-          padding: 0.25rem 0.5rem;
-          border-radius: var(--radius-lg);
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-        .expired-label {
-          background: var(--error-color);
-          color: #fff;
-          padding: 0.25rem 0.5rem;
-          border-radius: var(--radius-lg);
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-        .expire-btn {
-          margin-left: auto;
-          background: var(--error-color);
-          color: #fff;
-          border: none;
-          border-radius: var(--radius-lg);
-          padding: 0.25rem 0.5rem;
-          font-size: 0.75rem;
-          cursor: pointer;
-          box-shadow: var(--shadow-soft);
-          transition: background var(--transition), transform var(--transition);
-
-          &:hover {
-            background: var(--error-hover);
-            transform: translateY(-1px);
-          }
-        }
-      }
-    }
+  .member-main {
+    margin-top: var(--spacing-lg);
   }
 }

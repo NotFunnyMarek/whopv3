@@ -88,6 +88,7 @@
 
   .tab-btn {
     background: none;
+    border-radius: 0%;
     border: none;
     padding: var(--spacing-sm) var(--spacing-md);
     cursor: pointer;
@@ -102,6 +103,7 @@
 
     &:hover {
       color: var(--text-color);
+      box-shadow: none;
     }
   }
 }

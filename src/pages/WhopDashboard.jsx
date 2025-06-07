@@ -1,5 +1,3 @@
-// src/components/WhopDashboard.jsx
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -17,6 +15,8 @@ import {
   FaTools,
   FaLink,
 } from "react-icons/fa";
+import Confetti from "react-confetti";
+
 import Modal from "../components/Modal";
 import CardForm from "../components/CardForm";
 import "../styles/whop-dashboard.scss";
@@ -33,11 +33,19 @@ export default function WhopDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Stav pro fullscreen overlay
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayFading, setOverlayFading] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [whopData, setWhopData] = useState(null);
 
-  // Owner stav
+  // Owner stavy
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -62,6 +70,9 @@ export default function WhopDashboard() {
   // Member režim
   const [activeTab, setActiveTab] = useState("Home");
   const [memberLoading, setMemberLoading] = useState(false);
+
+  // Režim “View as Member”
+  const [viewAsMemberMode, setViewAsMemberMode] = useState(false);
 
   // —————————————————————
   // 1) Načtení Whopu
@@ -153,11 +164,21 @@ export default function WhopDashboard() {
   };
 
   // —————————————————————
-  // 3) Join Whop (member)
+  // 3) Join Whop (member) – s fullscreen loading + confetti + odložený fade‐out
   // —————————————————————
   const handleJoin = async () => {
     if (!whopData) return;
+
+    // 1) Okamžitě zobrazíme overlay (bez fade)
+    setOverlayVisible(true);
+    setOverlayFading(false);
     setMemberLoading(true);
+
+    // Přidáme listener pro případné změny velikosti okna
+    const resizeListener = () =>
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", resizeListener);
+
     try {
       const res = await fetch("https://app.byxbot.com/php/join_whop.php", {
         method: "POST",
@@ -168,10 +189,17 @@ export default function WhopDashboard() {
       const json = await res.json();
       if (!res.ok) {
         alert(json.message || "Nepodařilo se připojit.");
+        // 2) Pokud se nepodařilo, odložíme fade‐out o 2 sekundy:
+        setTimeout(() => {
+          setOverlayFading(true);
+        }, 3500);
+
         setMemberLoading(false);
+        window.removeEventListener("resize", resizeListener);
         return;
       }
-      // Po úspěchu refresh whopu
+
+      // 3) Po úspěšném joinu načteme data a kampaně
       const refresh = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -186,7 +214,13 @@ export default function WhopDashboard() {
     } catch (err) {
       console.error(err);
     } finally {
+      // 4) Spustíme fade‐out rovněž po 2 sekundách:
+      setTimeout(() => {
+        setOverlayFading(true);
+      }, 2000);
+
       setMemberLoading(false);
+      window.removeEventListener("resize", resizeListener);
     }
   };
 
@@ -209,7 +243,7 @@ export default function WhopDashboard() {
         setMemberLoading(false);
         return;
       }
-      // Po úspěchu načteme znovu Whop (už jako nepřipojený)
+      // Načteme Whop bez členství
       const refresh = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -219,7 +253,7 @@ export default function WhopDashboard() {
       const refreshed = await refresh.json();
       if (refresh.ok && refreshed.status === "success") {
         setWhopData(refreshed.data);
-        setCampaigns([]); // vyprázdníme kampaně
+        setCampaigns([]);
       }
     } catch (err) {
       console.error(err);
@@ -541,8 +575,45 @@ export default function WhopDashboard() {
   };
 
   // —————————————————————
+  // Udržování velikosti okna pro confetti
+  // —————————————————————
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // —————————————————————
   // RENDER
   // —————————————————————
+
+  // Fullscreen overlay s confetti a fade‐out
+  if (overlayVisible || overlayFading) {
+    return (
+      <div
+        className={`join-loading-overlay ${overlayFading ? "fade-out" : ""}`}
+        onTransitionEnd={() => {
+          if (overlayFading) {
+            setOverlayVisible(false);
+            setOverlayFading(false);
+          }
+        }}
+      >
+        <div className="spinner"></div>
+        <h1>Připojuji se…</h1>
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={200}
+        />
+      </div>
+    );
+  }
+
+  // Pokud načítání Whopu
   if (loading) {
     return (
       <div className="whop-loading">
@@ -550,6 +621,8 @@ export default function WhopDashboard() {
       </div>
     );
   }
+
+  // Pokud chyba načtení
   if (error) {
     return (
       <div className="whop-error">
@@ -560,10 +633,215 @@ export default function WhopDashboard() {
       </div>
     );
   }
+
   if (!whopData) return null;
 
   // —————————————————————
-  // Member režim
+  // REŽIM „View as Member“ (majitel se dívá jako člen)
+  // —————————————————————
+  if (viewAsMemberMode) {
+    return (
+      <div className="member-container">
+        {/* Back to Dashboard tlačítko */}
+        <button
+          className="whop-back-button view-as-member-back"
+          onClick={() => setViewAsMemberMode(false)}
+        >
+          <FaArrowLeft /> Back to Dashboard
+        </button>
+
+        {/* LEVÝ SIDEBAR */}
+        <div className="member-sidebar">
+          <div className="member-banner">
+            {whopData.banner_url ? (
+              <img
+                src={whopData.banner_url}
+                alt="Banner"
+                className="member-banner-img"
+              />
+            ) : (
+              <div className="member-banner-placeholder">Žádný banner</div>
+            )}
+          </div>
+          <div className="member-info">
+            <h2 className="member-title">{whopData.name}</h2>
+            <div className="member-members-count">
+              <FaUsers /> {whopData.members_count} členů
+            </div>
+          </div>
+          <nav className="member-nav">
+            <button
+              className={`nav-button ${activeTab === "Home" ? "active" : ""}`}
+              onClick={() => setActiveTab("Home")}
+            >
+              <FaHome /> Home
+            </button>
+            <button
+              className={`nav-button ${activeTab === "Chat" ? "active" : ""}`}
+              onClick={() => setActiveTab("Chat")}
+            >
+              <FaComments /> Chat
+            </button>
+            <button
+              className={`nav-button ${activeTab === "Earn" ? "active" : ""}`}
+              onClick={() => setActiveTab("Earn")}
+            >
+              <FaDollarSign /> Earn
+            </button>
+            <button
+              className={`nav-button ${activeTab === "Tools" ? "active" : ""}`}
+              onClick={() => setActiveTab("Tools")}
+            >
+              <FaTools /> Tools
+            </button>
+          </nav>
+          <div className="member-actions">
+            {memberLoading ? (
+              <div className="spinner spinner-small"></div>
+            ) : (
+              <button className="leave-button" onClick={handleLeave}>
+                <FaSignOutAlt /> Opustit
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* HLAVNÍ OBSAH */}
+        <div className="member-main">
+          {activeTab === "Home" && (
+            <div className="member-tab-content">
+              <h3 className="member-subtitle">{whopData.name}</h3>
+              <div className="whop-features-grid">
+                {whopData.features.map((feat, idx) => (
+                  <div key={idx} className="whop-feature-card">
+                    {feat.image_url ? (
+                      <img
+                        src={feat.image_url}
+                        alt={feat.title}
+                        className="whop-feature-image"
+                      />
+                    ) : (
+                      <div className="whop-feature-image-placeholder" />
+                    )}
+                    <div className="whop-feature-text">
+                      <h3 className="whop-feature-title">{feat.title}</h3>
+                      {feat.subtitle && (
+                        <p className="whop-feature-subtitle">{feat.subtitle}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {activeTab === "Chat" && (
+            <div className="member-tab-content">
+              <h3 className="member-subtitle">Chat</h3>
+              <p className="member-text">
+                Chatovací sekce se připravuje nebo tam může být vložen widget.
+              </p>
+            </div>
+          )}
+          {activeTab === "Earn" && (
+            <div className="member-tab-content">
+              <h3 className="member-subtitle">Earn</h3>
+              {campaignsLoading ? (
+                <div className="spinner spinner-small"></div>
+              ) : campaignsError ? (
+                <p className="member-error">{campaignsError}</p>
+              ) : campaigns.length === 0 ? (
+                <div className="no-campaign-msg">Žádné kampaně</div>
+              ) : (
+                <ul className="member-campaign-list">
+                  {campaigns.map((camp) => {
+                    const isExpired = camp.is_active === 0;
+                    return (
+                      <li
+                        key={camp.id}
+                        className={`member-campaign-card ${
+                          isExpired ? "expired" : "active"
+                        }`}
+                      >
+                        <div className="camp-header">
+                          <span className="camp-title">{camp.campaign_name}</span>
+                          {isExpired ? (
+                            <span className="expired-label">EXPIRED</span>
+                          ) : (
+                            <span className="reward-label">
+                              {camp.currency}
+                              {camp.reward_per_thousand.toFixed(2)} / 1K
+                            </span>
+                          )}
+                        </div>
+                        <p className="author">
+                          Autor: <span className="author-name">{camp.username}</span>
+                        </p>
+                        <div className="paid-bar">
+                          <div className="paid-info">
+                            {camp.currency}
+                            {camp.paid_out.toFixed(2)} z {camp.currency}
+                            {camp.total_paid_out.toFixed(2)} vyplaceno
+                          </div>
+                          <div className="progress-container">
+                            <div
+                              className="progress-fill"
+                              style={{
+                                width: isExpired
+                                  ? "100%"
+                                  : `${camp.paid_percent}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="percent-text">
+                            {isExpired ? "100%" : `${camp.paid_percent}%`}
+                          </div>
+                        </div>
+                        <ul className="camp-details">
+                          <li>
+                            <strong>Typ:</strong> {camp.type}
+                          </li>
+                          <li>
+                            <strong>Kategorie:</strong> {camp.category}
+                          </li>
+                          <li>
+                            <strong>Platformy:</strong>
+                            {camp.platforms.map((p, i) => (
+                              <span key={i} className="platform-pill">
+                                {p}
+                              </span>
+                            ))}
+                          </li>
+                          <li>
+                            <strong>Zhlédnutí:</strong>{" "}
+                            {camp.reward_per_thousand > 0
+                              ? Math.round(
+                                  (camp.paid_out / camp.reward_per_thousand) * 1000
+                                )
+                              : 0}
+                          </li>
+                        </ul>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+          {activeTab === "Tools" && (
+            <div className="member-tab-content">
+              <h3 className="member-subtitle">Tools</h3>
+              <p className="member-text">
+                Tools sekce se připravuje nebo tam mohou být doplňkové nástroje.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // —————————————————————
+  // Member režim (skutečný člen, ne owner)
   // —————————————————————
   if (whopData.is_member && !whopData.is_owner) {
     return (
@@ -628,10 +906,28 @@ export default function WhopDashboard() {
         <div className="member-main">
           {activeTab === "Home" && (
             <div className="member-tab-content">
-              <h3 className="member-subtitle">Home</h3>
-              <p className="member-text">
-                Vítejte v Home sekci. Zde můžete uvítat návštěvníky Whopu.
-              </p>
+              <h3 className="member-subtitle">{whopData.name}</h3>
+              <div className="whop-features-grid">
+                {whopData.features.map((feat, idx) => (
+                  <div key={idx} className="whop-feature-card">
+                    {feat.image_url ? (
+                      <img
+                        src={feat.image_url}
+                        alt={feat.title}
+                        className="whop-feature-image"
+                      />
+                    ) : (
+                      <div className="whop-feature-image-placeholder" />
+                    )}
+                    <div className="whop-feature-text">
+                      <h3 className="whop-feature-title">{feat.title}</h3>
+                      {feat.subtitle && (
+                        <p className="whop-feature-subtitle">{feat.subtitle}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {activeTab === "Chat" && (
@@ -759,10 +1055,45 @@ export default function WhopDashboard() {
         </div>
         <div className="whop-landing-content">
           <h1 className="whop-landing-title">{whopData.name}</h1>
+          <div className="whop-members-count">
+            <FaUsers /> {whopData.members_count} členů
+          </div>
           <p className="whop-landing-description">{whopData.description}</p>
-          <button className="whop-landing-join-btn" onClick={handleJoin} disabled={memberLoading}>
-            {memberLoading ? "Načítám…" : <><FaUserPlus /> Připojit se</>}
+          <button
+            className="whop-landing-join-btn"
+            onClick={handleJoin}
+            disabled={memberLoading}
+          >
+            {memberLoading ? "Načítám…" : (
+              <>
+                <FaUserPlus /> Připojit se
+              </>
+            )}
           </button>
+
+          {/* Zobrazit Features i na landing page */}
+          <h2 className="features-section-title">Features</h2>
+          <div className="whop-features-grid">
+            {whopData.features.map((feat, idx) => (
+              <div key={idx} className="whop-feature-card">
+                {feat.image_url ? (
+                  <img
+                    src={feat.image_url}
+                    alt={feat.title}
+                    className="whop-feature-image"
+                  />
+                ) : (
+                  <div className="whop-feature-image-placeholder" />
+                )}
+                <div className="whop-feature-text">
+                  <h3 className="whop-feature-title">{feat.title}</h3>
+                  {feat.subtitle && (
+                    <p className="whop-feature-subtitle">{feat.subtitle}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -897,6 +1228,12 @@ export default function WhopDashboard() {
               </button>
               <button className="whop-delete-btn" onClick={handleDelete}>
                 <FaTrash /> Smazat Whop
+              </button>
+              <button
+                className="whop-view-member-btn"
+                onClick={() => setViewAsMemberMode(true)}
+              >
+                <FaUsers /> View as Member
               </button>
               <button
                 className="whop-create-camp-btn"
