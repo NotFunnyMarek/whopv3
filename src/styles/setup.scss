@@ -61,6 +61,12 @@
   text-align: right;
 }
 
+.setup-note {
+  font-size: 0.875rem;
+  color: var(--muted-color);
+  margin-top: var(--spacing-xs);
+}
+
 .setup-buttons {
   display: flex;
   justify-content: space-between;

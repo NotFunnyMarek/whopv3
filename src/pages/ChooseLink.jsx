@@ -56,6 +56,10 @@ export default function ChooseLink() {
       slug: slug.trim(),
       features: prevWhopData.features || [],
       logoUrl: prevWhopData.logoUrl || "",
+      price: prevWhopData.price || 0.0,
+      billing_period: prevWhopData.billing_period || "none",
+      is_recurring: prevWhopData.is_recurring || 0,
+      currency: prevWhopData.currency || "USD",
     };
 
     setWhopSetupCookie(whopData);

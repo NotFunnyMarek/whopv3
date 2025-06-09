@@ -1,7 +1,9 @@
+// src/pages/BottomBar.jsx
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/bottombar.scss';
-import { FiMenu, FiSettings, FiUser, FiBell, FiSun, FiMoon } from 'react-icons/fi';
+import { FiMenu, FiSun, FiMoon } from 'react-icons/fi';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
@@ -22,15 +24,53 @@ export default function BottomBar() {
   const fetchJoinedWhops = async () => {
     setLoadingWhops(true);
     try {
-      const res = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
+      // 1) Načteme Whopy, kde je uživatel členem
+      const resMembers = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(`Chyba ${res.status}`);
-      const data = await res.json(); // očekává pole objektů { id, slug, banner_url }
-      setJoinedWhops(data);
+      if (!resMembers.ok) throw new Error(`Chyba ${resMembers.status}`);
+      const membersData = await resMembers.json(); // očekáváme pole objektů { id, slug, banner_url, ... }
+
+      // 2) Načteme Whopy, kde je uživatel vlastníkem
+      const resOwned = await fetch('https://app.byxbot.com/php/get_whop.php?owner=me', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!resOwned.ok) throw new Error(`Chyba ${resOwned.status}`);
+      const ownedJson = await resOwned.json();
+      if (ownedJson.status !== 'success') throw new Error('Nepodařilo se načíst vlastněné Whopy');
+      const ownedData = ownedJson.data; // očekáváme pole objektů s poli: { id, slug, banner_url, ... }
+
+      // 3) Spojíme obě množiny bez duplicit (rozdílné podle id nebo slug)
+      const mapBySlug = new Map();
+
+      // Přidáme nejdřív jednotlivé členy
+      for (const w of membersData) {
+        // předpokládáme strukturu: { id, whop_id, slug, banner_url, ... } nebo něco podobného
+        // pokud JSON vrací jiná pole, upravte odpovídající klíče
+        mapBySlug.set(w.slug, {
+          id: w.whop_id ?? w.id,
+          slug: w.slug,
+          banner_url: w.banner_url,
+        });
+      }
+
+      // Přidáme vlastní Whopy
+      for (const w of ownedData) {
+        // v get_whop?owner=me dostáváme objekty: { id, name, slug, description, logo_url, banner_url, ... }
+        mapBySlug.set(w.slug, {
+          id: w.id,
+          slug: w.slug,
+          banner_url: w.banner_url,
+        });
+      }
+
+      // Výsledné pole
+      const combined = Array.from(mapBySlug.values());
+      setJoinedWhops(combined);
     } catch (err) {
-      console.error('Chyba při načítání připojených whopů:', err);
+      console.error('Error loading joined/owned whops:', err);
       setJoinedWhops([]);
     } finally {
       setLoadingWhops(false);
@@ -68,13 +108,13 @@ export default function BottomBar() {
         console.error(`Logout failed (HTTP ${res.status})`);
       }
     } catch (err) {
-      console.error('Chyba při odhlášení:', err);
+      console.error('Error during logout:', err);
     }
   };
 
   return (
     <div className="bottombar">
-      {/* Levá část: Menu tlačítko + dropdown */}
+      {/* Levá část: Menu + dropdown */}
       <div className="bottombar__left">
         <button
           className="bottombar__left-button"
@@ -91,35 +131,33 @@ export default function BottomBar() {
           className={`bottombar__left-dropdown ${dropdownOpen ? 'visible' : ''}`}
           role="menu"
         >
-          {/* Přepínač tématu */}
+          {/* Theme toggle */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-theme">
-            <label className="theme-toggle">
+            <label>
               <input
                 type="radio"
-                id="theme-light"
                 name="theme"
                 value="light"
                 checked={theme === 'light'}
                 onChange={handleThemeChange}
               />
-              <FiSun /> Světlé
+              <FiSun /> Light
             </label>
-            <label className="theme-toggle">
+            <label>
               <input
                 type="radio"
-                id="theme-dark"
                 name="theme"
                 value="dark"
                 checked={theme === 'dark'}
                 onChange={handleThemeChange}
               />
-              <FiMoon /> Tmavé
+              <FiMoon /> Dark
             </label>
           </div>
 
           {/* What's New */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-whatsnew">
-            What's New <span>06/06/2025</span>
+            What's New <span>06/09/2025</span>
           </div>
 
           {/* Need help? */}
@@ -133,19 +171,19 @@ export default function BottomBar() {
             Need help?
           </a>
 
-          {/* Logout tlačítko */}
+          {/* Logout */}
           <button
             className="bottombar__left-dropdown-item bottombar__left-dropdown-item-logout"
             onClick={handleLogout}
             type="button"
             role="menuitem"
           >
-            <FaSignOutAlt /> Odhlásit
+            <FaSignOutAlt /> Logout
           </button>
         </div>
       </div>
 
-      {/* Střední část: bannery whopů s animací při hoveru */}
+      {/* Střední část: bannery Whopů */}
       <div
         className="bottombar__center-icons"
         ref={iconsContainerRef}
@@ -153,7 +191,7 @@ export default function BottomBar() {
         onMouseLeave={handleMouseLeave}
       >
         {loadingWhops
-          ? /* Skeleton placeholders: 5 kruhů */
+          ? // Skeleton placeholder: 5 kruhů
             Array.from({ length: 5 }).map((_, idx) => (
               <div key={idx} className="bottombar__center-icon skeleton-circle" />
             ))
@@ -161,7 +199,7 @@ export default function BottomBar() {
               if (hoveredX === null) {
                 return (
                   <div
-                    key={whop.id}
+                    key={whop.slug}
                     className="bottombar__center-icon"
                     onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
                   >
@@ -173,9 +211,10 @@ export default function BottomBar() {
                   </div>
                 );
               }
+              // interaktivní „fidgety“ efekt při najetí myší
               const container = iconsContainerRef.current;
               const { left, width } = container.getBoundingClientRect();
-              const segment = width / joinedWhops.length;
+              const segment = width / (joinedWhops.length || 1);
               const iconCenterX = left + segment * (idx + 0.5);
               const dx = Math.abs(hoveredX - iconCenterX);
               const maxRadius = segment * 2;
@@ -185,7 +224,7 @@ export default function BottomBar() {
 
               return (
                 <div
-                  key={whop.id}
+                  key={whop.slug}
                   className="bottombar__center-icon"
                   style={{
                     transform: `translateY(${translateY}px)`,
@@ -202,8 +241,6 @@ export default function BottomBar() {
               );
             })}
       </div>
-
-    
     </div>
   );
 }

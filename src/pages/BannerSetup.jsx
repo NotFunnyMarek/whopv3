@@ -1,5 +1,3 @@
-// src/pages/BannerSetup.jsx
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/banner-setup.scss";
@@ -116,7 +114,7 @@ export default function BannerSetup() {
   const handleContinue = async () => {
     if (!bannerUrl) return;
 
-    // Sestavíme objekt, který pošleme na backend (whop.php)
+    // Sestavíme objekt, který pošleme na backend (whop.php), včetně pricing
     const whopPayload = {
       name: prevWhopData.name,
       description: prevWhopData.description,
@@ -128,6 +126,10 @@ export default function BannerSetup() {
       })),
       logoUrl: prevWhopData.logoUrl || "",
       bannerUrl: bannerUrl,
+      price: prevWhopData.price || 0.0,
+      billing_period: prevWhopData.billing_period || "none",
+      is_recurring: prevWhopData.is_recurring || 0,
+      currency: prevWhopData.currency || "USD",
     };
 
     try {

@@ -1,23 +1,26 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import BottomBar from './components/BottomBar';
-import ProtectedRoute from './components/ProtectedRoute';
-import Loading from './components/Loading'; // Komponenta se spinnerem
+// src/App.jsx
 
-// Dynamické importy stránek pro Lazy Loading
-const Home = lazy(() => import('./pages/Home'));
-const Intro = lazy(() => import('./pages/Intro'));
-const Onboarding = lazy(() => import('./pages/Onboarding'));
-const Setup = lazy(() => import('./pages/Setup'));
-const ChooseLink = lazy(() => import('./pages/ChooseLink'));
-const FeaturesSetup = lazy(() => import('./pages/FeaturesSetup'));
-const BannerSetup = lazy(() => import('./pages/BannerSetup'));
-const WhopDashboard = lazy(() => import('./pages/WhopDashboard'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Balances = lazy(() => import('./pages/Balances'));
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import BottomBar from "./components/BottomBar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Loading from "./components/Loading";
+
+const Home = lazy(() => import("./pages/Home"));
+const Intro = lazy(() => import("./pages/Intro"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Setup = lazy(() => import("./pages/Setup"));
+const ChooseLink = lazy(() => import("./pages/ChooseLink"));
+const FeaturesSetup = lazy(() => import("./pages/FeaturesSetup"));
+const BannerSetup = lazy(() => import("./pages/BannerSetup"));
+const WhopDashboard = lazy(() => import("./pages/WhopDashboard"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Balances = lazy(() => import("./pages/Balances"));
+const Memberships = lazy(() => import("./pages/Memberships"));
+const Payments = lazy(() => import("./pages/Payments")); // nová stránka
 
 const App = () => {
   return (
@@ -28,7 +31,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Veřejná cesta: Intro */}
+          {/* Intro */}
           <Route
             path="/intro"
             element={
@@ -41,7 +44,7 @@ const App = () => {
             }
           />
 
-          {/* Chráněné: Onboarding */}
+          {/* Onboarding */}
           <Route
             path="/onboarding"
             element={
@@ -56,7 +59,7 @@ const App = () => {
             }
           />
 
-          {/* Chráněné: Setup (krok 1) */}
+          {/* Setup Whopu */}
           <Route
             path="/setup"
             element={
@@ -70,8 +73,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Chráněné: ChooseLink (krok 2) */}
           <Route
             path="/setup/link"
             element={
@@ -85,8 +86,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Chráněné: FeaturesSetup (krok 3) */}
           <Route
             path="/setup/features"
             element={
@@ -100,8 +99,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Chráněné: BannerSetup (krok 4) */}
           <Route
             path="/setup/banner"
             element={
@@ -116,7 +113,7 @@ const App = () => {
             }
           />
 
-          {/* WhopDashboard (po dokončení setupu a pro existující whopy) */}
+          {/* Whop Dashboard */}
           <Route
             path="/c/:slug"
             element={
@@ -132,7 +129,7 @@ const App = () => {
             }
           />
 
-          {/* Chráněné: Home */}
+          {/* Domovská stránka */}
           <Route
             path="/"
             element={
@@ -148,7 +145,7 @@ const App = () => {
             }
           />
 
-          {/* Chráněné: Profile */}
+          {/* Profil */}
           <Route
             path="/profile"
             element={
@@ -164,7 +161,7 @@ const App = () => {
             }
           />
 
-          {/* Chráněné: Balances */}
+          {/* Balances */}
           <Route
             path="/balances"
             element={
@@ -173,6 +170,38 @@ const App = () => {
                   <Sidebar />
                   <main className="main-content">
                     <Balances />
+                  </main>
+                  <BottomBar />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Moje předplatná */}
+          <Route
+            path="/memberships"
+            element={
+              <ProtectedRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <main className="main-content">
+                    <Memberships />
+                  </main>
+                  <BottomBar />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Nová stránka – historie plateb */}
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <main className="main-content">
+                    <Payments />
                   </main>
                   <BottomBar />
                 </div>

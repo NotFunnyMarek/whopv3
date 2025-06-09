@@ -1,5 +1,3 @@
-// src/pages/FeaturesSetup.jsx
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaPlus, FaTrash } from "react-icons/fa";
@@ -15,7 +13,6 @@ export default function FeaturesSetup() {
   // Můžeme dostat whopData buď z location.state, nebo z cookie
   const prevWhopData = location.state?.whopData || cookieData || null;
 
-  // === HOOKS MUSÍ BÝT NA VRCHOLU FUNKCE ===
   // Funkce, která vrátí počáteční stav pole features:
   const getInitialFeatures = () => {
     if (
@@ -56,8 +53,6 @@ export default function FeaturesSetup() {
     setWhopSetupCookie(newData);
   }, [features, prevWhopData]);
 
-  // === KONEC HOOKŮ ===
-
   // Pokud chybí předchozí whopData, hned vracíme chybovou obrazovku
   if (!prevWhopData) {
     return (
@@ -68,7 +63,7 @@ export default function FeaturesSetup() {
     );
   }
 
-  // === Funkce pro přidání nové feature ===
+  // Funkce pro přidání nové feature
   const addFeature = () => {
     if (features.length >= 6) return;
     const newId = features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
@@ -78,13 +73,13 @@ export default function FeaturesSetup() {
     ]);
   };
 
-  // === Funkce pro odstranění feature (minimálně 2 musí zůstat) ===
+  // Funkce pro odstranění feature (minimálně 2 musí zůstat)
   const removeFeature = (id) => {
     if (features.length <= 2) return;
     setFeatures((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // === Změna názvu / podnadpisu ===
+  // Změna názvu / podnadpisu
   const handleChange = (id, field, value) => {
     setFeatures((prev) =>
       prev.map((f) =>
@@ -98,7 +93,7 @@ export default function FeaturesSetup() {
     );
   };
 
-  // === Nahrávání obrázku na Cloudinary a generování náhledu ===
+  // Nahrávání obrázku na Cloudinary a generování náhledu
   const handleImageChange = async (id, file) => {
     if (!file) return;
 
@@ -179,7 +174,7 @@ export default function FeaturesSetup() {
   );
   const isContinueEnabled = validCount >= 2;
 
-  // === Handler pro tlačítko „Back“ ===
+  // Handler pro tlačítko „Back“
   const handleBack = () => {
     const newData = {
       ...prevWhopData,
@@ -193,7 +188,7 @@ export default function FeaturesSetup() {
     navigate("/setup/link", { state: { whopData: newData } });
   };
 
-  // === Handler pro tlačítko „Continue“ ===
+  // Handler pro tlačítko „Continue“
   const handleContinue = () => {
     if (!isContinueEnabled) return;
 
@@ -207,6 +202,10 @@ export default function FeaturesSetup() {
         imageUrl: f.imageUrl,
       })),
       logoUrl: prevWhopData.logoUrl || "",
+      price: prevWhopData.price || 0.0,
+      billing_period: prevWhopData.billing_period || "none",
+      is_recurring: prevWhopData.is_recurring || 0,
+      currency: prevWhopData.currency || "USD",
     };
 
     setWhopSetupCookie(whopData);

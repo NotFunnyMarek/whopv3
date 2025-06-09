@@ -33,7 +33,7 @@
   align-items: center;
   z-index: 2000;
   opacity: 1;
-  transition: opacity 0.5s ease; /* Fade-out trvá 0.5 s */
+  transition: opacity 0.5s ease;
 
   .spinner {
     border: 3px solid #d1d1d1;
@@ -54,7 +54,7 @@
 }
 
 .join-loading-overlay.fade-out {
-  opacity: 0; /* Fade-out: opacity 1 → 0 */
+  opacity: 0;
 }
 /* ==== Konec přidání pro fullscreen loading + fade-out ==== */
 
@@ -526,7 +526,7 @@
 .whop-landing {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centruje všechny potomky */
+  align-items: center;
   justify-content: center;
   padding: var(--spacing-lg);
   background: var(--bg-color);
@@ -541,7 +541,7 @@
     background: var(--border-color);
     overflow: hidden;
     backdrop-filter: blur(8px);
-    margin: 0 auto var(--spacing-lg); /* Horizontální vystředění + spodní mezera */
+    margin: 0 auto var(--spacing-lg);
 
     img.whop-landing-banner-img {
       width: 100%;
@@ -562,7 +562,7 @@
   .whop-landing-content {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centrovaný obsah */
+    align-items: center;
     gap: var(--spacing-md);
     max-width: 800px;
     width: 100%;
@@ -629,8 +629,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
     gap: var(--spacing-lg);
-    justify-content: center; /* Centrovaní karet */
-    margin: 0 auto var(--spacing-lg); /* Vystředěný grid + spodní mezera */
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
     max-width: 1000px;
     width: 100%;
 
@@ -708,8 +708,8 @@
     display: grid;
     gap: var(--spacing-md);
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    justify-content: center;      /* Centrovaný grid */
-    margin: 0 auto;               /* Grid vystředěn */
+    justify-content: center;
+    margin: 0 auto;
     max-width: 1000px;
     width: 100%;
 
@@ -1142,9 +1142,9 @@
    ------------------------------------------------- */
 .whop-banner {
   width: 100%;
-  max-width: 800px;        /* omezuje maximální šířku banneru na 800px */
+  max-width: 800px;
   height: 300px;
-  margin: 0 auto var(--spacing-lg); /* vystředí banner a přidá spodní mezeru */
+  margin: 0 auto var(--spacing-lg);
   background-color: var(--border-color);
   display: flex;
   align-items: center;
@@ -1166,7 +1166,7 @@
 .whop-content {
   display: flex;
   flex-direction: column;
-  align-items: center; /* centrování uvnitř obsahu pro ownera */
+  align-items: center;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
@@ -1181,6 +1181,101 @@
 
 .whop-action-btns {
   width: 100%;
+}
+
+/* -------------------------------------------------
+   J) MEMBERSHIPS PAGE
+   ------------------------------------------------- */
+.memberships-container {
+  max-width: 800px;
+  margin: var(--spacing-lg) auto;
+  padding: var(--spacing-md);
+  background: var(--surface-color);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+
+  h2 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .memberships-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: var(--spacing-md);
+
+    table.memberships-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      color: var(--text-color);
+
+      thead {
+        background: var(--border-color);
+        th {
+          padding: var(--spacing-xs) var(--spacing-sm);
+          text-align: left;
+          font-weight: 600;
+          color: var(--text-color);
+        }
+      }
+      tbody {
+        tr {
+          background: var(--surface-color);
+          &:nth-child(even) {
+            background: var(--border-color-hover);
+          }
+          &:hover {
+            background: var(--border-color);
+          }
+          td {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+
+            &.mono {
+              font-family: var(--font-mono);
+            }
+            .membership-action-btn {
+              display: inline-flex;
+              align-items: center;
+              gap: var(--spacing-xs);
+              background: var(--error-color);
+              color: #fff;
+              border: none;
+              border-radius: var(--radius-lg);
+              padding: 0.25rem 0.5rem;
+              font-size: 0.75rem;
+              cursor: pointer;
+              transition: background var(--transition), transform var(--transition);
+
+              &:hover {
+                background: var(--error-hover);
+                transform: translateY(-1px);
+              }
+            }
+            .membership-status-active {
+              color: var(--primary-color);
+              font-weight: 600;
+            }
+            .membership-status-expired {
+              color: var(--error-color);
+              font-weight: 600;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .memberships-note {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    text-align: center;
+  }
 }
 
 /* -------------------------------------------------

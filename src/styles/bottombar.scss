@@ -1,8 +1,9 @@
-// src/styles/bottombar.scss
-
 @import './variables';
 @import './theme';
 
+/* -------------------------------------------------
+   Celá spodní lišta
+--------------------------------------------------- */
 .bottombar {
   position: fixed;
   bottom: 0;
@@ -15,39 +16,41 @@
   align-items: center;
   padding: 0 var(--spacing-md);
   z-index: 50;
-  justify-content: flex-start;
+  justify-content: space-between;
   box-shadow: var(--shadow-sm);
 
-  .bottombar__left {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-
-  &-button {
-    display: inline-flex;
+  /* ---------- Levá část menu + dropdown ---------- */
+  &__left {
+    position: relative;
+    display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-lg);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: var(--shadow-soft);
-    transition: background var(--transition-default), transform var(--transition-default);
 
-    &:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-    }
+    &-button {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-soft);
+      transition: background var(--transition-default), transform var(--transition-default);
 
-    svg {
-      width: var(--icon-size);
-      height: var(--icon-size);
+      &:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      svg {
+        width: var(--icon-size);
+        height: var(--icon-size);
+      }
     }
-  }
 
     &-dropdown {
       position: absolute;
@@ -154,13 +157,15 @@
     }
   }
 
-   &__center-icons {
+  /* ---------- Střední část se seznamem whopů ---------- */
+  &__center-icons {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: flex-end;
     gap: var(--spacing-md);
+    overflow: hidden; /* Pro skeleton effect */
   }
 
   &__center-icon {
@@ -189,9 +194,23 @@
       object-fit: cover;
     }
   }
+
+  /* Skeleton Placeholder (kruh) */
+  .skeleton-circle {
+    background-color: var(--border-color);
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    animation: pulse 1.2s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
 }
 
-/* Klíčová animace */
+/* ---------- Animace pro dropdown ---------- */
 @keyframes fadeIn {
   from {
     opacity: 0;

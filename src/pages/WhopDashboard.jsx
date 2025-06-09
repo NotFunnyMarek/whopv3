@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+// src/pages/WhopDashboard.jsx
+
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   FaTrash,
@@ -13,7 +15,7 @@ import {
   FaComments,
   FaDollarSign,
   FaTools,
-  FaLink,
+  FaLink
 } from "react-icons/fa";
 import Confetti from "react-confetti";
 
@@ -33,50 +35,51 @@ export default function WhopDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Stav pro fullscreen overlay
+  // For fullscreen overlay animation
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayFading, setOverlayFading] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
-    height: window.innerHeight,
+    height: window.innerHeight
   });
 
+  // Global state: whopData, loading, error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [whopData, setWhopData] = useState(null);
 
-  // Owner stavy
+  // --- Owner‐editing state
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBannerUrl, setEditBannerUrl] = useState("");
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [bannerError, setBannerError] = useState("");
-  const [editFeatures, setEditFeatures] = useState([]);
 
   // Slug edit
   const [isSlugEditing, setIsSlugEditing] = useState(false);
   const [newSlugValue, setNewSlugValue] = useState("");
   const [slugError, setSlugError] = useState("");
 
+  // Edit features
+  const [editFeatures, setEditFeatures] = useState([]);
+
   // Campaign modal
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
 
-  // Campaigny
+  // Campaigns
   const [campaigns, setCampaigns] = useState([]);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
   const [campaignsError, setCampaignsError] = useState("");
 
-  // Member režim
+  // Member mode
   const [activeTab, setActiveTab] = useState("Home");
   const [memberLoading, setMemberLoading] = useState(false);
 
-  // Režim “View as Member”
+  // “View as Member” mode
   const [viewAsMemberMode, setViewAsMemberMode] = useState(false);
 
-  // —————————————————————
-  // 1) Načtení Whopu
-  // —————————————————————
+  // — Fetch whopData on mount or slug change —
   useEffect(() => {
     const slugToFetch = location.pathname.startsWith("/c/")
       ? location.pathname.split("/c/")[1].split("?")[0]
@@ -108,7 +111,7 @@ export default function WhopDashboard() {
         }
         setWhopData(json.data);
 
-        // Pokud owner, připravíme stavy pro edit
+        // If owner, prepare editing state
         if (json.data.is_owner) {
           setEditName(json.data.name);
           setEditDescription(json.data.description);
@@ -121,13 +124,13 @@ export default function WhopDashboard() {
               subtitle: f.subtitle,
               imageUrl: f.image_url,
               isUploading: false,
-              error: "",
+              error: ""
             }))
           );
           await fetchCampaigns(json.data.id);
         }
 
-        // Pokud member (ale ne owner), načteme kampaně
+        // If member (but not owner), load campaigns
         if (json.data.is_member && !json.data.is_owner) {
           await fetchCampaigns(json.data.id);
         }
@@ -142,16 +145,14 @@ export default function WhopDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSlug, location.pathname]);
 
-  // —————————————————————
-  // 2) Fetch kampaní
-  // —————————————————————
+  // — Fetch Campaigns for a given whopId —
   const fetchCampaigns = async (whopId) => {
     setCampaignsLoading(true);
     setCampaignsError("");
     try {
       const res = await fetch(`${CAMPAIGN_API_URL}?whop_id=${whopId}`, {
         method: "GET",
-        credentials: "include",
+        credentials: "include"
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -163,18 +164,92 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 3) Join Whop (member) – s fullscreen loading + confetti + odložený fade‐out
-  // —————————————————————
-  const handleJoin = async () => {
+  // — Confetti overlay resize listener —
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // ----------------------------------------
+  // 1) HANDLE SUBSCRIBE (Free vs Paid)
+  // ----------------------------------------
+  const handleSubscribe = async () => {
     if (!whopData) return;
 
-    // 1) Okamžitě zobrazíme overlay (bez fade)
+    // If price ≤ 0 → free whop
+    if (!whopData.price || parseFloat(whopData.price) <= 0) {
+      handleJoinFree();
+      return;
+    }
+
+    // Paid whop: confirm
+    const price = parseFloat(whopData.price).toFixed(2);
+    const period = whopData.is_recurring
+      ? `opakuje se každých ${whopData.billing_period}`
+      : "jednorázově";
+    const confirmMessage = `Tento Whop stojí ${whopData.currency}${price} ${period}.\nChcete pokračovat?`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    // Show fullscreen overlay
+    setOverlayVisible(true);
+    setOverlayFading(false);
+    setMemberLoading(true);
+    const resizeListener = () =>
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", resizeListener);
+
+    try {
+      const payload = { whop_id: whopData.id };
+      const res = await fetch("https://app.byxbot.com/php/subscribe_whop.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.message || "Nepodařilo se přihlásit.");
+      } else {
+        // On success: re‐fetch whopData & campaigns
+        const refresh = await fetch(
+          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+            whopData.slug
+          )}`,
+          { method: "GET", credentials: "include" }
+        );
+        const refreshed = await refresh.json();
+        if (refresh.ok && refreshed.status === "success") {
+          setWhopData(refreshed.data);
+          await fetchCampaigns(refreshed.data.id);
+        }
+      }
+    } catch (err) {
+      console.error("Chyba při subscribe:", err);
+    } finally {
+      // Fade‐out overlay after 2s
+      setTimeout(() => {
+        setOverlayFading(true);
+      }, 2000);
+      setMemberLoading(false);
+      window.removeEventListener("resize", resizeListener);
+    }
+  };
+
+  // ----------------------------------------
+  // 2) JOIN FREE (price ≤ 0)
+  // ----------------------------------------
+  const handleJoinFree = async () => {
+    if (!whopData) return;
+
     setOverlayVisible(true);
     setOverlayFading(false);
     setMemberLoading(true);
 
-    // Přidáme listener pro případné změny velikosti okna
     const resizeListener = () =>
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener("resize", resizeListener);
@@ -184,87 +259,121 @@ export default function WhopDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ whop_id: whopData.id }),
+        body: JSON.stringify({ whop_id: whopData.id })
       });
       const json = await res.json();
       if (!res.ok) {
         alert(json.message || "Nepodařilo se připojit.");
-        // 2) Pokud se nepodařilo, odložíme fade‐out o 2 sekundy:
-        setTimeout(() => {
-          setOverlayFading(true);
-        }, 3500);
-
-        setMemberLoading(false);
-        window.removeEventListener("resize", resizeListener);
-        return;
-      }
-
-      // 3) Po úspěšném joinu načteme data a kampaně
-      const refresh = await fetch(
-        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
-          whopData.slug
-        )}`,
-        { method: "GET", credentials: "include" }
-      );
-      const refreshed = await refresh.json();
-      if (refresh.ok && refreshed.status === "success") {
-        setWhopData(refreshed.data);
-        await fetchCampaigns(refreshed.data.id);
+      } else {
+        // On success: re‐fetch whopData & campaigns
+        const refresh = await fetch(
+          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+            whopData.slug
+          )}`,
+          { method: "GET", credentials: "include" }
+        );
+        const refreshed = await refresh.json();
+        if (refresh.ok && refreshed.status === "success") {
+          setWhopData(refreshed.data);
+          await fetchCampaigns(refreshed.data.id);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Chyba při join free:", err);
     } finally {
-      // 4) Spustíme fade‐out rovněž po 2 sekundách:
       setTimeout(() => {
         setOverlayFading(true);
       }, 2000);
-
       setMemberLoading(false);
       window.removeEventListener("resize", resizeListener);
     }
   };
 
-  // —————————————————————
-  // 4) Leave Whop (member)
-  // —————————————————————
+  // ----------------------------------------
+  // 3) LEAVE (if paid → cancel_membership, if free → leave_whop)
+  // ----------------------------------------
   const handleLeave = async () => {
     if (!whopData) return;
+
+    // Confirm immediate removal
+    if (!window.confirm("Chcete okamžitě opustit tento Whop a ztratit přístup?")) {
+      return;
+    }
+
     setMemberLoading(true);
+
+    // If paid whop (price > 0)
+    if (whopData.price && parseFloat(whopData.price) > 0) {
+      try {
+        const payload = { whop_id: whopData.id };
+        const res = await fetch("https://app.byxbot.com/php/cancel_membership.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          alert(json.message || "Nepodařilo se zrušit předplatné.");
+        } else {
+          // On success: re‐fetch whopData (uživatel ztratí přístup)
+          const refresh = await fetch(
+            `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+              whopData.slug
+            )}`,
+            { method: "GET", credentials: "include" }
+          );
+          const refreshed = await refresh.json();
+          if (refresh.ok && refreshed.status === "success") {
+            setWhopData(refreshed.data);
+            setCampaigns([]); // membership vymazané
+          }
+        }
+      } catch (err) {
+        console.error("Chyba při cancel membership:", err);
+        alert("Síťová chyba.");
+      } finally {
+        setMemberLoading(false);
+      }
+      return;
+    }
+
+    // Otherwise: free whop
     try {
       const res = await fetch("https://app.byxbot.com/php/leave_whop.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ whop_id: whopData.id }),
+        body: JSON.stringify({ whop_id: whopData.id })
       });
       const json = await res.json();
       if (!res.ok) {
         alert(json.message || "Nepodařilo se opustit.");
-        setMemberLoading(false);
-        return;
-      }
-      // Načteme Whop bez členství
-      const refresh = await fetch(
-        `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
-          whopData.slug
-        )}`,
-        { method: "GET", credentials: "include" }
-      );
-      const refreshed = await refresh.json();
-      if (refresh.ok && refreshed.status === "success") {
-        setWhopData(refreshed.data);
-        setCampaigns([]);
+      } else {
+        // On success: re‐fetch whopData
+        const refresh = await fetch(
+          `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
+            whopData.slug
+          )}`,
+          { method: "GET", credentials: "include" }
+        );
+        const refreshed = await refresh.json();
+        if (refresh.ok && refreshed.status === "success") {
+          setWhopData(refreshed.data);
+          setCampaigns([]);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Chyba při leave free:", err);
+      alert("Síťová chyba.");
     } finally {
       setMemberLoading(false);
     }
   };
 
-  // —————————————————————
-  // 5) Upload banner (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 4) Upload banner (owner)
+  // ----------------------------------------
   const handleBannerUpload = async (file) => {
     if (!file) return;
     const maxSize = 5 * 1024 * 1024;
@@ -284,7 +393,7 @@ export default function WhopDashboard() {
     try {
       const res = await fetch(CLOUDINARY_UPLOAD_URL, {
         method: "POST",
-        body: formData,
+        body: formData
       });
       if (!res.ok) throw new Error(`Cloudinary chybička: ${res.status}`);
       const data = await res.json();
@@ -300,18 +409,16 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 6) Upload feature image (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 5) Upload feature image (owner)
+  // ----------------------------------------
   const handleImageChange = async (id, file) => {
     if (!file) return;
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setEditFeatures((prev) =>
         prev.map((f) =>
-          f.id === id
-            ? { ...f, error: "Max 5 MB.", isUploading: false }
-            : f
+          f.id === id ? { ...f, error: "Max 5 MB.", isUploading: false } : f
         )
       );
       return;
@@ -325,13 +432,18 @@ export default function WhopDashboard() {
       return;
     }
     setEditFeatures((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, isUploading: true, error: "" } : f))
+      prev.map((f) =>
+        f.id === id ? { ...f, isUploading: true, error: "" } : f
+      )
     );
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
     try {
-      const res = await fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData });
+      const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: "POST",
+        body: formData
+      });
       if (!res.ok) throw new Error(`Cloudinary: ${res.status}`);
       const data = await res.json();
       if (!data.secure_url) throw new Error("Žádné secure_url.");
@@ -354,9 +466,9 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 7) Přidání feature
-  // —————————————————————
+  // ----------------------------------------
+  // 6) Add feature (owner)
+  // ----------------------------------------
   const addFeature = () => {
     if (editFeatures.length >= 6) return;
     const newId =
@@ -365,30 +477,30 @@ export default function WhopDashboard() {
         : 1;
     setEditFeatures((prev) => [
       ...prev,
-      { id: newId, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
+      { id: newId, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" }
     ]);
   };
 
-  // —————————————————————
-  // 8) Odebrání feature
-  // —————————————————————
+  // ----------------------------------------
+  // 7) Remove feature (owner)
+  // ----------------------------------------
   const removeFeature = (id) => {
     if (editFeatures.length <= 2) return;
     setEditFeatures((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // —————————————————————
-  // 9) Změna field ve feature
-  // —————————————————————
+  // ----------------------------------------
+  // 8) Change field on feature (owner)
+  // ----------------------------------------
   const handleFeatChange = (id, field, value) => {
     setEditFeatures((prev) =>
       prev.map((f) => (f.id === id ? { ...f, [field]: value } : f))
     );
   };
 
-  // —————————————————————
-  // 10) Uložení slug (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 9) Save slug (owner)
+  // ----------------------------------------
   const handleSlugSave = async () => {
     setSlugError("");
     const trimmed = newSlugValue.trim();
@@ -406,7 +518,7 @@ export default function WhopDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       const text = await res.text();
       let json;
@@ -427,9 +539,9 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 11) Uložení změn Whopu (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 10) Save Whop (owner)
+  // ----------------------------------------
   const handleSave = async () => {
     if (!editName.trim() || !editDescription.trim()) {
       setError("Název i popis nesmí být prázdné.");
@@ -440,23 +552,30 @@ export default function WhopDashboard() {
       setError("Minimálně 2 platné features.");
       return;
     }
+
+    // Build payload (including price/recurring)
     const payload = {
       slug: whopData.slug,
       name: editName.trim(),
       description: editDescription.trim(),
       bannerUrl: editBannerUrl.trim(),
+      price: parseFloat(whopData.price) || 0.00,
+      currency: whopData.currency || "USD",
+      is_recurring: whopData.is_recurring || 0,
+      billing_period: whopData.billing_period || "",
       features: validFeats.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
-        image_url: f.imageUrl,
-      })),
+        image_url: f.imageUrl
+      }))
     };
+
     try {
       const res = await fetch("https://app.byxbot.com/php/update_whop.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       const text = await res.text();
       let json;
@@ -470,8 +589,9 @@ export default function WhopDashboard() {
         setError(json.message || "Nepovedlo se uložit.");
         return;
       }
+
+      // On success: turn off editing and re‐fetch whopData
       setIsEditing(false);
-      // Refresh Whop
       const refreshRes = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -487,6 +607,7 @@ export default function WhopDashboard() {
       }
       if (refreshRes.ok && refreshJson.status === "success") {
         setWhopData(refreshJson.data);
+        // Update local states
         setEditName(refreshJson.data.name);
         setEditDescription(refreshJson.data.description);
         setEditBannerUrl(refreshJson.data.banner_url || "");
@@ -496,7 +617,7 @@ export default function WhopDashboard() {
           subtitle: f.subtitle,
           imageUrl: f.image_url,
           isUploading: false,
-          error: "",
+          error: ""
         }));
         setEditFeatures(newFeatArr);
         setError("");
@@ -509,9 +630,9 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 12) Smazání Whopu (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 11) Delete Whop (owner)
+  // ----------------------------------------
   const handleDelete = async () => {
     if (!window.confirm("Opravdu smazat Whop?")) return;
     try {
@@ -520,7 +641,7 @@ export default function WhopDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       const text = await res.text();
       let json;
@@ -531,7 +652,7 @@ export default function WhopDashboard() {
         return;
       }
       if (!res.ok || json.status !== "success") {
-        setError(json.message || "Nepovedlo se smazat.");
+        setError(json.message || "Nepodařilo se smazat.");
         return;
       }
       navigate("/onboarding");
@@ -541,16 +662,16 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // 13) Back button (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 12) Back button (owner)
+  // ----------------------------------------
   const handleBack = () => {
     navigate("/onboarding");
   };
 
-  // —————————————————————
-  // 14) Expirace kampaně (owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 13) Expire a campaign (owner)
+  // ----------------------------------------
   const handleExpire = async (campaignId) => {
     if (!window.confirm("Označit kampaň jako EXPIRY?")) return;
     try {
@@ -558,7 +679,7 @@ export default function WhopDashboard() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaign_id: campaignId }),
+        body: JSON.stringify({ campaign_id: campaignId })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -574,22 +695,42 @@ export default function WhopDashboard() {
     }
   };
 
-  // —————————————————————
-  // Udržování velikosti okna pro confetti
-  // —————————————————————
+  // ----------------------------------------
+  // 14) Fetch paid members (owner)
+  // ----------------------------------------
+  const [membershipsList, setMembershipsList] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersError, setMembersError] = useState("");
+
+  const fetchWhopMembers = async () => {
+    if (!whopData || !whopData.is_owner) return;
+    setMembersLoading(true);
+    setMembersError("");
+    try {
+      const res = await fetch(
+        `https://app.byxbot.com/php/get_whop_members.php?whop_id=${whopData.id}`,
+        { method: "GET", credentials: "include" }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setMembershipsList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Chyba při načítání členů Whopu:", err);
+      setMembersError("Nepodařilo se načíst členy Whopu.");
+      setMembershipsList([]);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    fetchWhopMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [whopData]);
 
-  // —————————————————————
-  // RENDER
-  // —————————————————————
-
-  // Fullscreen overlay s confetti a fade‐out
+  // ----------------------------------------
+  // 15) Render Fullscreen overlay + Confetti
+  // ----------------------------------------
   if (overlayVisible || overlayFading) {
     return (
       <div
@@ -613,7 +754,9 @@ export default function WhopDashboard() {
     );
   }
 
-  // Pokud načítání Whopu
+  // ----------------------------------------
+  // 16) While loading whopData
+  // ----------------------------------------
   if (loading) {
     return (
       <div className="whop-loading">
@@ -622,7 +765,9 @@ export default function WhopDashboard() {
     );
   }
 
-  // Pokud chyba načtení
+  // ----------------------------------------
+  // 17) Error loading whopData
+  // ----------------------------------------
   if (error) {
     return (
       <div className="whop-error">
@@ -636,13 +781,13 @@ export default function WhopDashboard() {
 
   if (!whopData) return null;
 
-  // —————————————————————
-  // REŽIM „View as Member“ (majitel se dívá jako člen)
-  // —————————————————————
+  // ----------------------------------------
+  // 18) “View as Member” (owner viewing own whop as a member)
+  // ----------------------------------------
   if (viewAsMemberMode) {
     return (
       <div className="member-container">
-        {/* Back to Dashboard tlačítko */}
+        {/* Back to Dashboard button */}
         <button
           className="whop-back-button view-as-member-back"
           onClick={() => setViewAsMemberMode(false)}
@@ -650,7 +795,7 @@ export default function WhopDashboard() {
           <FaArrowLeft /> Back to Dashboard
         </button>
 
-        {/* LEVÝ SIDEBAR */}
+        {/* MEMBER SIDEBAR */}
         <div className="member-sidebar">
           <div className="member-banner">
             {whopData.banner_url ? (
@@ -706,7 +851,7 @@ export default function WhopDashboard() {
           </div>
         </div>
 
-        {/* HLAVNÍ OBSAH */}
+        {/* MEMBER MAIN CONTENT */}
         <div className="member-main">
           {activeTab === "Home" && (
             <div className="member-tab-content">
@@ -788,7 +933,7 @@ export default function WhopDashboard() {
                               style={{
                                 width: isExpired
                                   ? "100%"
-                                  : `${camp.paid_percent}%`,
+                                  : `${camp.paid_percent}%`
                               }}
                             />
                           </div>
@@ -840,13 +985,13 @@ export default function WhopDashboard() {
     );
   }
 
-  // —————————————————————
-  // Member režim (skutečný člen, ne owner)
-  // —————————————————————
+  // ----------------------------------------
+  // 19) MEMBER MODE (actually connected, not owner)
+  // ----------------------------------------
   if (whopData.is_member && !whopData.is_owner) {
     return (
       <div className="member-container">
-        {/* LEVÝ SIDEBAR */}
+        {/* MEMBER SIDEBAR */}
         <div className="member-sidebar">
           <div className="member-banner">
             {whopData.banner_url ? (
@@ -902,7 +1047,7 @@ export default function WhopDashboard() {
           </div>
         </div>
 
-        {/* HLAVNÍ OBSAH */}
+        {/* MEMBER MAIN CONTENT */}
         <div className="member-main">
           {activeTab === "Home" && (
             <div className="member-tab-content">
@@ -984,7 +1129,7 @@ export default function WhopDashboard() {
                               style={{
                                 width: isExpired
                                   ? "100%"
-                                  : `${camp.paid_percent}%`,
+                                  : `${camp.paid_percent}%`
                               }}
                             />
                           </div>
@@ -1036,9 +1181,9 @@ export default function WhopDashboard() {
     );
   }
 
-  // —————————————————————
-  // Nepřipojený uživatel (landing page)
-  // —————————————————————
+  // ----------------------------------------
+  // 20) LANDING PAGE (visitor, not owner or member)
+  // ----------------------------------------
   if (!whopData.is_owner && !whopData.is_member) {
     return (
       <div className="whop-landing">
@@ -1059,19 +1204,24 @@ export default function WhopDashboard() {
             <FaUsers /> {whopData.members_count} členů
           </div>
           <p className="whop-landing-description">{whopData.description}</p>
+
           <button
             className="whop-landing-join-btn"
-            onClick={handleJoin}
+            onClick={handleSubscribe}
             disabled={memberLoading}
           >
-            {memberLoading ? "Načítám…" : (
+            {memberLoading ? (
+              "Načítám…"
+            ) : (
               <>
-                <FaUserPlus /> Připojit se
+                <FaUserPlus />{" "}
+                {whopData.price && parseFloat(whopData.price) > 0
+                  ? `${whopData.currency}${parseFloat(whopData.price).toFixed(2)}`
+                  : "Připojit se zdarma"}
               </>
             )}
           </button>
 
-          {/* Zobrazit Features i na landing page */}
           <h2 className="features-section-title">Features</h2>
           <div className="whop-features-grid">
             {whopData.features.map((feat, idx) => (
@@ -1099,9 +1249,9 @@ export default function WhopDashboard() {
     );
   }
 
-  // —————————————————————
-  // Owner režim
-  // —————————————————————
+  // ----------------------------------------
+  // 21) OWNER MODE
+  // ----------------------------------------
   return (
     <div className="whop-container">
       {isEditing && (
@@ -1110,6 +1260,7 @@ export default function WhopDashboard() {
         </button>
       )}
 
+      {/* BANNER */}
       <div className="whop-banner">
         {isEditing ? (
           <div className="whop-banner-edit-wrapper">
@@ -1146,7 +1297,9 @@ export default function WhopDashboard() {
         )}
       </div>
 
+      {/* HLAVNÍ OBSAH (owner) */}
       <div className="whop-content">
+        {/* HLAVIČKA: název, popis */}
         <div className="whop-header">
           {isEditing ? (
             <>
@@ -1176,6 +1329,7 @@ export default function WhopDashboard() {
           )}
         </div>
 
+        {/* SLUG & Price/Period */}
         <div className="whop-slug-section">
           {(isEditing || isSlugEditing) && (
             <div className="whop-slug-edit-wrapper">
@@ -1211,6 +1365,87 @@ export default function WhopDashboard() {
           )}
         </div>
 
+        {/* PRICE / PERIOD (owner edit) */}
+        <div className="whop-price-section">
+          {isEditing ? (
+            <div className="price-edit-wrapper">
+              <div className="price-field">
+                <label>Cena (např. 10.00)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={whopData.price ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setWhopData((prev) => ({
+                      ...prev,
+                      price: val !== "" ? parseFloat(val) : 0
+                    }));
+                  }}
+                />
+              </div>
+              <div className="price-field">
+                <label>Měna</label>
+                <input
+                  type="text"
+                  value={whopData.currency || "USD"}
+                  onChange={(e) => {
+                    const val = e.target.value.toUpperCase();
+                    setWhopData((prev) => ({ ...prev, currency: val }));
+                  }}
+                />
+              </div>
+              <div className="price-field">
+                <label>Předplatné</label>
+                <select
+                  value={whopData.is_recurring ? "1" : "0"}
+                  onChange={(e) => {
+                    const rec = parseInt(e.target.value, 10);
+                    setWhopData((prev) => ({ ...prev, is_recurring: rec }));
+                  }}
+                >
+                  <option value="0">Jednorázově</option>
+                  <option value="1">Opakované</option>
+                </select>
+              </div>
+              {whopData.is_recurring ? (
+                <div className="price-field">
+                  <label>Perioda</label>
+                  <select
+                    value={whopData.billing_period || ""}
+                    onChange={(e) => {
+                      const period = e.target.value;
+                      setWhopData((prev) => ({ ...prev, billing_period: period }));
+                    }}
+                  >
+                    <option value="1 minute">1 minute</option>
+                    <option value="7 days">7 days</option>
+                    <option value="14 days">14 days</option>
+                    <option value="30 days">30 days</option>
+                    <option value="1 year">1 year</option>
+                  </select>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="price-view-wrapper">
+              {(!whopData.price || parseFloat(whopData.price) <= 0) ? (
+                <span className="price-free">Cost: Free</span>
+              ) : (
+                <span className="price-info">
+                  {whopData.currency}
+                  {parseFloat(whopData.price).toFixed(2)}{" "}
+                  {whopData.is_recurring
+                    ? `(Opakuje se každých ${whopData.billing_period})`
+                    : `(Jednorázově)`}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ACTION BUTTONS */}
         <div className="whop-action-btns">
           {isEditing ? (
             <>
@@ -1245,6 +1480,7 @@ export default function WhopDashboard() {
           )}
         </div>
 
+        {/* FEATURES SECTION */}
         <div className="whop-features-section">
           <h2 className="features-section-title">Features</h2>
           {isEditing ? (
@@ -1345,6 +1581,7 @@ export default function WhopDashboard() {
           )}
         </div>
 
+        {/* OWNER: Campaigns Section */}
         {whopData.is_owner && (
           <div className="whop-campaigns-section">
             <h2 className="campaigns-section-title">Kampaně</h2>
@@ -1368,7 +1605,7 @@ export default function WhopDashboard() {
                         <strong>Budget:</strong> {camp.currency}
                         {camp.budget.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
+                          maximumFractionDigits: 2
                         })}
                       </p>
                       <p className="campaign-item-detail">
@@ -1396,10 +1633,78 @@ export default function WhopDashboard() {
             )}
           </div>
         )}
+
+        {/* OWNER: Members / Subscriptions Section */}
+        {whopData.is_owner && (
+          <div className="whop-members-section">
+            <h2 className="members-section-title">Členové (placené Whopy)</h2>
+            {membersLoading ? (
+              <p className="members-loading">Načítám členy…</p>
+            ) : membersError ? (
+              <p className="members-error">{membersError}</p>
+            ) : membershipsList.length === 0 ? (
+              <p className="members-empty">Žádní členové (placené Whopy)</p>
+            ) : (
+              <table className="members-table">
+                <thead>
+                  <tr>
+                    <th>Uživatel</th>
+                    <th>Cena</th>
+                    <th>Perioda</th>
+                    <th>Začátek</th>
+                    <th>Další platba</th>
+                    <th>Stav</th>
+                    <th>Akce</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {membershipsList.map((m) => {
+                    const start = new Date(m.start_at).toLocaleString();
+                    const nextPay = m.next_payment_at
+                      ? new Date(m.next_payment_at).toLocaleString()
+                      : "-";
+                    const periodText = m.is_recurring
+                      ? m.billing_period
+                      : "Jednorázově";
+                    return (
+                      <tr key={m.user_id}>
+                        <td>{m.username}</td>
+                        <td>
+                          {m.currency}
+                          {parseFloat(m.price).toFixed(2)}
+                        </td>
+                        <td>{periodText}</td>
+                        <td>{start}</td>
+                        <td>{nextPay}</td>
+                        <td>{m.status}</td>
+                        <td>
+                          {m.status === "active" ? (
+                            <button
+                              className="member-cancel-btn"
+                              onClick={() => handleCancelMember(m.user_id)}
+                            >
+                              Zrušit
+                            </button>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Modal for creating a campaign */}
       {isCampaignModalOpen && (
-        <Modal isOpen={isCampaignModalOpen} onClose={() => setIsCampaignModalOpen(false)}>
+        <Modal
+          isOpen={isCampaignModalOpen}
+          onClose={() => setIsCampaignModalOpen(false)}
+        >
           <CardForm
             whopId={whopData.id}
             onClose={() => setIsCampaignModalOpen(false)}
@@ -1409,4 +1714,28 @@ export default function WhopDashboard() {
       )}
     </div>
   );
+
+  // ----------------------------------------
+  // 22) Helper: Cancel a paid member (owner)
+  // ----------------------------------------
+  async function handleCancelMember(memberUserId) {
+    if (!window.confirm("Opravdu zrušit toto předplatné?")) return;
+    try {
+      const payload = { whop_id: whopData.id };
+      const res = await fetch("https://app.byxbot.com/php/cancel_membership.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.message || "Nepodařilo se zrušit předplatné.");
+      } else {
+        fetchWhopMembers();
+      }
+    } catch (err) {
+      console.error("Chyba při rušení členství:", err);
+    }
+  }
 }

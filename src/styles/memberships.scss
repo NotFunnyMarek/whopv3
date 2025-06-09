@@ -1,0 +1,72 @@
+@import './variables';
+@import './theme';
+
+.memberships-container {
+  max-width: 800px;
+  margin: var(--spacing-lg) auto;
+  padding: var(--spacing-md);
+  background: var(--bg-color);
+  color: var(--text-color);
+
+  h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .memberships-loading,
+  .memberships-error {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--muted-color);
+  }
+
+  table.memberships-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-md);
+
+    th,
+    td {
+      border: 1px solid var(--border-color);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    th {
+      background: var(--surface-color);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background: var(--bg-color);
+    }
+
+    tr:nth-child(odd) {
+      background: var(--surface-color);
+    }
+
+    .cancel-btn {
+      background: var(--error-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      cursor: pointer;
+      transition: background var(--transition-default), transform var(--transition-default);
+
+      &:hover {
+        background: var(--error-color-dark);
+        transform: translateY(-1px);
+      }
+
+      svg {
+        font-size: 1rem;
+      }
+    }
+  }
+}

@@ -1,21 +1,30 @@
 // src/components/Sidebar.jsx
 
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import '../styles/sidebar.scss';
-import Logo from '../assets/logo.png';
-import { FiHome, FiSearch, FiMessageSquare, FiBell, FiBarChart2, FiUser } from 'react-icons/fi';
+import React, { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
+import "../styles/sidebar.scss";
+import Logo from "../assets/logo.png";
+import {
+  FiHome,
+  FiSearch,
+  FiMessageSquare,
+  FiBell,
+  FiBarChart2,
+  FiUser,
+} from "react-icons/fi";
+import { FaUserShield } from "react-icons/fa"; // ikona Memberships
+import { FaDollarSign } from "react-icons/fa"; // ikona pro Payments
 
 const Sidebar = () => {
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [balance, setBalance] = useState(0);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch('https://app.byxbot.com/php/profile.php', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    fetch("https://app.byxbot.com/php/profile.php", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
     })
       .then((res) => {
         if (res.status === 401) {
@@ -25,14 +34,14 @@ const Sidebar = () => {
         return res.json();
       })
       .then((data) => {
-        if (data && data.status === 'success') {
-          setAvatarUrl(data.data.avatar_url || '');
+        if (data && data.status === "success") {
+          setAvatarUrl(data.data.avatar_url || "");
           setBalance(parseFloat(data.data.balance) || 0);
         }
       })
       .catch((err) => {
-        console.error('Chyba při načítání profilu (Sidebar):', err);
-        setError('Nepodařilo se načíst data.');
+        console.error("Chyba při načítání profilu (Sidebar):", err);
+        setError("Nepodařilo se načíst data.");
       });
   }, []);
 
@@ -42,9 +51,7 @@ const Sidebar = () => {
         <img src={Logo} alt="Logo platformy" />
       </div>
 
-      <div className="sidebar__balance-display">
-        ${balance.toFixed(2)}
-      </div>
+      <div className="sidebar__balance-display">${balance.toFixed(2)}</div>
 
       <nav className="sidebar__nav">
         <ul>
@@ -71,6 +78,17 @@ const Sidebar = () => {
           <li className="sidebar__nav-item">
             <NavLink to="/balances" className="sidebar__link">
               <FiBarChart2 className="sidebar__icon" />
+            </NavLink>
+          </li>
+          <li className="sidebar__nav-item">
+            <NavLink to="/memberships" className="sidebar__link">
+              <FaUserShield className="sidebar__icon" />
+            </NavLink>
+          </li>
+          {/* Nový odkaz na Payments */}
+          <li className="sidebar__nav-item">
+            <NavLink to="/payments" className="sidebar__link">
+              <FaDollarSign className="sidebar__icon" />
             </NavLink>
           </li>
           <li className="sidebar__nav-item">

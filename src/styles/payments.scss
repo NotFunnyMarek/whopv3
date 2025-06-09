@@ -1,0 +1,35 @@
+/* src/styles/payments.scss */
+
+.payments-container {
+  padding: 1rem;
+}
+
+.payments-total {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payments-table th,
+.payments-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.payments-table th {
+  background-color: #f5f5f5;
+}
+
+/* Nové třídy pro barvy podle typu platby */
+.payments-table td.success {
+  color: #1a7f27; /* tmavá zelená pro úspěšné platby */
+}
+
+.payments-table td.failed {
+  color: #b30e0e; /* tmavá červená pro neúspěšné platby */
+}
