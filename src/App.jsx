@@ -12,7 +12,7 @@ const Setup = lazy(() => import("./pages/Setup"));
 const ChooseLink = lazy(() => import("./pages/ChooseLink"));
 const FeaturesSetup = lazy(() => import("./pages/FeaturesSetup"));
 const BannerSetup = lazy(() => import("./pages/BannerSetup"));
-const WhopDashboard = lazy(() => import("./pages/WhopDashboard"));
+const WhopDashboard = lazy(() => import("./pages/WhopDashboard/WhopDashboard"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Profile = lazy(() => import("./pages/Profile"));

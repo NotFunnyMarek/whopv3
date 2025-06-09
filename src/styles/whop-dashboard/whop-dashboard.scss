@@ -1,0 +1,106 @@
+@import "./_loading.scss";
+@import "./_error.scss";
+@import "./_member.scss";
+@import "./_landing.scss";
+@import "./_owner.scss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   UPRAVA: STYLY PRO WHOP‐FEATURES (OWNER VIEW)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Kontejner celé sekce Features v owner‐režimu */
+.whop-features-section {
+  /* Nadpis */
+  .features-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-align: center;
+    margin: var(--spacing-lg) auto var(--spacing-md);
+    max-width: 800px;
+  }
+
+  /* Grid (jsou tam karty s funkcemi) */
+  .whop-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--spacing-md);
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+    max-width: 1000px;
+    width: 100%;
+
+    /* Každá karta */
+    .whop-feature-card {
+      background: var(--surface-color);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      transition: transform var(--transition), box-shadow var(--transition);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      /* Obrázek (nebo placeholder) */
+      .whop-feature-image {
+        width: 100%;
+        height: 10rem;
+        object-fit: cover;
+        background: var(--border-color);
+      }
+      .whop-feature-image-placeholder {
+        width: 100%;
+        height: 10rem;
+        background: var(--border-color);
+      }
+
+      
+
+      /* Textová část uvnitř karty */
+      .whop-feature-text {
+        padding: var(--spacing-sm);
+
+        .whop-feature-title {
+          margin: 0;
+          font-size: 1rem;
+          color: var(--text-color);
+        }
+        .whop-feature-subtitle {
+          margin-top: var(--spacing-xs);
+          font-size: 0.875rem;
+          color: var(--muted-color);
+        }
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------
+   UPRAVA: Centrování price‐info v Owner Mode
+   ------------------------------------------------- */
+.whop-price-section {
+  width: 100%;
+
+  /* Tento wrapper obsahuje <span class="price-info">…</span> nebo <span class="price-free">…</span> */
+  .price-view-wrapper {
+    display: flex;
+    justify-content: center; /* horizontální centrování */
+    align-items: center;     /* vertikální centrování, pokud je vícřádkový obsah */
+    width: 100%;
+    margin: var(--spacing-md) 0;
+  }
+
+  /* Pokud používáte price-info ve view módu */
+  .price-info,
+  .price-free {
+    text-align: center; /* dodatečné zarovnání do středu */
+    display: block;
+  }
+}

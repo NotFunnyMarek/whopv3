@@ -20,10 +20,10 @@ const ActiveUsersIndicator = ({ campaignId }) => {
   }
 
   // 3) Klíč do localStorage
-  const storageKey = 'activeUsers_' + campaignId;
+  const storageKey = 'rawActiveUsers_' + campaignId;
 
-  // (A) Stav: aktuální zobrazené číslo (z localStorage nebo náhodné)
-  const [displayedUsers, setDisplayedUsers] = useState(() => {
+  // (A) Stav: aktuální "raw" počet uživatelů (z localStorage nebo náhodné)
+  const [rawUsers, setRawUsers] = useState(() => {
     try {
       const stored = window.localStorage.getItem(storageKey);
       if (stored !== null && !isNaN(parseInt(stored, 10))) {
@@ -32,13 +32,13 @@ const ActiveUsersIndicator = ({ campaignId }) => {
     } catch (e) {
       // ignore
     }
-    const init = getInitialUsers();
+    const initRaw = getInitialUsers();
     try {
-      window.localStorage.setItem(storageKey, init.toString());
+      window.localStorage.setItem(storageKey, initRaw.toString());
     } catch (e) {
       // ignore
     }
-    return init;
+    return initRaw;
   });
 
   // (B) Směr animace: 'down' pokud číslo roste, 'up' pokud klesá
@@ -56,25 +56,33 @@ const ActiveUsersIndicator = ({ campaignId }) => {
     }
   }
 
+  // Vypočítaný zobrazený počet: cca 30 % méně než rawUsers
+  const displayedUsers = Math.floor(rawUsers * 0.7);
+
   useEffect(() => {
     function scheduleUpdate() {
       const interval = pickNextInterval();
       updateTimeoutRef.current = setTimeout(() => {
-        const newCount = getNextUsers(displayedUsers);
-        if (newCount === displayedUsers) {
-          // Pokud se nemění, naplánujeme hned znovu
+        const newRaw = getNextUsers(rawUsers);
+        if (newRaw === rawUsers) {
+          // Pokud se rawUsers nezmění, naplánujeme hned znovu
           scheduleUpdate();
           return;
         }
-        // Určeme směr animace
-        setDirection(newCount > displayedUsers ? 'down' : 'up');
-        // Přepíšeme stav – AnimatePresence vyvolá exit/enter animaci
-        setDisplayedUsers(newCount);
+
+        // Určeme směr animace na základě zobrazených hodnot
+        const oldDisplayed = displayedUsers;
+        const newDisplayed = Math.floor(newRaw * 0.7);
+        setDirection(newDisplayed > oldDisplayed ? 'down' : 'up');
+
+        // Nastavíme nový raw stav
+        setRawUsers(newRaw);
         try {
-          window.localStorage.setItem(storageKey, newCount.toString());
+          window.localStorage.setItem(storageKey, newRaw.toString());
         } catch (e) {
           // ignore
         }
+
         // Hned plánujeme další update
         scheduleUpdate();
       }, interval);
@@ -82,8 +90,9 @@ const ActiveUsersIndicator = ({ campaignId }) => {
 
     scheduleUpdate();
     return () => clearTimeout(updateTimeoutRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayedUsers, storageKey]);
+    // Poznámka: závislost rawUsers (a storageKey) je záměrná,
+    // abychom vždy přistupovali k nejaktuálnějšímu rawUsers.
+  }, [rawUsers, storageKey]);
 
   // Variants pro Framer Motion: krátká animace 0.3 s s vertikálním posunem a mírným zoomem
   const variants = {

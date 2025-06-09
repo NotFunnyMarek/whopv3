@@ -96,20 +96,28 @@
       }
     }
 
-    &-dropdown {
-      position: absolute;
-      bottom: calc(var(--bottombar-height) + var(--spacing-sm));
-      left: 0;
-      width: 16rem;
-      background-color: var(--surface-color);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      padding: var(--spacing-md);
-      display: none;
-      flex-direction: column;
-      gap: var(--spacing-sm);
-      z-index: 10000;
+&-dropdown {
+  position: absolute;
+  bottom: calc(var(--bottombar-height) + var(--spacing-sm));
+  left: 0;
+  width: 16rem;
+
+  /* rozostří pozadí za tímto elementem */
+  backdrop-filter: blur(10px);
+
+  /* průhlednější vrstva „skla” */
+  background-color: rgba(255, 255, 255, 0.75);
+
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-md);
+
+  display: none;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  z-index: 10000;
+
 
       &.visible {
         display: flex;
@@ -170,7 +178,7 @@
       }
 
       &-item-help {
-        background-color: var(--primary-color);
+        background-color: #0aac5b;
         color: #fff;
         text-align: center;
         padding: var(--spacing-xs) var(--spacing-sm);

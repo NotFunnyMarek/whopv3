@@ -1,0 +1,33 @@
+.whop-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  .whop-error-text {
+    color: var(--error-color);
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .whop-back-button {
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: background var(--transition), transform var(--transition);
+    svg {
+      font-size: 1rem;
+    }
+    &:hover {
+      background: var(--border-color);
+      transform: translateY(-1px);
+    }
+  }
+}

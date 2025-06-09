@@ -1,0 +1,66 @@
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.join-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(241, 241, 241, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+
+  .spinner {
+    border: 3px solid #9c9c9c;
+    border-top: 3px solid #000000;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: 1rem;
+    color: rgb(3, 3, 3);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+}
+.join-loading-overlay.fade-out {
+  opacity: 0;
+}
+
+.whop-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  .spinner {
+    border: 3px solid #000000;
+    border-top: 3px solid #7c7c7c;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+  }
+}

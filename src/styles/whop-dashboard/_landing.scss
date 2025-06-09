@@ -1,0 +1,167 @@
+.whop-landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: var(--bg-color);
+  min-height: calc(100vh - var(--bottombar-height));
+  text-align: center;
+
+  .whop-landing-banner {
+    width: 100%;
+    max-width: 800px;
+    height: 250px;
+    border-radius: var(--radius-lg);
+    background: var(--border-color);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    margin: 0 auto var(--spacing-lg);
+
+    img.whop-landing-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .whop-landing-banner-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted-color);
+      font-size: 1rem;
+      text-align: center;
+    }
+  }
+
+  .whop-landing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    max-width: 800px;
+    width: 100%;
+  }
+
+  .whop-landing-title {
+    font-size: 2rem;
+    color: var(--text-color);
+    margin: 0;
+  }
+  .whop-members-count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 1rem;
+    color: var(--muted-color);
+    svg {
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+  }
+  .whop-landing-description {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1.5;
+    max-width: 700px;
+  }
+  .whop-landing-join-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: background var(--transition), transform var(--transition);
+    margin-top: var(--spacing-lg);
+
+    &:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    &:disabled {
+      background: var(--border-color);
+      color: var(--muted-color);
+      cursor: not-allowed;
+    }
+  }
+
+  .features-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    text-align: center;
+    margin: var(--spacing-lg) auto var(--spacing-md);
+    max-width: 800px;
+  }
+  .whop-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--spacing-lg);
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+    max-width: 1000px;
+    width: 100%;
+
+    .whop-feature-card {
+      background: var(--surface-color);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      transition: transform var(--transition), box-shadow var(--transition);
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+      }
+
+      .whop-feature-image {
+        width: 100%;
+        height: 10rem;
+        object-fit: cover;
+        background: var(--border-color);
+      }
+      .whop-feature-image-placeholder {
+        width: 100%;
+        height: 10rem;
+        background: var(--border-color);
+      }
+      .whop-feature-text {
+        padding: var(--spacing-sm);
+
+        .whop-feature-title {
+          margin: 0;
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: var(--text-color);
+        }
+        .whop-feature-subtitle {
+          margin-top: var(--spacing-xs);
+          font-size: 0.9rem;
+          color: var(--muted-color);
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .whop-landing-banner {
+    height: 180px;
+  }
+  .whop-landing-title {
+    font-size: 1.5rem;
+  }
+}
