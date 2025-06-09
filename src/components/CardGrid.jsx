@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/card.scss';
+import '../styles/activeUsers.scss';
+import ActiveUsersIndicator from './ActiveUsersIndicator';
 
 export default function CardGrid({ cardsData }) {
-  // Zobrazíme pouze kampaně, které jsou aktivní (is_active === 1)
+  // Zobrazíme jen aktivní (is_active === 1)
   const activeCampaigns = cardsData.filter((camp) => camp.is_active === 1);
 
   return (
@@ -34,6 +36,8 @@ export default function CardGrid({ cardsData }) {
                     {camp.currency}
                     {camp.reward_per_thousand.toFixed(2)} / 1K
                   </span>
+                  {/* Přidáme indikátor aktivních uživatelů */}
+                  <ActiveUsersIndicator campaignId={camp.id} />
                 </div>
 
                 <div className="card-body">

@@ -1,0 +1,59 @@
+@import './_theme.scss';
+
+/* ---- Pulsující animace zelené tečky ---- */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.active-users-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;      /* 0.75 rem, jak v designu */
+  color: var(--text-color);
+  margin-top: 0.25rem;
+
+  /* ===== 1) Pulsující zelená čárka ===== */
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: #3ea629;    /* zelená */
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    animation: pulse 1.5s infinite ease-in-out;
+    flex-shrink: 0;
+  }
+
+  /* ===== 2) Kontejner pro číslo ===== */
+  .number-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 2ch;              /* pevná šířka ≈ 2 znaky (0–99) */
+    height: 1em;             /* přesně výška jedné řádky textu */
+    overflow: hidden;        /* skryje posunuté části, pokud by byly mimo */
+    text-align: center;      /* číslo vycentrujeme vodorovně */
+  }
+
+  /* ===== 3) Styl animovaného čísla ===== */
+  .number {
+    display: inline-block;
+    width: 100%;             /* vyplní celou šířku 2ch */
+    line-height: 1em;        /* pro svislé zarovnání */
+    font-weight: 600;
+    color: var(--text-color);
+    /* Framer Motion bude manipulovat s transform: translateY(...) a opacity */
+  }
+
+  /* ===== 4) Text “online” vedle ===== */
+  .suffix {
+    margin-left: 0.3rem;
+    color: var(--muted-color);
+  }
+}

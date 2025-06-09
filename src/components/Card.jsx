@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import '../styles/card.scss';
+import '../styles/activeUsers.scss';              // import pro ActiveUsersIndicator
+import ActiveUsersIndicator from './ActiveUsersIndicator';
 import { FiPlusCircle, FiTrash2 } from 'react-icons/fi';
 
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
@@ -12,7 +14,7 @@ export default function Card() {
   const [loading, setLoading]           = useState(true);
   const [errorMsg, setErrorMsg]         = useState('');
 
-  // Pole pro formulář (tvoříme `campaign`)
+  // Pole pro formulář (vytváříme novou kampaň)
   const [campaignName, setCampaignName]         = useState('');
   const [category, setCategory]                 = useState('');
   const [budget, setBudget]                     = useState('');
@@ -31,7 +33,7 @@ export default function Card() {
   const [newRequirement, setNewRequirement]     = useState('');
   const [requirements, setRequirements]         = useState([]);
 
-  // ==== 1) Načtení všech kampaní (GET) po prvním vykreslení ====
+  // ==== 1) Načtení všech kampaní po mountu ====
   useEffect(() => {
     fetchCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,7 +51,7 @@ export default function Card() {
         throw new Error(`Chyba ${res.status}`);
       }
       const data = await res.json();
-      // Normalizace: JSON decode a převod na čísla
+      // Normalizace: převod stringů na čísla
       const normalized = data.map((camp) => ({
         ...camp,
         id:                  Number(camp.id),
@@ -123,7 +125,6 @@ export default function Card() {
     e.preventDefault();
     setErrorMsg('');
 
-    // Kontrola, že povinná pole nejsou prázdná
     if (
       !campaignName.trim() ||
       !category.trim() ||
@@ -161,7 +162,7 @@ export default function Card() {
         return;
       }
       if (res.status === 201) {
-        // Úspěšné vložení – resetujeme pole formuláře
+        // Úspěšně vytvořeno
         setCampaignName('');
         setCategory('');
         setBudget('');
@@ -176,10 +177,8 @@ export default function Card() {
         setNewRequirement('');
         setRequirements([]);
         setIsModalOpen(false);
-        // A znovu (refresh) načteme všechny karty
         refreshCampaigns();
       } else {
-        // Vrátilo se něco jako 400/500
         const data = await res.json();
         setErrorMsg(data.error || `Chyba ${res.status}`);
       }
@@ -372,7 +371,7 @@ export default function Card() {
               />
               <button
                 type="button"
-                className="list-add-btn cf-list-add-button"
+                className="list-add-btn cf-list-add-btn"
                 onClick={addContentLink}
               >
                 <FiPlusCircle />
@@ -390,7 +389,7 @@ export default function Card() {
                   </a>
                   <button
                     type="button"
-                    className="list-delete-btn cf-list-delete-button"
+                    className="list-delete-btn cf-list-delete-btn"
                     onClick={() => removeContentLink(idx)}
                   >
                     <FiTrash2 />
@@ -412,7 +411,7 @@ export default function Card() {
               />
               <button
                 type="button"
-                className="list-add-btn cf-list-add-button"
+                className="list-add-btn cf-list-add-btn"
                 onClick={addRequirement}
               >
                 <FiPlusCircle />
@@ -424,7 +423,7 @@ export default function Card() {
                   <span>{item}</span>
                   <button
                     type="button"
-                    className="list-delete-btn cf-list-delete-button"
+                    className="list-delete-btn cf-list-delete-btn"
                     onClick={() => removeRequirement(idx)}
                   >
                     <FiTrash2 />
@@ -445,7 +444,7 @@ export default function Card() {
       <div className="cards-grid">
         {loading && (
           <>
-            {/* Zobrazíme 4 skeleton karty */}
+            {/* 4 skeleton karty */}
             {Array.from({ length: 4 }).map((_, idx) => (
               <div key={idx} className="card-item card-skeleton" />
             ))}
@@ -471,10 +470,11 @@ export default function Card() {
                   {camp.currency}
                   {camp.reward_per_thousand.toFixed(2)} / 1K
                 </span>
+                {/* Zde přidáme ActiveUsersIndicator */}
+                <ActiveUsersIndicator campaignId={camp.id} />
               </div>
 
               <div className="card-body">
-                {/* Vypíšeme autora */}
                 <div className="card-author">
                   <strong>Author:</strong> {camp.username}
                 </div>
