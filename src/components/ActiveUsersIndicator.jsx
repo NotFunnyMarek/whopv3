@@ -3,24 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/activeUsers.scss';
 
 const ActiveUsersIndicator = ({ campaignId }) => {
-  // 1) Náhodné počáteční číslo 3–30
+  // 1) Počáteční náhodné číslo v rozsahu 0–50
   function getInitialUsers() {
-    return Math.floor(Math.random() * 28) + 3;
+    return Math.floor(Math.random() * 51);
   }
 
-  // 2) Nové číslo = staré ±1 nebo ±2, v rámci [3, 30]
+  // 2) Nové číslo = staré ±(1–5), v rozsahu [0, 50]
   function getNextUsers(oldValue) {
-    const delta = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * 2) + 1);
+    // delta je ±(1–5)
+    const step = Math.floor(Math.random() * 5) + 1; // 1–5
+    const delta = Math.random() < 0.5 ? -step : step;
     let candidate = oldValue + delta;
-    if (candidate < 3) candidate = 3;
-    if (candidate > 30) candidate = 30;
+    if (candidate < 0) candidate = 0;
+    if (candidate > 50) candidate = 50;
     return candidate;
   }
 
-  // Klíč pro localStorage
+  // 3) Klíč do localStorage
   const storageKey = 'activeUsers_' + campaignId;
 
-  // (A) Stav: právě zobrazené číslo, načtené z localStorage nebo náhodně
+  // (A) Stav: aktuální zobrazené číslo (z localStorage nebo náhodné)
   const [displayedUsers, setDisplayedUsers] = useState(() => {
     try {
       const stored = window.localStorage.getItem(storageKey);
@@ -42,32 +44,37 @@ const ActiveUsersIndicator = ({ campaignId }) => {
   // (B) Směr animace: 'down' pokud číslo roste, 'up' pokud klesá
   const [direction, setDirection] = useState('down');
 
-  // Ref pro `setTimeout`, abychom ho mohli zrušit při unmountu
+  // Ref pro timeout, abychom ho mohli zrušit při unmountu
   const updateTimeoutRef = useRef(null);
 
-  // Náhodný interval 7–20 s
+  // 4) Náhodný interval: 50 % krátký (1–5 s), 50 % dlouhý (10–20 s)
   function pickNextInterval() {
-    return Math.random() * (20000 - 7000) + 7000;
+    if (Math.random() < 0.5) {
+      return Math.random() * (5000 - 1000) + 1000;   // 1 000–5 000 ms
+    } else {
+      return Math.random() * (20000 - 10000) + 10000; // 10 000–20 000 ms
+    }
   }
 
   useEffect(() => {
-    // Funkce pro naplánování další změny
     function scheduleUpdate() {
       const interval = pickNextInterval();
       updateTimeoutRef.current = setTimeout(() => {
         const newCount = getNextUsers(displayedUsers);
         if (newCount === displayedUsers) {
-          // žádná změna, naplánujeme hned znovu
+          // Pokud se nemění, naplánujeme hned znovu
           scheduleUpdate();
           return;
         }
-        // Určíme směr animace
+        // Určeme směr animace
         setDirection(newCount > displayedUsers ? 'down' : 'up');
-        // Přepíšeme displayedUsers – tím framer spustí exit/enter animaci
+        // Přepíšeme stav – AnimatePresence vyvolá exit/enter animaci
         setDisplayedUsers(newCount);
         try {
           window.localStorage.setItem(storageKey, newCount.toString());
-        } catch (e) { /* ignore */ }
+        } catch (e) {
+          // ignore
+        }
         // Hned plánujeme další update
         scheduleUpdate();
       }, interval);
@@ -78,21 +85,22 @@ const ActiveUsersIndicator = ({ campaignId }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayedUsers, storageKey]);
 
-  // Framer Motion „varianty“ pro posun nahoru / dolů
+  // Variants pro Framer Motion: krátká animace 0.3 s s vertikálním posunem a mírným zoomem
   const variants = {
-    initialDown: { y: -20, opacity: 0 },
-    animate:     { y:   0, opacity: 1 },
-    exitDown:    { y:  20, opacity: 0 },
-    initialUp:   { y:  20, opacity: 0 },
-    exitUp:      { y: -20, opacity: 0 },
+    initialDown: { y: -10, opacity: 0, scale: 0.8 },
+    animate:     { y:   0, opacity: 1, scale: 1   },
+    exitDown:    { y:  10, opacity: 0, scale: 0.8 },
+    initialUp:   { y:  10, opacity: 0, scale: 0.8 },
+    exitUp:      { y: -10, opacity: 0, scale: 0.8 },
   };
 
   return (
     <div className="active-users-indicator">
-      <span className="dot" />
+      {/* Pokud displayedUsers === 0 → šedá tečka, jinak zelená pulsující */}
+      <span className={`dot ${displayedUsers === 0 ? 'zero' : 'active'}`} />
 
       <div className="number-wrapper">
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} exitBeforeEnter>
           <motion.span
             key={displayedUsers}
             className="number"
@@ -100,7 +108,7 @@ const ActiveUsersIndicator = ({ campaignId }) => {
             animate="animate"
             exit={direction === 'down' ? 'exitDown' : 'exitUp'}
             variants={variants}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             {displayedUsers}
           </motion.span>

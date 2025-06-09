@@ -26,7 +26,8 @@ html, body {
 // Glassmorphism: aplikujeme na kontejner, background-color + blur
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;            /* Zdarma výška podle viewportu */
+  overflow: hidden;         /* Obsah se rolovat bude uvnitř main-content */
   background-color: var(--bg-color);
   backdrop-filter: blur(12px);
 }
@@ -89,7 +90,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(var(--primary-color-hover), 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--primary-hover), 0.2);
 }
 
 // Scrollbar styl
@@ -107,7 +108,10 @@ textarea:focus {
 
 // Hlavní obsah vedle sidebaru
 .main-content {
-  flex: 1;
-  padding: var(--spacing-lg);
-  overflow-y: auto;
+  flex: 1;                               /* Zabere zbytek šířky vedle sidebaru */
+  padding: var(--spacing-lg);            /* Standardní padding nahoře/po stranách */
+  padding-bottom: calc(
+    var(--spacing-lg) + var(--bottombar-height)
+  );                                      /* Rezerva pod lištu, aby se obsah nepřekryl */
+  overflow-y: auto;                      /* Vertikální scroll uvnitř main-content */
 }

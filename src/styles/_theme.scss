@@ -1,36 +1,36 @@
 /* ============================================
    _theme.scss
-   Globální proměnné + reset + font Inter
+   Globální proměnné + reset + font Plus Jakarta Sans
    ============================================ */
 
-/* Import Google Font (Inter) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Import Google Font (Plus Jakarta Sans) */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   /* TYPOGRAFIE */
-  --font-family:          'Inter', sans-serif;
+  --font-family:          'Plus Jakarta Sans', sans-serif;
 
   /* BARVY */
-  --bg-color:            rgba(255, 255, 255, 0.75);
-  --surface-color:       rgba(255, 255, 255, 0.55);
+  --bg-color:            rgba(250, 250, 250, 0.75);     /* o něco teplejší bílá */
+  --surface-color:       rgba(255, 255, 255, 0.60);     /* lehce průhlednější */
 
-  --text-color:          #111827;
-  --muted-color:         #6B7280;
+  --text-color:          #1F2937;   /* tmavší neutrální šedavá (blíž #1F2937) */
+  --muted-color:         #4B5563;   /* neutrální šedá pro pomocný text */
 
-  --primary-color:       #0d1d25;
-  --primary-hover:       #18181a;
-  --secondary-color:     #0d1d25;
-  --secondary-hover:     #18181a;
-  --accent-color:        #0c1214;
-  --accent-color-dark:   #0c1214;
+  --primary-color:       #1F2A37;   /* chladnější tmavě modrošedá */
+  --primary-hover:       #161F29;   /* o několik tónů tmavší pro hover */
+  --secondary-color:     #1F2A37;   /* stejné jako primary */
+  --secondary-hover:     #161F29;   /* stejné jako primary-hover */
+  --accent-color:        #131A1F;   /* tmavší akcentní tón */
+  --accent-color-dark:   #131A1F;   /* shodné pro tmavší variantu akcentu */
 
-  --error-color:         #E86644;
-  --error-hover:         #FF008D;
-  --success-color:       #00876D;
+  --error-color:         #E8544B;   /* lehce víc na červeno než původní */
+  --error-hover:         #E63946;   /* výraznější hover pro chybové */
+  --success-color:       #008F75;   /* o něco chladuplnější zelená */
 
-  --border-color:        rgba(0, 0, 0, 0.08);
+  --border-color:        rgba(0, 0, 0, 0.10); /* lehce viditelnější linka */
   --shadow-soft:         0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow:              0 8px 20px rgba(0, 0, 0, 0.1);
+  --shadow:              0 8px 20px rgba(0, 0, 0, 0.10);
 
   --radius-sm:           8px;
   --radius-base:         12px;

@@ -1,5 +1,3 @@
-// src/pages/BottomBar.jsx
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/bottombar.scss';
@@ -30,7 +28,7 @@ export default function BottomBar() {
         credentials: 'include',
       });
       if (!resMembers.ok) throw new Error(`Chyba ${resMembers.status}`);
-      const membersData = await resMembers.json(); // očekáváme pole objektů { id, slug, banner_url, ... }
+      const membersData = await resMembers.json();
 
       // 2) Načteme Whopy, kde je uživatel vlastníkem
       const resOwned = await fetch('https://app.byxbot.com/php/get_whop.php?owner=me', {
@@ -40,25 +38,19 @@ export default function BottomBar() {
       if (!resOwned.ok) throw new Error(`Chyba ${resOwned.status}`);
       const ownedJson = await resOwned.json();
       if (ownedJson.status !== 'success') throw new Error('Nepodařilo se načíst vlastněné Whopy');
-      const ownedData = ownedJson.data; // očekáváme pole objektů s poli: { id, slug, banner_url, ... }
+      const ownedData = ownedJson.data;
 
-      // 3) Spojíme obě množiny bez duplicit (rozdílné podle id nebo slug)
+      // 3) Spojíme obě množiny bez duplicit (rozdílné podle slug)
       const mapBySlug = new Map();
 
-      // Přidáme nejdřív jednotlivé členy
       for (const w of membersData) {
-        // předpokládáme strukturu: { id, whop_id, slug, banner_url, ... } nebo něco podobného
-        // pokud JSON vrací jiná pole, upravte odpovídající klíče
         mapBySlug.set(w.slug, {
           id: w.whop_id ?? w.id,
           slug: w.slug,
           banner_url: w.banner_url,
         });
       }
-
-      // Přidáme vlastní Whopy
       for (const w of ownedData) {
-        // v get_whop?owner=me dostáváme objekty: { id, name, slug, description, logo_url, banner_url, ... }
         mapBySlug.set(w.slug, {
           id: w.id,
           slug: w.slug,
@@ -66,7 +58,6 @@ export default function BottomBar() {
         });
       }
 
-      // Výsledné pole
       const combined = Array.from(mapBySlug.values());
       setJoinedWhops(combined);
     } catch (err) {
@@ -211,7 +202,8 @@ export default function BottomBar() {
                   </div>
                 );
               }
-              // interaktivní „fidgety“ efekt při najetí myší
+
+              // Interaktivní “fidgety” efekt při najetí myší
               const container = iconsContainerRef.current;
               const { left, width } = container.getBoundingClientRect();
               const segment = width / (joinedWhops.length || 1);

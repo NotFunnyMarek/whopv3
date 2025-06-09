@@ -57,11 +57,13 @@
       align-items: center;
       gap: var(--spacing-xs);
       cursor: pointer;
-      transition: background var(--transition-default), transform var(--transition-default);
+      transition: background 1s ease-in-out var(--transition-default), transform var(--transition-default);
 
       &:hover {
         background: var(--error-color-dark);
         transform: translateY(-1px);
+        color: black;
+        border: 1px solid black;
       }
 
       svg {
