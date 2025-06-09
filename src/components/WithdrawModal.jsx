@@ -1,31 +1,28 @@
 // src/components/WithdrawModal.jsx
 
 import React, { useState, useEffect } from 'react';
+import { useNotifications } from './NotificationProvider';
 import '../styles/withdraw-modal.scss';
 
-export default function WithdrawModal({ isOpen, onClose }) {
+export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
+  const { showNotification } = useNotifications();
+
   const [usdAmount, setUsdAmount] = useState('');
   const [solAddress, setSolAddress] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [solPrice, setSolPrice] = useState(null); // kurz SOL→USD
   const [solEquivalent, setSolEquivalent] = useState(null);
 
-  // Když se modal zavře, vyčistíme předchozí hlášky i kurz
   useEffect(() => {
     if (!isOpen) {
       setUsdAmount('');
       setSolAddress('');
-      setError('');
-      setSuccessMsg('');
       setLoading(false);
       setSolPrice(null);
       setSolEquivalent(null);
     }
   }, [isOpen]);
 
-  // Jakmile se modal otevře, načteme cenu SOL z CoinGecko
   useEffect(() => {
     if (!isOpen) return;
 
@@ -54,7 +51,6 @@ export default function WithdrawModal({ isOpen, onClose }) {
     fetchSolPriceUSD();
   }, [isOpen]);
 
-  // Vypočítáme odpovídající SOL, když se změní USD částka nebo kurz
   useEffect(() => {
     const usd = parseFloat(usdAmount);
     if (
@@ -72,16 +68,14 @@ export default function WithdrawModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    setSuccessMsg('');
 
     const usd = parseFloat(usdAmount);
     if (isNaN(usd) || usd < 9.99) {
-      setError('Minimální částka k výběru je 9.99 USD.');
+      showNotification({ type: 'error', message: 'Minimální částka k výběru je 9.99 USD.' });
       return;
     }
     if (!solAddress.trim()) {
-      setError('Zadejte platnou Solana adresu.');
+      showNotification({ type: 'error', message: 'Zadejte platnou Solana adresu.' });
       return;
     }
 
@@ -113,19 +107,21 @@ export default function WithdrawModal({ isOpen, onClose }) {
       })
       .then((data) => {
         if (data.status === 'success') {
-          setSuccessMsg(
-            `Výběr úspěšný: ${data.message} TX: ${data.tx || '-'}`
-          );
+          showNotification({
+            type: 'success',
+            message: `Výběr úspěšný: ${data.message} TX: ${data.tx || '-'}`,
+          });
           setUsdAmount('');
           setSolAddress('');
           setSolEquivalent(null);
+          if (onSuccess) onSuccess();
         } else {
-          setError(data.message || 'Chyba při odesílání žádosti.');
+          showNotification({ type: 'error', message: data.message || 'Chyba při odesílání žádosti.' });
         }
       })
       .catch((err) => {
         console.error('Chyba při volání withdraw.php:', err);
-        setError(err.message || 'Nepodařilo se provést žádost o výběr.');
+        showNotification({ type: 'error', message: err.message || 'Nepodařilo se provést žádost o výběr.' });
       })
       .finally(() => {
         setLoading(false);
@@ -138,9 +134,6 @@ export default function WithdrawModal({ isOpen, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="wm-container" onClick={(e) => e.stopPropagation()}>
         <h2>Withdraw SOL (Testnet)</h2>
-
-        {error && <div className="wm-error">{error}</div>}
-        {successMsg && <div className="wm-success">{successMsg}</div>}
 
         <form onSubmit={handleSubmit} className="wm-form">
           <div className="wm-input-group">

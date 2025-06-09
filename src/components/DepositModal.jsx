@@ -1,9 +1,12 @@
 // src/components/DepositModal.jsx
 
 import React, { useState, useEffect } from 'react';
+import { useNotifications } from './NotificationProvider';
 import '../styles/deposit-modal.scss';
 
-export default function DepositModal({ isOpen, onClose }) {
+export default function DepositModal({ isOpen, onClose, onSuccess }) {
+  const { showNotification } = useNotifications();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [depositAddress, setDepositAddress] = useState('');
@@ -30,7 +33,8 @@ export default function DepositModal({ isOpen, onClose }) {
       .then((data) => {
         if (data.status === 'success') {
           setDepositAddress(data.data.deposit_address);
-          // 2) Po úspěšném načtení adresy spustíme načtení ceny SOL z CoinGecko
+          showNotification({ type: 'success', message: 'Adresa pro deposit načtena.' });
+          // 2) Poté načteme cenu SOL z CoinGecko
           return fetch(
             'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'
           );
@@ -56,15 +60,24 @@ export default function DepositModal({ isOpen, onClose }) {
       .catch((err) => {
         console.error('Chyba při načítání deposit nebo ceny SOL:', err);
         setError('Nepodařilo se načíst data pro deposit');
+        showNotification({ type: 'error', message: 'Chyba při načítání deposit dat.' });
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [isOpen]);
+  }, [isOpen, showNotification]);
 
   const handleCopy = () => {
     if (!depositAddress) return;
-    navigator.clipboard.writeText(depositAddress).catch(() => {});
+    navigator.clipboard.writeText(depositAddress).then(
+      () => {
+        showNotification({ type: 'success', message: 'Adresa zkopírována do schránky.' });
+        if (onSuccess) onSuccess();
+      },
+      () => {
+        showNotification({ type: 'error', message: 'Chyba při kopírování.' });
+      }
+    );
   };
 
   if (!isOpen) return null;

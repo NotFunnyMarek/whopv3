@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard.jsx
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   FaTrash,
@@ -21,6 +21,7 @@ import Confetti from "react-confetti";
 
 import Modal from "../components/Modal";
 import CardForm from "../components/CardForm";
+import { useNotifications } from "../components/NotificationProvider";
 import "../styles/whop-dashboard.scss";
 
 const CLOUDINARY_CLOUD_NAME = "dv6igcvz8";
@@ -34,8 +35,9 @@ export default function WhopDashboard() {
   const { slug: initialSlug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { showNotification, showConfirm } = useNotifications();
 
-  // For fullscreen overlay animation
+  // Pro fullscreen overlay animaci
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayFading, setOverlayFading] = useState(false);
   const [windowSize, setWindowSize] = useState({
@@ -43,12 +45,12 @@ export default function WhopDashboard() {
     height: window.innerHeight
   });
 
-  // Global state: whopData, loading, error
+  // Globální stav: whopData, loading, error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [whopData, setWhopData] = useState(null);
 
-  // --- Owner‐editing state
+  // --- Stav pro owner‐editaci
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -179,23 +181,27 @@ export default function WhopDashboard() {
   const handleSubscribe = async () => {
     if (!whopData) return;
 
-    // If price ≤ 0 → free whop
+    // Pokud je zdarma (price ≤ 0)
     if (!whopData.price || parseFloat(whopData.price) <= 0) {
       handleJoinFree();
       return;
     }
 
-    // Paid whop: confirm
+    // Paid whop: potvrzení přes custom confirm modal
     const price = parseFloat(whopData.price).toFixed(2);
     const period = whopData.is_recurring
       ? `opakuje se každých ${whopData.billing_period}`
       : "jednorázově";
     const confirmMessage = `Tento Whop stojí ${whopData.currency}${price} ${period}.\nChcete pokračovat?`;
-    if (!window.confirm(confirmMessage)) {
+
+    try {
+      await showConfirm(confirmMessage);
+    } catch {
+      // uživatel zrušil → return
       return;
     }
 
-    // Show fullscreen overlay
+    // Ukážeme fullscreen overlay
     setOverlayVisible(true);
     setOverlayFading(false);
     setMemberLoading(true);
@@ -213,7 +219,7 @@ export default function WhopDashboard() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || "Nepodařilo se přihlásit.");
+        showNotification({ type: "error", message: json.message || "Nepodařilo se přihlásit." });
       } else {
         // On success: re‐fetch whopData & campaigns
         const refresh = await fetch(
@@ -226,12 +232,14 @@ export default function WhopDashboard() {
         if (refresh.ok && refreshed.status === "success") {
           setWhopData(refreshed.data);
           await fetchCampaigns(refreshed.data.id);
+          showNotification({ type: "success", message: "Úspěšně přihlášeno." });
         }
       }
     } catch (err) {
       console.error("Chyba při subscribe:", err);
+      showNotification({ type: "error", message: "Síťová chyba při přihlašování." });
     } finally {
-      // Fade‐out overlay after 2s
+      // Fade‐out overlay po 2 s
       setTimeout(() => {
         setOverlayFading(true);
       }, 2000);
@@ -263,7 +271,7 @@ export default function WhopDashboard() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || "Nepodařilo se připojit.");
+        showNotification({ type: "error", message: json.message || "Nepodařilo se připojit." });
       } else {
         // On success: re‐fetch whopData & campaigns
         const refresh = await fetch(
@@ -276,10 +284,12 @@ export default function WhopDashboard() {
         if (refresh.ok && refreshed.status === "success") {
           setWhopData(refreshed.data);
           await fetchCampaigns(refreshed.data.id);
+          showNotification({ type: "success", message: "Úspěšně připojeno zdarma." });
         }
       }
     } catch (err) {
       console.error("Chyba při join free:", err);
+      showNotification({ type: "error", message: "Síťová chyba při připojování zdarma." });
     } finally {
       setTimeout(() => {
         setOverlayFading(true);
@@ -295,14 +305,16 @@ export default function WhopDashboard() {
   const handleLeave = async () => {
     if (!whopData) return;
 
-    // Confirm immediate removal
-    if (!window.confirm("Chcete okamžitě opustit tento Whop a ztratit přístup?")) {
+    // Potvrzení přes custom confirm modal
+    try {
+      await showConfirm("Chcete okamžitě opustit tento Whop a ztratit přístup?");
+    } catch {
       return;
     }
 
     setMemberLoading(true);
 
-    // If paid whop (price > 0)
+    // Pokud je placený (price > 0)
     if (whopData.price && parseFloat(whopData.price) > 0) {
       try {
         const payload = { whop_id: whopData.id };
@@ -314,7 +326,7 @@ export default function WhopDashboard() {
         });
         const json = await res.json();
         if (!res.ok) {
-          alert(json.message || "Nepodařilo se zrušit předplatné.");
+          showNotification({ type: "error", message: json.message || "Nepodařilo se zrušit předplatné." });
         } else {
           // On success: re‐fetch whopData (uživatel ztratí přístup)
           const refresh = await fetch(
@@ -327,18 +339,19 @@ export default function WhopDashboard() {
           if (refresh.ok && refreshed.status === "success") {
             setWhopData(refreshed.data);
             setCampaigns([]); // membership vymazané
+            showNotification({ type: "success", message: "Úspěšně odebráno předplatné." });
           }
         }
       } catch (err) {
         console.error("Chyba při cancel membership:", err);
-        alert("Síťová chyba.");
+        showNotification({ type: "error", message: "Síťová chyba při rušení předplatného." });
       } finally {
         setMemberLoading(false);
       }
       return;
     }
 
-    // Otherwise: free whop
+    // Jinak: free whop
     try {
       const res = await fetch("https://app.byxbot.com/php/leave_whop.php", {
         method: "POST",
@@ -348,7 +361,7 @@ export default function WhopDashboard() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || "Nepodařilo se opustit.");
+        showNotification({ type: "error", message: json.message || "Nepodařilo se opustit." });
       } else {
         // On success: re‐fetch whopData
         const refresh = await fetch(
@@ -361,11 +374,12 @@ export default function WhopDashboard() {
         if (refresh.ok && refreshed.status === "success") {
           setWhopData(refreshed.data);
           setCampaigns([]);
+          showNotification({ type: "success", message: "Úspěšně opuštěno." });
         }
       }
     } catch (err) {
       console.error("Chyba při leave free:", err);
-      alert("Síťová chyba.");
+      showNotification({ type: "error", message: "Síťová chyba při opuštění." });
     } finally {
       setMemberLoading(false);
     }
@@ -400,10 +414,12 @@ export default function WhopDashboard() {
       if (!data.secure_url) throw new Error("Chyba URL.");
       setEditBannerUrl(data.secure_url);
       setBannerError("");
+      showNotification({ type: "success", message: "Banner úspěšně nahrán." });
     } catch (err) {
       console.error(err);
       setBannerError("Nepodařilo se nahrát banner.");
       setEditBannerUrl("");
+      showNotification({ type: "error", message: "Nepodařilo se nahrát banner." });
     } finally {
       setIsUploadingBanner(false);
     }
@@ -454,6 +470,7 @@ export default function WhopDashboard() {
             : f
         )
       );
+      showNotification({ type: "success", message: "Feature obrázek nahrán." });
     } catch (err) {
       console.error(err);
       setEditFeatures((prev) =>
@@ -463,6 +480,7 @@ export default function WhopDashboard() {
             : f
         )
       );
+      showNotification({ type: "error", message: "Nepodařilo se nahrát obrázek feature." });
     }
   };
 
@@ -479,14 +497,19 @@ export default function WhopDashboard() {
       ...prev,
       { id: newId, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" }
     ]);
+    showNotification({ type: "info", message: "Přidána nová feature (vyplňte údaje)." });
   };
 
   // ----------------------------------------
   // 7) Remove feature (owner)
   // ----------------------------------------
   const removeFeature = (id) => {
-    if (editFeatures.length <= 2) return;
+    if (editFeatures.length <= 2) {
+      showNotification({ type: "error", message: "Minimálně 2 features musí zůstat." });
+      return;
+    }
     setEditFeatures((prev) => prev.filter((f) => f.id !== id));
+    showNotification({ type: "info", message: "Feature odstraněna." });
   };
 
   // ----------------------------------------
@@ -532,6 +555,7 @@ export default function WhopDashboard() {
         setSlugError(json.message || "Nepovedlo se.");
         return;
       }
+      showNotification({ type: "success", message: "Slug úspěšně změněn." });
       navigate(`/c/${trimmed}`);
     } catch (err) {
       console.error(err);
@@ -590,6 +614,8 @@ export default function WhopDashboard() {
         return;
       }
 
+      showNotification({ type: "success", message: "Whop úspěšně uložen." });
+
       // On success: turn off editing and re‐fetch whopData
       setIsEditing(false);
       const refreshRes = await fetch(
@@ -627,6 +653,7 @@ export default function WhopDashboard() {
     } catch (err) {
       console.error(err);
       setError("Síťová chyba.");
+      showNotification({ type: "error", message: "Síťová chyba při ukládání Whopu." });
     }
   };
 
@@ -634,7 +661,12 @@ export default function WhopDashboard() {
   // 11) Delete Whop (owner)
   // ----------------------------------------
   const handleDelete = async () => {
-    if (!window.confirm("Opravdu smazat Whop?")) return;
+    try {
+      await showConfirm("Opravdu smazat Whop?");
+    } catch {
+      return;
+    }
+
     try {
       const payload = { slug: whopData.slug };
       const res = await fetch("https://app.byxbot.com/php/delete_whop.php", {
@@ -653,12 +685,15 @@ export default function WhopDashboard() {
       }
       if (!res.ok || json.status !== "success") {
         setError(json.message || "Nepodařilo se smazat.");
+        showNotification({ type: "error", message: json.message || "Nepodařilo se smazat." });
         return;
       }
+      showNotification({ type: "success", message: "Whop smazán." });
       navigate("/onboarding");
     } catch (err) {
       console.error(err);
       setError("Síťová chyba.");
+      showNotification({ type: "error", message: "Síťová chyba při mazání Whopu." });
     }
   };
 
@@ -673,7 +708,11 @@ export default function WhopDashboard() {
   // 13) Expire a campaign (owner)
   // ----------------------------------------
   const handleExpire = async (campaignId) => {
-    if (!window.confirm("Označit kampaň jako EXPIRY?")) return;
+    try {
+      await showConfirm("Označit kampaň jako EXPIRY?");
+    } catch {
+      return;
+    }
     try {
       const res = await fetch(EXPIRE_CAMPAIGN_URL, {
         method: "POST",
@@ -683,15 +722,16 @@ export default function WhopDashboard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Nepodařilo se");
+        showNotification({ type: "error", message: data.error || "Nepodařilo se" });
         return;
       }
       if (whopData) {
         await fetchCampaigns(whopData.id);
       }
+      showNotification({ type: "success", message: "Kampaň označena jako EXPIRED." });
     } catch (err) {
       console.error(err);
-      alert("Síťová chyba.");
+      showNotification({ type: "error", message: "Síťová chyba při expirování kampaně." });
     }
   };
 
@@ -1719,9 +1759,13 @@ export default function WhopDashboard() {
   // 22) Helper: Cancel a paid member (owner)
   // ----------------------------------------
   async function handleCancelMember(memberUserId) {
-    if (!window.confirm("Opravdu zrušit toto předplatné?")) return;
     try {
-      const payload = { whop_id: whopData.id };
+      await showConfirm("Opravdu zrušit toto předplatné?");
+    } catch {
+      return;
+    }
+    try {
+      const payload = { whop_id: whopData.id, user_id: memberUserId };
       const res = await fetch("https://app.byxbot.com/php/cancel_membership.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1730,12 +1774,14 @@ export default function WhopDashboard() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.message || "Nepodařilo se zrušit předplatné.");
+        showNotification({ type: "error", message: json.message || "Nepodařilo se zrušit předplatné." });
       } else {
+        showNotification({ type: "success", message: "Předplatné zrušeno." });
         fetchWhopMembers();
       }
     } catch (err) {
       console.error("Chyba při rušení členství:", err);
+      showNotification({ type: "error", message: "Chyba při rušení členství." });
     }
   }
 }

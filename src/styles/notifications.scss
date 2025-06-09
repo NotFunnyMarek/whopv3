@@ -1,0 +1,193 @@
+/* src/styles/notifications.scss */
+
+/* ============================================
+   NOTIFIKAČNÍ KONTEJNICI
+   ============================================ */
+
+.notification-container {
+  position: fixed;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--spacing-sm);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ============================================
+   JEDNOTLIVÁ NOTIFIKACE
+   (VĚTŠÍ, OSTRÉ HRANY, BOTTOM PRUH)
+   ============================================ */
+
+.notification {
+  position: relative;
+  min-width: 280px;
+  max-width: 400px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0; /* ostré hrany */
+  padding: var(--spacing-md);
+  font-size: 1rem;
+  color: var(--text-color);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(50px);
+  animation: slide-in 0.4s ease-out forwards;
+
+  & + .notification {
+    margin-top: var(--spacing-sm);
+  }
+
+  &.success {
+    border-left: 2px solid var(--success-color);
+  }
+  &.error {
+    border-left: 1px solid var(--error-color);
+  }
+  &.info {
+    border-left: 2px solid var(--primary-color);
+  }
+
+  .notification-message {
+    word-break: break-word;
+  }
+
+  /* Spodní proužek ubíhající časovač */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background: var(--primary-color);
+    animation: progress-stripe 3.5s linear forwards;
+  }
+
+  &.success::after {
+    background: var(--success-color);
+  }
+  &.error::after {
+    background: var(--error-color);
+  }
+  &.info::after {
+    background: var(--primary-color);
+  }
+
+  &.hide {
+    animation: fade-out 0.3s ease-in forwards;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+}
+
+@keyframes progress-stripe {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ============================================
+   CONFIRM MODAL
+   (ZAOBLENÉ HRANY)
+   ============================================ */
+
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(30, 30, 40, 0.60);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  pointer-events: auto;
+}
+
+.confirm-modal {
+  background: var(--surface-color);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  text-align: left;
+  color: var(--text-color);
+}
+
+.confirm-modal-message {
+  margin-bottom: var(--spacing-lg);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.confirm-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+}
+
+.confirm-modal-buttons .btn {
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-weight: 500;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  min-width: 100px;
+  text-align: center;
+  border: none;
+}
+
+.btn-confirm-ok {
+  background-color: var(--success-color);
+  color: #fff;
+}
+
+.btn-confirm-ok:hover {
+  background-color: var(--success-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+  color: black;
+  border: 1px solid rgba(0, 0, 0, 0.226);
+}
+
+.btn-confirm-cancel {
+  background-color: var(--error-color);
+  color: #fff;
+}
+
+.btn-confirm-cancel:hover {
+  background-color: var(--error-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}

@@ -1,21 +1,23 @@
 // src/pages/Payments.jsx
 
 import React, { useEffect, useState } from "react";
+import { useNotifications } from "../components/NotificationProvider";
 import "../styles/payments.scss";
 
 export default function Payments() {
+  const { showNotification } = useNotifications();
+
   const [payments, setPayments] = useState([]);
   const [totalSpent, setTotalSpent] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPayments = async () => {
     setLoading(true);
-    setError("");
     try {
       const res = await fetch("https://app.byxbot.com/php/get_payments.php", {
         method: "GET",
@@ -26,12 +28,12 @@ export default function Payments() {
       if (json.status !== "success") {
         throw new Error(json.message || "Nepodařilo se načíst platby.");
       }
-      // Očekáváme, že backend vrací: { status: "success", data: { payments: [...], total_spent: X } }
       setPayments(json.data.payments);
       setTotalSpent(json.data.total_spent);
+      showNotification({ type: "success", message: "Platby načteny." });
     } catch (err) {
       console.error("Chyba při načítání plateb:", err);
-      setError("Nepodařilo se načíst historii plateb.");
+      showNotification({ type: "error", message: "Nepodařilo se načíst historii plateb." });
     } finally {
       setLoading(false);
     }
@@ -41,19 +43,11 @@ export default function Payments() {
     return <div className="payments-loading">Načítám historii plateb…</div>;
   }
 
-  if (error) {
-    return (
-      <div className="payments-error">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="payments-container">
       <h2>Historie Plateb</h2>
       <div className="payments-total">
-        <strong>Celkem utraceno:</strong> ${totalSpent.toFixed(2)}
+        <strong>Celkem utraceno:</strong> ${parseFloat(totalSpent).toFixed(2)}
       </div>
       {payments.length === 0 ? (
         <p>Žádné platby k zobrazení.</p>
@@ -75,11 +69,7 @@ export default function Payments() {
                 <td>{p.whop_name}</td>
                 <td>{parseFloat(p.amount).toFixed(2)}</td>
                 <td>{p.currency}</td>
-                <td
-                  className={
-                    p.type === "failed" ? "failed" : "success"
-                  }
-                >
+                <td className={p.type === "failed" ? "failed" : "success"}>
                   {p.type === "one_time"
                     ? "Jednorázově"
                     : p.type === "recurring"

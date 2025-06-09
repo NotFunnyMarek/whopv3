@@ -2,27 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "../components/NotificationProvider";
 import "../styles/setup.scss";
 import { getWhopSetupCookie, setWhopSetupCookie } from "../utils/cookieUtils";
 
 export default function Setup() {
   const navigate = useNavigate();
+  const { showNotification } = useNotifications();
 
   // Načteme z cookie, pokud existuje
   const cookieData = getWhopSetupCookie();
-  const initialName = cookieData?.name || "";
-  const initialDesc = cookieData?.description || "";
-  const initialLogo = cookieData?.logoUrl || "";
-  const initialPrice = cookieData?.price?.toString() || "0.00";
+  const initialName    = cookieData?.name        || "";
+  const initialDesc    = cookieData?.description || "";
+  const initialLogo    = cookieData?.logoUrl     || "";
+  const initialPrice   = cookieData?.price?.toString() || "0.00";
   const initialBilling = cookieData?.billing_period || "none";
-  // is_recurring se nyní odvozuje z billingPeriod automaticky
+  // is_recurring se odvozuje z billingPeriod
 
-  const [whopName, setWhopName] = useState(initialName);
+  const [whopName, setWhopName]       = useState(initialName);
   const [description, setDescription] = useState(initialDesc);
-  const [logoUrl, setLogoUrl] = useState(initialLogo);
+  const [logoUrl, setLogoUrl]         = useState(initialLogo);
 
-  // Nová pole pro pricing
-  const [price, setPrice] = useState(initialPrice);
+  // Pole pro pricing
+  const [price, setPrice]             = useState(initialPrice);
   const [billingPeriod, setBillingPeriod] = useState(initialBilling);
 
   const maxNameLength = 30;
@@ -31,17 +33,17 @@ export default function Setup() {
   // isRecurring = 1 pokud billingPeriod není "none" a není "single"
   const isRecurring = billingPeriod !== "none" && billingPeriod !== "single" ? 1 : 0;
 
-  // Uložíme všechny hodnoty do cookie vždy, když se změní
   useEffect(() => {
+    // Pokaždé, když se změní nějaká položka, uložíme do cookie
     const newData = {
       ...(cookieData || {}),
-      name: whopName,
-      description: description,
-      logoUrl: logoUrl,
-      price: parseFloat(price),
+      name:           whopName,
+      description:    description,
+      logoUrl:        logoUrl,
+      price:          parseFloat(price),
       billing_period: billingPeriod,
-      is_recurring: isRecurring,
-      currency: "USD",
+      is_recurring:   isRecurring,
+      currency:       "USD",
     };
     setWhopSetupCookie(newData);
   }, [whopName, description, logoUrl, price, billingPeriod, isRecurring, cookieData]);
@@ -70,7 +72,6 @@ export default function Setup() {
 
   const handleBillingChange = (e) => {
     setBillingPeriod(e.target.value);
-    // Pokud "none" nebo "single", isRecurring zůstane 0, jinak automaticky 1
   };
 
   const pricingInvalid = () => {
@@ -87,22 +88,24 @@ export default function Setup() {
 
   const handleContinue = () => {
     if (!whopName.trim() || !description.trim() || pricingInvalid()) {
+      showNotification({ type: "error", message: "Prosím vyplňte všechny požadované položky správně." });
       return;
     }
 
     const whopData = {
-      name: whopName.trim(),
-      description: description.trim(),
-      slug: cookieData?.slug || "",
-      features: cookieData?.features || [],
-      logoUrl: logoUrl.trim(),
-      price: parseFloat(price),
+      name:           whopName.trim(),
+      description:    description.trim(),
+      slug:           cookieData?.slug || "",
+      features:       cookieData?.features || [],
+      logoUrl:        logoUrl.trim(),
+      price:          parseFloat(price),
       billing_period: billingPeriod,
-      is_recurring: isRecurring,
-      currency: "USD",
+      is_recurring:   isRecurring,
+      currency:       "USD",
     };
 
     setWhopSetupCookie(whopData);
+    showNotification({ type: "success", message: "Údaje uloženy. Pokračujeme..." });
     navigate("/setup/link", { state: { whopData } });
   };
 

@@ -1,16 +1,19 @@
+// src/pages/Login.jsx
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../components/NotificationProvider';
 import '../styles/login.scss';
 
 const Login = () => {
+  const { showNotification } = useNotifications();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage]  = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('Přihlašuji...');
+    showNotification({ type: 'info', message: 'Přihlašuji...' });
     try {
       const res = await fetch('https://app.byxbot.com/php/login.php', {
         method: 'POST',
@@ -36,18 +39,17 @@ const Login = () => {
           phone: ''
         };
         localStorage.setItem('user', JSON.stringify(userObj));
-
-        setMessage('Přihlášení proběhlo úspěšně.');
+        showNotification({ type: 'success', message: 'Přihlášení proběhlo úspěšně.' });
         setUsername('');
         setPassword('');
         setTimeout(() => navigate('/'), 1000);
       } else if (res.status === 401) {
-        setMessage('Špatné jméno nebo heslo.');
+        showNotification({ type: 'error', message: 'Špatné jméno nebo heslo.' });
       } else {
-        setMessage(`Chyba při přihlášení (HTTP ${res.status}).`);
+        showNotification({ type: 'error', message: `Chyba při přihlášení (HTTP ${res.status}).` });
       }
     } catch (err) {
-      setMessage('Síťová chyba: ' + err.message);
+      showNotification({ type: 'error', message: 'Síťová chyba: ' + err.message });
     }
   };
 
@@ -78,7 +80,6 @@ const Login = () => {
             Přihlásit
           </button>
         </form>
-        <p className="message">{message}</p>
         <p className="switch-link">
           Nemáte účet? <Link to="/register">Přejít na registraci</Link>
         </p>

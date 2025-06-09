@@ -3,19 +3,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGlobe, FaPlus, FaCheckCircle, FaArrowLeft } from "react-icons/fa";
+import { useNotifications } from "../components/NotificationProvider";
 import "../styles/onboarding.scss";
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { showNotification, showConfirm } = useNotifications();
+
   const [selectedOption, setSelectedOption] = useState("");
   const [userWhops, setUserWhops] = useState([]);
   const [loading, setLoading]    = useState(true);
-  const [error, setError]        = useState("");
 
   useEffect(() => {
     const fetchUserWhops = async () => {
       setLoading(true);
-      setError("");
       try {
         const res = await fetch("https://app.byxbot.com/php/get_user_whops.php", {
           method: "GET",
@@ -25,35 +26,38 @@ export default function Onboarding() {
         let json;
         try {
           json = JSON.parse(text);
-        } catch (parseErr) {
-          console.error("Get user whops JSON parse error:", text);
-          setError("Chyba při zpracování odpovědi serveru.");
+        } catch {
+          showNotification({ type: "error", message: "Chyba při zpracování odpovědi serveru." });
           setLoading(false);
           return;
         }
         if (!res.ok || json.status !== "success") {
-          const msg = json.message || "Nepodařilo se načíst tvoje whopy";
-          setError(msg);
+          showNotification({ type: "error", message: json.message || "Nepodařilo se načíst tvoje whopy." });
           setLoading(false);
           return;
         }
         setUserWhops(json.data);
+        showNotification({ type: "success", message: "Seznam whopů načten." });
       } catch (err) {
         console.error("Network error get_user_whops:", err);
-        setError("Network error: " + err.message);
+        showNotification({ type: "error", message: "Network error: " + err.message });
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserWhops();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectNew = () => setSelectedOption("new");
   const handleSelectExisting = (slug) => setSelectedOption(slug);
 
-  const handleContinue = () => {
-    if (!selectedOption) return;
+  const handleContinue = async () => {
+    if (!selectedOption) {
+      showNotification({ type: "error", message: "Prosím vyberte možnost." });
+      return;
+    }
     if (selectedOption === "new") {
       navigate("/setup");
     } else {
@@ -61,25 +65,19 @@ export default function Onboarding() {
     }
   };
 
-  const handleBack = () => {
-    navigate("/"); // např. na homepage
+  const handleBack = async () => {
+    try {
+      await showConfirm("Opravdu se chcete vrátit na domovskou stránku?");
+      navigate("/");
+    } catch {
+      return;
+    }
   };
 
   if (loading) {
     return (
       <div className="onboarding-loading">
         <span>Načítám seznam tvých whopů…</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="onboarding-error">
-        <p>{error}</p>
-        <button onClick={handleBack}>
-          <FaArrowLeft /> Back
-        </button>
       </div>
     );
   }

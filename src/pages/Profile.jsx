@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../components/NotificationProvider';
 import '../styles/profile.scss';
 
 const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
@@ -11,6 +12,7 @@ const CLOUDINARY_UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_C
 export default function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { showNotification } = useNotifications();
 
   const [form, setForm] = useState({
     name:         '',
@@ -24,8 +26,6 @@ export default function Profile() {
     showLocation: false,
   });
   const [initialForm, setInitialForm] = useState(null);
-  const [message, setMessage] = useState('');
-  const [error, setError]     = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -61,19 +61,17 @@ export default function Profile() {
           setInitialForm(loaded);
           setIsDirty(false);
         } else {
-          setError('Chyba při načítání: ' + (data.message || ''));
+          showNotification({ type: 'error', message: 'Chyba při načítání: ' + (data.message || '') });
         }
       })
       .catch((err) => {
         console.error('Chyba při načítání profilu:', err);
-        setError('Nepodařilo se načíst profil.');
+        showNotification({ type: 'error', message: 'Nepodařilo se načíst profil.' });
       });
-  }, [navigate]);
+  }, [navigate, showNotification]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setError('');
-    setMessage('');
     setForm((prev) => {
       const updated = {
         ...prev,
@@ -125,7 +123,7 @@ export default function Profile() {
         }
         throw new Error(errMsg);
       }
-      setMessage('Avatar byl uložen v profilu.');
+      showNotification({ type: 'success', message: 'Avatar byl uložen v profilu.' });
       setInitialForm((prev) => ({
         ...prev,
         avatar_url: avatarUrl
@@ -133,7 +131,7 @@ export default function Profile() {
       setIsDirty(false);
     } catch (err) {
       console.error('Chyba při ukládání avatar_url do DB:', err);
-      setError('Nepodařilo se uložit avatar do profilu.');
+      showNotification({ type: 'error', message: 'Nepodařilo se uložit avatar do profilu.' });
     }
   };
 
@@ -143,16 +141,14 @@ export default function Profile() {
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('Avatar je příliš velký (max. 5 MB).');
+      showNotification({ type: 'error', message: 'Avatar je příliš velký (max. 5 MB).' });
       return;
     }
     if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      setError('Nepodporovaný formát (povoleno JPG, PNG, GIF).');
+      showNotification({ type: 'error', message: 'Nepodporovaný formát (povoleno JPG, PNG, GIF).' });
       return;
     }
 
-    setError('');
-    setMessage('');
     setIsUploadingAvatar(true);
 
     const formData = new FormData();
@@ -178,12 +174,12 @@ export default function Profile() {
           }));
           saveAvatarToDb(newUrl);
         } else {
-          setError('Nepodařilo se získat URL z Cloudinary.');
+          showNotification({ type: 'error', message: 'Nepodařilo se získat URL z Cloudinary.' });
         }
       })
       .catch((err) => {
         console.error('Chyba při uploadu na Cloudinary:', err);
-        setError('Nepodařilo se nahrát avatar.');
+        showNotification({ type: 'error', message: 'Nepodařilo se nahrát avatar.' });
       })
       .finally(() => {
         setIsUploadingAvatar(false);
@@ -192,8 +188,7 @@ export default function Profile() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('Ukládám…');
+    showNotification({ type: 'info', message: 'Ukládám…' });
 
     const payload = {
       name:        form.name,
@@ -225,22 +220,19 @@ export default function Profile() {
         try {
           const parsed = JSON.parse(result);
           if (parsed.status === 'error') {
-            setError(parsed.message || 'Neznámá chyba při ukládání');
-            setMessage('');
+            showNotification({ type: 'error', message: parsed.message || 'Neznámá chyba při ukládání' });
             return;
           }
         } catch {
-          // assume success
+          // předpokládejme úspěch
         }
-        setMessage('Vše bylo úspěšně uloženo.');
-        setError('');
+        showNotification({ type: 'success', message: 'Vše bylo úspěšně uloženo.' });
         setInitialForm({ ...form });
         setIsDirty(false);
       })
       .catch((err) => {
         console.error('Chyba při ukládání profilu:', err);
-        setError(err.message || 'Chyba při ukládání profilu.');
-        setMessage('');
+        showNotification({ type: 'error', message: err.message || 'Chyba při ukládání profilu.' });
       });
   };
 
@@ -255,18 +247,19 @@ export default function Profile() {
         if (res.ok) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
+          showNotification({ type: 'info', message: 'Byli jste odhlášeni.' });
           navigate('/login');
         }
       })
-      .catch((err) => console.error('Logout chyba:', err));
+      .catch((err) => {
+        console.error('Logout chyba:', err);
+        showNotification({ type: 'error', message: 'Chyba při odhlašování.' });
+      });
   };
 
   return (
     <div className="profile-container">
       <h2>Account settings</h2>
-
-      {error && <p className="profile-error">{error}</p>}
-      {message && !error && <p className="profile-success">{message}</p>}
 
       <form onSubmit={handleSubmit} className="profile-form">
         <div className="profile-left">

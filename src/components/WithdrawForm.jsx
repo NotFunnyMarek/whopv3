@@ -1,26 +1,25 @@
 // src/components/WithdrawForm.jsx
 
 import React, { useState } from 'react';
+import { useNotifications } from './NotificationProvider';
 
 export default function WithdrawForm({ onSuccess }) {
+  const { showNotification } = useNotifications();
+
   const [usdAmount, setUsdAmount] = useState('');
   const [solAddress, setSolAddress] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
 
     const usd = parseFloat(usdAmount);
     if (isNaN(usd) || usd <= 0) {
-      setError('Částka musí být kladné číslo.');
+      showNotification({ type: 'error', message: 'Částka musí být kladné číslo.' });
       return;
     }
     if (!solAddress.trim()) {
-      setError('Zadejte cílovou Solana adresu.');
+      showNotification({ type: 'error', message: 'Zadejte cílovou Solana adresu.' });
       return;
     }
 
@@ -35,7 +34,6 @@ export default function WithdrawForm({ onSuccess }) {
           solAddress: solAddress.trim()
         }),
       });
-
       const text = await res.text();
       let data;
       try {
@@ -45,15 +43,15 @@ export default function WithdrawForm({ onSuccess }) {
       }
 
       if (!res.ok || data.status !== 'success') {
-        setError(data.message || 'Nastala neznámá chyba.');
+        showNotification({ type: 'error', message: data.message || 'Nastala neznámá chyba.' });
       } else {
-        setMessage(`Úspěšně odesláno. Tx: ${data.tx}`);
+        showNotification({ type: 'success', message: `Úspěšně odesláno. Tx: ${data.tx}` });
         setUsdAmount('');
         setSolAddress('');
         if (onSuccess) onSuccess();
       }
     } catch (e) {
-      setError('Chyba sítě: ' + e.message);
+      showNotification({ type: 'error', message: 'Chyba sítě: ' + e.message });
     }
     setLoading(false);
   };
@@ -61,8 +59,6 @@ export default function WithdrawForm({ onSuccess }) {
   return (
     <div className="dm-container">
       <form onSubmit={handleSubmit} className="withdraw-form">
-        {error && <p className="dm-error">{error}</p>}
-        {message && <p className="dm-success">{message}</p>}
         <div className="dm-section">
           <strong>Částka (USD):</strong>
           <input
