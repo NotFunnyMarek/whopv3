@@ -1,5 +1,7 @@
+// src/components/BottomBar.jsx
+
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import '../styles/bottombar.scss';
 import { FiMenu, FiSun, FiMoon } from 'react-icons/fi';
 import { FaSignOutAlt } from 'react-icons/fa';
@@ -11,18 +13,46 @@ export default function BottomBar() {
   const [hoveredX, setHoveredX] = useState(null);
   const [joinedWhops, setJoinedWhops] = useState([]);
   const [loadingWhops, setLoadingWhops] = useState(true);
+
+  // Nový stav pro zůstatek
+  const [balance, setBalance] = useState(0);
+
   const iconsContainerRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchJoinedWhops();
+    fetchProfileBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Načte zůstatek z profile.php
+  const fetchProfileBalance = async () => {
+    try {
+      const res = await fetch('https://app.byxbot.com/php/profile.php', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (res.status === 401) return;
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      const data = await res.json();
+      if (data?.status === 'success') {
+        setBalance(parseFloat(data.data.balance) || 0);
+      }
+    } catch (err) {
+      console.error('Chyba při načítání zůstatku (BottomBar):', err);
+    }
+  };
+
+  // Formátování např. 1013.5 → “1.01k”
+  const formatBalance = (amount) =>
+    amount >= 1000 ? `${(amount / 1000).toFixed(2)}k` : amount.toFixed(2);
 
   const fetchJoinedWhops = async () => {
     setLoadingWhops(true);
     try {
-      // 1) Načteme Whopy, kde je uživatel členem
+      // 1) Whopy, kde je uživatel členem
       const resMembers = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
@@ -30,14 +60,15 @@ export default function BottomBar() {
       if (!resMembers.ok) throw new Error(`Chyba ${resMembers.status}`);
       const membersData = await resMembers.json();
 
-      // 2) Načteme Whopy, kde je uživatel vlastníkem
+      // 2) Whopy, kde je uživatel vlastníkem
       const resOwned = await fetch('https://app.byxbot.com/php/get_whop.php?owner=me', {
         method: 'GET',
         credentials: 'include',
       });
       if (!resOwned.ok) throw new Error(`Chyba ${resOwned.status}`);
       const ownedJson = await resOwned.json();
-      if (ownedJson.status !== 'success') throw new Error('Nepodařilo se načíst vlastněné Whopy');
+      if (ownedJson.status !== 'success')
+        throw new Error('Nepodařilo se načíst vlastněné Whopy');
       const ownedData = ownedJson.data;
 
       // 3) Spojíme obě množiny bez duplicit (rozdílné podle slug)
@@ -58,8 +89,7 @@ export default function BottomBar() {
         });
       }
 
-      const combined = Array.from(mapBySlug.values());
-      setJoinedWhops(combined);
+      setJoinedWhops(Array.from(mapBySlug.values()));
     } catch (err) {
       console.error('Error loading joined/owned whops:', err);
       setJoinedWhops([]);
@@ -72,17 +102,11 @@ export default function BottomBar() {
     setDropdownOpen((prev) => !prev);
   };
 
-  const handleThemeChange = (e) => {
+  const handleThemeChange = (e) =>
     e.target.value === 'light' ? setLight() : setDark();
-  };
 
-  const handleMouseMove = (e) => {
-    setHoveredX(e.clientX);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredX(null);
-  };
+  const handleMouseMove = (e) => setHoveredX(e.clientX);
+  const handleMouseLeave = () => setHoveredX(null);
 
   const handleLogout = async () => {
     try {
@@ -105,7 +129,7 @@ export default function BottomBar() {
 
   return (
     <div className="bottombar">
-      {/* Levá část: Menu + dropdown */}
+      {/* Levá část: Menu + ikonka + balance (jako jeden odkaz) + dropdown */}
       <div className="bottombar__left">
         <button
           className="bottombar__left-button"
@@ -116,6 +140,18 @@ export default function BottomBar() {
         >
           <FiMenu size={20} /> Menu
         </button>
+
+        {/* ZDE SESKUPENO: ikona + balance */}
+        <NavLink to="/balances" className="bottombar__balance-link">
+          <img
+            src="https://i.ibb.co/gFPZjybL/846174-notes-512x512.png"
+            alt="Notes Icon"
+            className="bottombar__note-icon"
+          />
+          <span className="bottombar__balance-text">
+            ${formatBalance(balance)}
+          </span>
+        </NavLink>
 
         <div
           id="bottombar-menu"
@@ -187,6 +223,7 @@ export default function BottomBar() {
               <div key={idx} className="bottombar__center-icon skeleton-circle" />
             ))
           : joinedWhops.map((whop, idx) => {
+              // Pokud myš není nad ikonami, vykreslíme základní state
               if (hoveredX === null) {
                 return (
                   <div
@@ -203,7 +240,7 @@ export default function BottomBar() {
                 );
               }
 
-              // Interaktivní “fidgety” efekt při najetí myší
+              // “Fidgety” efekt při hoveru
               const container = iconsContainerRef.current;
               const { left, width } = container.getBoundingClientRect();
               const segment = width / (joinedWhops.length || 1);

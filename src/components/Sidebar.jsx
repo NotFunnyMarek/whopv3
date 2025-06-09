@@ -17,7 +17,6 @@ import { FaDollarSign } from "react-icons/fa"; // ikona pro Payments
 
 const Sidebar = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [balance, setBalance] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,7 +35,6 @@ const Sidebar = () => {
       .then((data) => {
         if (data && data.status === "success") {
           setAvatarUrl(data.data.avatar_url || "");
-          setBalance(parseFloat(data.data.balance) || 0);
         }
       })
       .catch((err) => {
@@ -50,8 +48,6 @@ const Sidebar = () => {
       <div className="sidebar__logo">
         <img src={Logo} alt="Logo platformy" />
       </div>
-
-      <div className="sidebar__balance-display">${balance.toFixed(2)}</div>
 
       <nav className="sidebar__nav">
         <ul>

@@ -5,10 +5,10 @@
    Celá spodní lišta – vždy fixní ke spodní části viewportu
 --------------------------------------------------- */
 .bottombar {
-  position: fixed !important;   /* Pevně vůči viewportu */
+  position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
-  width: 100vw;                 /* Přesná šířka viewportu */
+  width: 100vw;
   height: var(--bottombar-height);
   background-color: rgba(233, 233, 233, 0.541);
   backdrop-filter: blur(5px);
@@ -16,16 +16,16 @@
   display: flex;
   align-items: center;
   padding: 0 var(--spacing-md);
-  z-index: 9999;                /* Nad vším ostatním */
+  z-index: 9999;
   justify-content: space-between;
   box-shadow: var(--shadow-sm);
 
-  /* ---------- Levá část menu + dropdown ---------- */
+  /* ---------- Levá část: Menu + balance-link + dropdown ---------- */
   &__left {
     position: relative;
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
 
     &-button {
       display: inline-flex;
@@ -53,6 +53,49 @@
       }
     }
 
+    /* Kontejner pro ikonku + text zůstatku, jako jeden odkaz */
+    .bottombar__balance-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      box-shadow: var(--shadow-soft);
+      transition: background var(--transition-default), transform var(--transition-default);
+      cursor: pointer;
+      text-decoration: none; /* zruší podtržení odkazu */
+      color: var(--text-color);
+
+      &:hover {
+        background-color: var(--border-color);
+        transform: translateY(-1px);
+      }
+
+      /* pokud je /balances aktivní route, přidá se třída .active */
+      &.active {
+        background-color: var(--border-color);
+        transform: translateY(-1px);
+      }
+
+      .bottombar__note-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        object-fit: contain;
+        transition: transform var(--transition-default);
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+
+      .bottombar__balance-text {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+    }
+
     &-dropdown {
       position: absolute;
       bottom: calc(var(--bottombar-height) + var(--spacing-sm));
@@ -66,11 +109,11 @@
       display: none;
       flex-direction: column;
       gap: var(--spacing-sm);
-      z-index: 10000;         /* Nad bottombarem */
+      z-index: 10000;
 
       &.visible {
         display: flex;
-        animation: fadeIn 0.4s ease-out; /* Jemný fade-in */
+        animation: fadeIn 0.4s ease-out;
       }
 
       .bottombar__left-dropdown-item {
@@ -158,7 +201,7 @@
     }
   }
 
-  /* ---------- Střední část se seznamem whopů ---------- */
+  /* ---------- Střední část: bannery Whopů ---------- */
   &__center-icons {
     position: absolute;
     left: 50%;
@@ -166,7 +209,7 @@
     display: flex;
     align-items: flex-end;
     gap: var(--spacing-md);
-    overflow: visible;        /* Ikony se při hoveru nezastřihnou */
+    overflow: visible; /* Ikony se při hoveru nezastřihnou */
     z-index: 9999;
   }
 
@@ -213,8 +256,12 @@
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0.4; }
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
 }
 
