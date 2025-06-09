@@ -14,6 +14,7 @@ import CampaignModal from "./CampaignModal";
 
 export default function OwnerMode({
   whopData,
+  setWhopData,
   isEditing,
   setIsEditing,
   editName,
@@ -33,7 +34,6 @@ export default function OwnerMode({
   handleSave,
   handleDelete,
   setViewAsMemberMode,
-  // odstranili jsme jednu duplicitní definici setIsCampaignModalOpen
   setIsCampaignModalOpen,
   editFeatures,
   handleFeatChange,
@@ -52,6 +52,8 @@ export default function OwnerMode({
   isCampaignModalOpen,
   fetchCampaigns,
 }) {
+  if (!whopData) return null;
+
   return (
     <div className="whop-container">
       {isEditing && (
@@ -80,6 +82,7 @@ export default function OwnerMode({
       <div className="whop-content">
         <OwnerSlugPrice
           whopData={whopData}
+          setWhopData={setWhopData}              // nyní skutečně posíláme setWhopData
           isEditing={isEditing}
           isSlugEditing={isSlugEditing}
           setIsSlugEditing={setIsSlugEditing}
