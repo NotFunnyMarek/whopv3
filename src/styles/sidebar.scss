@@ -65,7 +65,6 @@
 
       &:hover {
         transform: translateY(-2px);
-        background-color: var(--border-color);
       }
 
       .sidebar__icon {
@@ -75,17 +74,17 @@
       }
 
       a.active .sidebar__icon {
-        color: var(--primary-color);
+        color: rgb(177, 97, 22);
       }
 
       &:hover .sidebar__icon {
         color: var(--primary-hover);
-        transform: scale(1.2);
+        transform: scale(1.1);
       }
 
       .sidebar__profile-img {
-        width: var(--icon-size, 24px);
-        height: var(--icon-size, 24px);
+        width:  32px;
+        height: 32px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid var(--border-color);
