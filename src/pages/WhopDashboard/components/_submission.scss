@@ -1,0 +1,286 @@
+/* src/pages/WhopDashboard/components/_submission.scss */
+
+.submission-panel {
+  padding: var(--spacing-lg);
+  background: var(--bg-color);
+  min-height: calc(100vh - var(--bottombar-height));
+
+  .submission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+
+    .btn-back {
+      background: var(--border-color);
+      border: none;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.875rem;
+      cursor: pointer;
+      color: var(--text-color);
+      transition: background var(--transition), color var(--transition);
+      &:hover {
+        background: var(--primary-color);
+        color: #fff;
+      }
+    }
+
+    .submission-tabs {
+      display: flex;
+      gap: var(--spacing-sm);
+
+      .tab {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background var(--transition), color var(--transition);
+        color: var(--muted-color);
+
+        &.active {
+          background: var(--primary-color);
+          color: #fff;
+          border-color: var(--primary-color);
+        }
+
+        &:hover:not(.active) {
+          background: var(--border-color);
+          color: var(--text-color);
+        }
+      }
+    }
+  }
+
+  .submission-rewards {
+    .submission-banner {
+      width: 100%;
+      max-height: 200px;
+      margin-bottom: var(--spacing-md);
+      overflow: hidden;
+      border-radius: var(--radius-base);
+      background: var(--border-color);
+
+      img.submission-banner-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .submission-banner-placeholder {
+        width: 100%;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted-color);
+        font-size: 1rem;
+      }
+    }
+
+    .submission-submit-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: var(--spacing-lg);
+
+      .btn-open-modal {
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+        }
+        &:disabled {
+          background: var(--border-color);
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .submission-paid-bar {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow-soft);
+
+      .paid-info {
+        font-size: 0.9rem;
+        color: var(--text-color);
+        margin-bottom: var(--spacing-sm);
+      }
+      .progress-container {
+        width: 100%;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: var(--radius-base);
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--secondary-color);
+        border-radius: var(--radius-base);
+        transition: width 0.4s ease;
+      }
+      .percent-text {
+        margin-top: var(--spacing-xs);
+        font-size: 0.75rem;
+        color: var(--muted-color);
+        text-align: right;
+      }
+    }
+
+    .submission-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-color);
+      }
+      .platform-pill {
+        background: var(--border-color);
+        color: var(--text-color);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-lg);
+        margin-right: var(--spacing-xs);
+        display: inline-block;
+      }
+    }
+
+    .submission-requirements,
+    .submission-assets {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow-soft);
+
+      h4 {
+        margin-top: 0;
+        margin-bottom: var(--spacing-sm);
+        color: var(--text-color);
+      }
+      ul {
+        list-style: disc inside;
+        margin: 0;
+        padding: 0;
+        li {
+          font-size: 0.9rem;
+          color: var(--text-color);
+          margin-bottom: var(--spacing-xs);
+        }
+      }
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--muted-color);
+      }
+    }
+
+    .submission-disclaimer {
+      font-size: 0.8rem;
+      color: var(--muted-color);
+      margin-bottom: var(--spacing-lg);
+      p {
+        margin: var(--spacing-xs) 0;
+      }
+    }
+  }
+
+  .submission-my-list {
+    padding-top: var(--spacing-lg);
+
+    .spinner-small {
+      margin: var(--spacing-md) auto;
+    }
+    .error-text {
+      color: var(--error-color);
+      text-align: center;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .submission-panel {
+    padding: var(--spacing-md);
+
+    .submission-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+
+      .submission-tabs {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    .submission-rewards {
+      .submission-details {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
+
+/* Doporučené styly pro SubmissionsList – lze vložit do _submission.scss */
+
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-md);
+
+  th,
+  td {
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background: var(--surface-color);
+    color: var(--text-color);
+  }
+
+  td {
+    color: var(--text-color);
+    vertical-align: middle;
+  }
+
+  .submission-icon,
+  .submission-icon-text {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+  }
+
+  .submission-icon {
+    object-fit: contain;
+  }
+
+  .status-pending {
+    color: var(--muted-color);
+  }
+  .status-approved {
+    color: green;
+  }
+  .status-rejected {
+    color: red;
+  }
+}

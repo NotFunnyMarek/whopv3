@@ -1,0 +1,145 @@
+/* src/pages/WhopDashboard/components/_submission-detail-modal.scss */
+
+.detail-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1100;
+}
+
+.submission-detail-modal {
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  width: 95%;
+  max-width: 720px;
+  padding: var(--spacing-lg);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+
+  .modal-close-btn {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--muted-color);
+    transition: color var(--transition);
+    &:hover {
+      color: var(--error-color);
+    }
+  }
+
+  .submission-detail-title {
+    margin-top: 0;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .video-container {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--border-color);
+    margin-bottom: var(--spacing-md);
+    iframe {
+      width: 100%;
+      height: 100%;
+    }
+    .no-video-msg {
+      text-align: center;
+      color: var(--muted-color);
+      padding: var(--spacing-md);
+      a {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  .stats-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: var(--spacing-md);
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      padding: var(--spacing-sm);
+      margin: 0 var(--spacing-xs);
+
+      .stat-label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted-color);
+      }
+      .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+    }
+  }
+
+  .status-box {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-base);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    &.pending-box {
+      background: #fff4e5;
+      border: 1px solid #ffcc80;
+      color: #663c00;
+    }
+    &.approved-box {
+      background: #e6f4ea;
+      border: 1px solid #80d8a7;
+      color: #155724;
+    }
+    &.rejected-box {
+      background: #fdecea;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+  }
+
+  .rejection-reason-container {
+    margin-top: var(--spacing-md);
+    .rejection-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: var(--spacing-xs);
+    }
+    .rejection-reason {
+      width: 100%;
+      min-height: 80px;
+      padding: var(--spacing-xs);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      font-size: 0.9rem;
+      color: var(--text-color);
+      background: var(--bg-color);
+      resize: vertical;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .submission-detail-modal {
+    padding: var(--spacing-md);
+
+    .stats-container {
+      flex-direction: column;
+      .stat-item {
+        margin: var(--spacing-xs) 0;
+      }
+    }
+  }
+}

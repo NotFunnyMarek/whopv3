@@ -9,6 +9,7 @@ export default function MemberMain({
   campaigns,
   campaignsLoading,
   campaignsError,
+  onSelectCampaign, // funkce z MemberMode
 }) {
   return (
     <div className="member-main">
@@ -67,6 +68,13 @@ export default function MemberMain({
                     className={`member-campaign-card ${
                       isExpired ? "expired" : "active"
                     }`}
+                    onClick={() => {
+                      if (!isExpired) {
+                        // pouze u aktivních kampaní bude možný vstup do SubmissionPanelu
+                        onSelectCampaign(camp);
+                      }
+                    }}
+                    style={{ cursor: isExpired ? "default" : "pointer" }}
                   >
                     <div className="camp-header">
                       <span className="camp-title">{camp.campaign_name}</span>
@@ -85,7 +93,8 @@ export default function MemberMain({
                     <div className="paid-bar">
                       <div className="paid-info">
                         {camp.currency}
-                        {camp.paid_out.toFixed(2)} z {camp.currency}
+                        {camp.paid_out.toFixed(2)} z{" "}
+                        {camp.currency}
                         {camp.total_paid_out.toFixed(2)} vyplaceno
                       </div>
                       <div className="progress-container">
@@ -121,7 +130,8 @@ export default function MemberMain({
                         <strong>Zhlédnutí:</strong>{" "}
                         {camp.reward_per_thousand > 0
                           ? Math.round(
-                              (camp.paid_out / camp.reward_per_thousand) * 1000
+                              (camp.paid_out / camp.reward_per_thousand) *
+                                1000
                             )
                           : 0}
                       </li>

@@ -1,0 +1,84 @@
+/* src/pages/WhopDashboard/components/_submissions-list.scss */
+
+.submissions-table.fullwidth {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-md);
+
+  thead {
+    background: var(--primary-color);
+    th {
+      padding: var(--spacing-sm);
+      text-align: left;
+      font-size: 0.875rem;
+      color: #fff;
+      border-bottom: 2px solid var(--surface-color);
+    }
+  }
+
+  tbody {
+    tr.submission-row {
+      cursor: pointer;
+      transition: background var(--transition);
+      &:nth-child(even) {
+        background: var(--surface-color);
+      }
+      &:hover {
+        background: var(--border-color);
+      }
+      td {
+        padding: var(--spacing-sm);
+        font-size: 0.875rem;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+      .status {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-base);
+        font-size: 0.75rem;
+        color: #fff;
+        &.pending {
+          background: #ffcc80;
+          color: #663c00;
+        }
+        &.approved {
+          background: #80d8a7;
+          color: #155724;
+        }
+        &.rejected {
+          background: #f5c6cb;
+          color: #721c24;
+        }
+      }
+      .icon-img {
+        width: 24px;
+        height: 24px;
+      }
+      .link-text {
+        font-size: 0.875rem;
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+.no-submissions-msg {
+  text-align: center;
+  color: var(--muted-color);
+  margin-top: var(--spacing-md);
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .submissions-table.fullwidth {
+    font-size: 0.8rem;
+    th, td {
+      padding: var(--spacing-xs);
+    }
+    .icon-img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
