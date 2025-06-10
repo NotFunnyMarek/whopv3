@@ -540,7 +540,7 @@ export default function Dashboard() {
                             disabled={loadingAction}
                             onClick={() => handleRemoveMember(m.user_id)}
                           >
-                            Kick
+                            Terminate Membership
                           </button>
                           <button
                             className="btn-ban"
