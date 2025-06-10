@@ -18,6 +18,23 @@
   }
 }
 
+/* Minimalistický černobílý styl pro countdown/expiry v kartách */
+
+.card-ending {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  font-size: 0.6rem;
+  color: #000;
+  background-color: #fff;
+  border: 1px solid #0000001e;
+  border-radius: 50px;
+}
+
+.card-ending.expired {
+  opacity: 0.6; /* poněkud zeslabené zobrazení pro expired */
+}
+
 .cards-grid {
   display: grid;
   gap: var(--spacing-md);

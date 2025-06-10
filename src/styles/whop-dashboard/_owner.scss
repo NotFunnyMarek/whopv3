@@ -309,6 +309,33 @@
   }
 }
 
+.expired-label {
+  color: #c0392b;
+  font-weight: bold;
+}
+.active-label {
+  color: #27ae60;
+  font-weight: bold;
+}
+.expired-text {
+  color: #c0392b;
+}
+.active-text {
+  color: #2980b9;
+}
+.expire-btn {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.expire-btn:hover {
+  background-color: #a93226;
+}
+
+
 .whop-action-btns {
   display: flex;
   flex-wrap: wrap;

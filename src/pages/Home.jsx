@@ -39,8 +39,16 @@ export default function Home() {
     }
   };
 
+  // Nejprve vezmeme pouze live kampaně (is_active === 1),
+  // protože backend auto-expiruje a přepíná is_active na 0.
+  const liveCampaigns = useMemo(
+    () => cardsData.filter((c) => c.is_active === 1),
+    [cardsData]
+  );
+
+  // Aplikujeme filtry a řazení pouze na live kampaně
   const filteredData = useMemo(() => {
-    let arr = [...cardsData];
+    let arr = [...liveCampaigns];
 
     if (filterType !== 'All') {
       arr = arr.filter((c) => c.type === filterType);
@@ -57,16 +65,20 @@ export default function Home() {
         arr.sort((a, b) => a.budget - b.budget);
         break;
       case 'Nejnovější':
-        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        arr.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
         break;
       case 'Nejstarší':
-        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        arr.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
         break;
       default:
         break;
     }
     return arr;
-  }, [cardsData, filterType, filterCategory, sortOption]);
+  }, [liveCampaigns, filterType, filterCategory, sortOption]);
 
   return (
     <div className="home-container">
@@ -83,7 +95,9 @@ export default function Home() {
 
       <div className="home-controls">
         <div className="home-count">
-          {loading ? 'Načítám kampaně…' : `${filteredData.length} live kampaní`}
+          {loading
+            ? 'Načítám kampaně…'
+            : `${filteredData.length} live kampaní`}
         </div>
 
         <div className="home-filters">

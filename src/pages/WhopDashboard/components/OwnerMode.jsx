@@ -43,7 +43,7 @@ export default function OwnerMode({
   campaigns,
   campaignsLoading,
   campaignsError,
-  handleExpire,
+  handleExpire,          // Tato funkce nyní provádí „Refund & Expire“
   membershipsList,
   membersLoading,
   membersError,

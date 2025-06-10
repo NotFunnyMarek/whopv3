@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/MemberMain.jsx
 
-import React from "react";
+import React, { useEffect } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 
 export default function MemberMain({
@@ -61,7 +61,24 @@ export default function MemberMain({
           ) : (
             <ul className="member-campaign-list">
               {campaigns.map((camp) => {
-                const isExpired = camp.is_active === 0;
+                // Parsování expiration_datetime a výpočet zbývajícího času včetně minut
+                const now = new Date();
+                const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
+                const diffMs = expDate.getTime() - now.getTime();
+                const isExpired = camp.is_active === 0 || diffMs <= 0;
+
+                let timeInfo;
+                if (isExpired) {
+                  timeInfo = "EXPIRED";
+                } else {
+                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                  const diffHours = Math.floor(
+                    (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+                  );
+                  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                  timeInfo = `Ending in: ${diffDays}d ${diffHours}h ${diffMins}m`;
+                }
+
                 return (
                   <li
                     key={camp.id}
@@ -69,12 +86,10 @@ export default function MemberMain({
                       isExpired ? "expired" : "active"
                     }`}
                     onClick={() => {
-                      if (!isExpired) {
-                        // pouze u aktivních kampaní bude možný vstup do SubmissionPanelu
-                        onSelectCampaign(camp);
-                      }
+                      // Umožníme vstup do SubmissionPanelu i u expired kampaní
+                      onSelectCampaign(camp);
                     }}
-                    style={{ cursor: isExpired ? "default" : "pointer" }}
+                    style={{ cursor: "pointer" }}
                   >
                     <div className="camp-header">
                       <span className="camp-title">{camp.campaign_name}</span>
@@ -90,6 +105,12 @@ export default function MemberMain({
                     <p className="author">
                       Autor: <span className="author-name">{camp.username}</span>
                     </p>
+
+                    {/* Zobrazení countdown (dny, hodiny, minuty) nebo „EXPIRED“ */}
+                    <p className={`countdown ${isExpired ? "expired-text" : "active-text"}`}>
+                      {timeInfo}
+                    </p>
+
                     <div className="paid-bar">
                       <div className="paid-info">
                         {camp.currency}

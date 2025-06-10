@@ -15,7 +15,7 @@ const API_URL = 'https://app.byxbot.com/php/campaign.php';
 export default function CardForm({ whopId, onClose, onRefresh }) {
   const [campaignName, setCampaignName] = useState('');
   const [category, setCategory] = useState('');
-  const [type, setType] = useState('Clipping'); // DOPLNĚNO: typ kampaně
+  const [type, setType] = useState('Clipping');
   const [budget, setBudget] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [rewardPerThousand, setRewardPerThousand] = useState('');
@@ -31,6 +31,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
   const [newContentLink, setNewContentLink] = useState('');
   const [requirements, setRequirements] = useState([]);
   const [newRequirement, setNewRequirement] = useState('');
+  const [expirationDateTime, setExpirationDateTime] = useState(''); // Nové pole
   const [errorMsg, setErrorMsg] = useState('');
 
   const handlePlatformChange = (e) => {
@@ -62,23 +63,37 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
     e.preventDefault();
     setErrorMsg('');
 
-    // Kontrola pole type
+    // Povinná pole: type + expirationDateTime
     if (!type.trim()) {
       setErrorMsg('Zadejte prosím typ kampaně (Clipping/UGC).');
       return;
     }
-
-    // Kontrola, že povinná pole nejsou prázdná
-    if (!campaignName.trim() || !category.trim() || !budget || !rewardPerThousand) {
-      setErrorMsg('Vyplňte všechna povinná pole (*)!');
+    if (
+      !campaignName.trim() ||
+      !category.trim() ||
+      !budget ||
+      !rewardPerThousand ||
+      !expirationDateTime
+    ) {
+      setErrorMsg('Vyplňte všechna povinná pole (*) včetně data a času vypršení!');
       return;
+    }
+
+    // Připravíme payload
+    // expirationDateTime má formát "YYYY-MM-DDTHH:mm"
+    // PHP očekává "YYYY-MM-DD HH:mm:00" → přidáme ":00" pokud chybí v minutách
+    let expFormatted = expirationDateTime.replace('T', ' ');
+    // Pokud chybí sekundy, dokážeme je přidat ručně: 
+    // např. "2025-06-10 15:30" → "2025-06-10 15:30:00"
+    if (expFormatted.length === 16) {
+      expFormatted += ':00';
     }
 
     const payload = {
       whop_id: whopId,
       campaign_name: campaignName.trim(),
       category: category.trim(),
-      type: type.trim(), // DOPLNĚNO: posíláme i typ
+      type: type.trim(),
       budget: parseFloat(budget),
       currency: currency,
       reward_per_thousand: parseFloat(rewardPerThousand),
@@ -88,6 +103,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
       thumbnail_url: thumbnailUrl.trim(),
       content_links: contentLinks,
       requirements: requirements,
+      expiration_datetime: expFormatted, // Nové pole ve formátu "YYYY-MM-DD HH:mm:00"
     };
 
     try {
@@ -114,10 +130,11 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
     }
   };
 
-  // Helper komponenta pro výběr typu
   const renderTypeSelect = () => (
     <div className="cf-input-group">
-      <label>Typ kampaně <span className="cf-required">*</span></label>
+      <label>
+        Typ kampaně <span className="cf-required">*</span>
+      </label>
       <select value={type} onChange={(e) => setType(e.target.value)} required>
         <option value="">— Vyberte typ —</option>
         <option value="Clipping">Clipping</option>
@@ -378,6 +395,20 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Expiration Date/Time */}
+        <div className="cf-input-group">
+          <label>
+            Datum a čas ukončení <span className="cf-required">*</span>{' '}
+            <FaQuestionCircle title="Datum a čas, kdy kampaň vyprší." />
+          </label>
+          <input
+            type="datetime-local"
+            value={expirationDateTime}
+            onChange={(e) => setExpirationDateTime(e.target.value)}
+            required
+          />
         </div>
 
         {/* Tlačítko Uložit */}

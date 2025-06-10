@@ -360,7 +360,7 @@ export default function WhopDashboard() {
   return (
     <OwnerMode
       whopData={whopData}
-      setWhopData={setWhopData}                                           
+      setWhopData={setWhopData}
       isEditing={isEditing}
       setIsEditing={setIsEditing}
       editName={editName}
