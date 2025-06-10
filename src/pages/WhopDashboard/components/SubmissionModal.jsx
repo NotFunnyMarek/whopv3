@@ -1,5 +1,3 @@
-// src/pages/WhopDashboard/components/SubmissionModal.jsx
-
 import React, { useState } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import "./_submission-modal.scss";
@@ -56,14 +54,20 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
             errMsg = errJson.message;
           }
         } catch {
-          // ignore
+          // ignore JSON parse errors
         }
         throw new Error(errMsg);
       }
 
+      // při úspěšném odeslání
       onAfterSubmit();
     } catch (err) {
-      setError("Chyba při odesílání: " + err.message);
+      // specifická hláška pro duplicitní odeslání (PHP vrátí 409)
+      if (err.message.includes("409") || err.message.includes("Toto video")) {
+        setError("Toto video jste již pro tuto kampaň odeslali.");
+      } else {
+        setError("Chyba při odesílání: " + err.message);
+      }
       console.error(err);
     } finally {
       setIsSubmitting(false);
