@@ -1,12 +1,12 @@
 // src/pages/WhopDashboard/handleSubscribe.js
 
 /**
- * Pokud je whopData.price ≤ 0, zavolá handleJoinFree, jinak se pustí placený flow.
+ * Pokud je whopData.price ≤ 0, zavolá handleJoinFree, jinak spustí placený flow.
  *
- * @param {object} whopData              - data o Whopu (obsahují id, price, currency, is_recurring, atp.)
- * @param {function} showConfirm         - funkce pro zobrazení confirm modalu
+ * @param {object} whopData              - data o Whopu (obsahují id, price, currency, is_recurring, billing_period, slug)
+ * @param {function} showConfirm         - funkce pro zobrazení confirm modalu (vrací promise)
  * @param {function} setOverlayVisible   - setter pro zobrazení fullscreen overlayu
- * @param {function} setOverlayFading    - setter pro fade‐out efekt overlaye
+ * @param {function} setOverlayFading    - setter pro fade‐out efekt overlayu
  * @param {function} setMemberLoading    - setter pro stav načítání „člena“
  * @param {{width:number, height:number}} windowSize - objekt s rozměry obrazovky
  * @param {function} navigate            - react‐router funkce pro navigaci
@@ -28,10 +28,8 @@ export default async function handleSubscribe(
 ) {
   if (!whopData) return;
 
-  // Pokud je zdarma (price ≤ 0)
+  // Pokud je zdarma (price ≤ 0), přesměrujeme do free‐flow
   if (!whopData.price || parseFloat(whopData.price) <= 0) {
-    // Přesměrujeme rovnou na free flow
-    // Re‐exportujeme handleJoinFree jako "joinFree"
     const { default: joinFree } = await import("./handleJoinFree");
     await joinFree(
       whopData,
@@ -47,7 +45,7 @@ export default async function handleSubscribe(
     return;
   }
 
-  // Placený flow: nejprve potvrzení
+  // Placený flow: nejprve potvrzení od uživatele
   const price = parseFloat(whopData.price).toFixed(2);
   const period = whopData.is_recurring
     ? `opakuje se každých ${whopData.billing_period}`
@@ -57,7 +55,7 @@ export default async function handleSubscribe(
   try {
     await showConfirm(confirmMessage);
   } catch {
-    // Uživatel zrušil → konec
+    // Uživatel zrušil → ukončíme
     return;
   }
 
@@ -65,11 +63,11 @@ export default async function handleSubscribe(
   setOverlayVisible(true);
   setOverlayFading(false);
   setMemberLoading(true);
-  const resizeListener = () =>
-    setOverlayFading(false) /* dummy */; // nepotřebujeme víc
+  const resizeListener = () => setOverlayFading(false);
   window.addEventListener("resize", resizeListener);
 
   try {
+    // Pošleme POST požadavek na PHP
     const payload = { whop_id: whopData.id };
     const res = await fetch("https://app.byxbot.com/php/subscribe_whop.php", {
       method: "POST",
@@ -77,16 +75,27 @@ export default async function handleSubscribe(
       credentials: "include",
       body: JSON.stringify(payload),
     });
-    const json = await res.json();
 
-    if (!res.ok) {
-      // Pokud API vrátí chybu
-      showNotification({
-        type: "error",
-        message: json.message || "Nepodařilo se přihlásit.",
-      });
+    // Nejprve si vyzvedneme čisté textové tělo (pro případ, že to nebude validní JSON)
+    const rawText = await res.text();
+    console.log("🔸 [handleSubscribe] HTTP status:", res.status);
+    console.log("🔸 [handleSubscribe] Raw response text:", rawText);
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      throw new Error(
+        `Server nevrátil platné JSON (HTTP ${res.status}):\n${rawText}`
+      );
+    }
+
+    if (!res.ok || data.status !== "success") {
+      // API vrátilo chybu (např. 400 nebo 401, nebo {status:"error"})
+      const msg = data.message || `Chyba HTTP ${res.status}`;
+      showNotification({ type: "error", message: msg });
     } else {
-      // On success: re‐fetch whopData & kampaně
+      // Úspěšné přihlášení → refresh whopData + kampaně
       const refresh = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -97,20 +106,15 @@ export default async function handleSubscribe(
       if (refresh.ok && refreshed.status === "success") {
         setWhopData(refreshed.data);
         await fetchCampaigns(refreshed.data.id);
-        showNotification({ type: "success", message: "Úspěšně přihlášeno." });
+        showNotification({ type: "success", message: data.message || "Úspěšně přihlášeno." });
       }
     }
   } catch (err) {
-    console.error("Chyba při subscribe:", err);
-    showNotification({
-      type: "error",
-      message: "Síťová chyba při přihlašování.",
-    });
+    console.error("⚠️ [handleSubscribe] Chyba při subscribe:", err);
+    showNotification({ type: "error", message: err.message || "Síťová chyba při přihlašování." });
   } finally {
-    // Fade‐out overlay po 2 s
-    setTimeout(() => {
-      setOverlayFading(true);
-    }, 2000);
+    // Fade‐out overlay po 2 sekundách
+    setTimeout(() => setOverlayFading(true), 2000);
     setMemberLoading(false);
     window.removeEventListener("resize", resizeListener);
   }

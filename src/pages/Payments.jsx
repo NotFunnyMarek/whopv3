@@ -33,7 +33,10 @@ export default function Payments() {
       showNotification({ type: "success", message: "Platby načteny." });
     } catch (err) {
       console.error("Chyba při načítání plateb:", err);
-      showNotification({ type: "error", message: "Nepodařilo se načíst historii plateb." });
+      showNotification({
+        type: "error",
+        message: "Nepodařilo se načíst historii plateb.",
+      });
     } finally {
       setLoading(false);
     }
@@ -69,11 +72,21 @@ export default function Payments() {
                 <td>{p.whop_name}</td>
                 <td>{parseFloat(p.amount).toFixed(2)}</td>
                 <td>{p.currency}</td>
-                <td className={p.type === "failed" ? "failed" : "success"}>
+                <td
+                  className={
+                    p.type === "one_time" || p.type === "recurring"
+                      ? "success"
+                      : p.type === "refunded"
+                      ? "refunded"
+                      : "failed"
+                  }
+                >
                   {p.type === "one_time"
                     ? "Jednorázově"
                     : p.type === "recurring"
                     ? "Opakovaně"
+                    : p.type === "refunded"
+                    ? "Refundováno"
                     : "Neúspěšná platba"}
                 </td>
               </tr>

@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -5,20 +7,21 @@ import BottomBar from "./components/BottomBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Loading from "./components/Loading";
 
-const Home = lazy(() => import("./pages/Home"));
-const Intro = lazy(() => import("./pages/Intro"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const Setup = lazy(() => import("./pages/Setup"));
-const ChooseLink = lazy(() => import("./pages/ChooseLink"));
-const FeaturesSetup = lazy(() => import("./pages/FeaturesSetup"));
-const BannerSetup = lazy(() => import("./pages/BannerSetup"));
-const WhopDashboard = lazy(() => import("./pages/WhopDashboard/WhopDashboard"));
-const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Balances = lazy(() => import("./pages/Balances"));
-const Memberships = lazy(() => import("./pages/Memberships"));
-const Payments = lazy(() => import("./pages/Payments")); // nová stránka
+const Home           = lazy(() => import("./pages/Home"));
+const Intro          = lazy(() => import("./pages/Intro"));
+const Onboarding     = lazy(() => import("./pages/Onboarding"));
+const Setup          = lazy(() => import("./pages/Setup"));
+const ChooseLink     = lazy(() => import("./pages/ChooseLink"));
+const FeaturesSetup  = lazy(() => import("./pages/FeaturesSetup"));
+const BannerSetup    = lazy(() => import("./pages/BannerSetup"));
+const WhopDashboard  = lazy(() => import("./pages/WhopDashboard/WhopDashboard"));
+const Dashboard      = lazy(() => import("./pages/Dashboard"));        // NOVÁ STRÁNKA
+const Login          = lazy(() => import("./pages/Login"));
+const Register       = lazy(() => import("./pages/Register"));
+const Profile        = lazy(() => import("./pages/Profile"));
+const Balances       = lazy(() => import("./pages/Balances"));
+const Memberships    = lazy(() => import("./pages/Memberships"));
+const Payments       = lazy(() => import("./pages/Payments")); // nová stránka
 
 const App = () => {
   return (
@@ -111,7 +114,7 @@ const App = () => {
             }
           />
 
-          {/* Whop Dashboard */}
+          {/* Whop Dashboard (Member/Owner režim se řeší v rámci komponenty) */}
           <Route
             path="/c/:slug"
             element={
@@ -120,6 +123,22 @@ const App = () => {
                   <Sidebar />
                   <main className="main-content">
                     <WhopDashboard />
+                  </main>
+                  <BottomBar />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* NOVÁ TRASA – OWNER DASHBOARD */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <main className="main-content">
+                    <Dashboard />
                   </main>
                   <BottomBar />
                 </div>
@@ -191,7 +210,7 @@ const App = () => {
             }
           />
 
-          {/* Nová stránka – historie plateb */}
+          {/* Historie plateb (Userské placené stránky) */}
           <Route
             path="/payments"
             element={

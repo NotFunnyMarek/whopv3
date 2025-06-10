@@ -1,0 +1,234 @@
+/* src/styles/dashboard.scss */
+
+@import "./_theme.scss";
+
+/* Reset a základní layout viz předchozí příklady… */
+
+.dashboard-container {
+  padding: 2rem;
+}
+
+.dashboard-title {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+/* STATISTIKY */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-card {
+  background: var(--surface-color);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  margin-top: var(--spacing-sm);
+  color: var(--accent-color);
+}
+
+/* GRAF */
+.chart-section {
+  background: var(--surface-color);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* TABULKY */
+.table-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-color);
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.dashboard-table th {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+}
+
+.dashboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Filtrování */
+.filter-input-wrapper {
+  margin-bottom: var(--spacing-sm);
+}
+
+.filter-input {
+  max-width: 300px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* Barvy stavu platby */
+.dashboard-td-success {
+  color: var(--success-color);
+}
+
+.dashboard-td-failed {
+  color: var(--error-color);
+}
+
+.dashboard-td-refunded {
+  color: #d4a20b; /* zlatavá/žlutá */
+}
+
+/* Štítky členů */
+.label-paid {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.label-free {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Tlačítka */
+button.btn-kick {
+  background: var(--error-color);
+}
+button.btn-kick:hover {
+  background: var(--error-hover);
+}
+
+button.btn-refund {
+  background: #d4a20b;
+}
+button.btn-refund:hover {
+  background: darken(#d4a20b, 10%);
+}
+
+button.btn-unban {
+  background: var(--success-color);
+}
+button.btn-unban:hover {
+  background: var(--success-dark);
+}
+
+button.btn-invite {
+  background: var(--primary-color);
+}
+button.btn-invite:hover {
+  background: var(--primary-hover);
+}
+
+button.btn-remove-mod {
+  background: var(--error-color);
+}
+button.btn-remove-mod:hover {
+  background: var(--error-hover);
+}
+
+/* Pomocný „mdash“ */
+.dashmdash {
+  opacity: 0.4;
+}
+
+/* BANNED filtrace */
+.dashboard-loading,
+.no-data-text {
+  text-align: center;
+  color: var(--muted-color);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  margin-top: var(--spacing-md);
+}
+
+.page-btn {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-weight: 500;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-base);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.page-btn:disabled {
+  background: var(--border-color);
+  color: var(--muted-color);
+  cursor: not-allowed;
+}
+
+.page-btn.active {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+/* DALŠÍ TYPOGRAFIE */
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+/* src/styles/dashboard.scss */
+
+@import "./_theme.scss";
+
+/* ... ostatní styly z předchozích verzí ... */
+
+/* Tlačítko Ban */
+button.btn-ban {
+  background: var(--error-color);
+  margin-left: var(--spacing-xs);
+}
+button.btn-ban:hover {
+  background: var(--error-hover);
+}
+
+/* Už existující .btn-kick, .btn-refund, .btn-unban apod. */
+button.btn-kick {
+  background: var(--error-color);
+}
+button.btn-kick:hover {
+  background: var(--error-hover);
+}
+
+button.btn-unban {
+  background: var(--success-color);
+}
+button.btn-unban:hover {
+  background: var(--success-dark);
+}
+
+/* … pokračujte ostatními styly, jak jste je měli */
+.btn-invite {
+    margin-left: 10px;
+}

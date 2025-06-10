@@ -56,6 +56,7 @@ export default function OwnerMode({
 
   return (
     <div className="whop-container">
+      {/* Zobrazení tlačítka “Zpět” pouze v režimu editace */}
       {isEditing && (
         <button
           className="whop-back-button"
@@ -66,6 +67,7 @@ export default function OwnerMode({
         </button>
       )}
 
+      {/* Hlavička (názvu, popisu a banneru) */}
       <OwnerHeader
         whopData={whopData}
         isEditing={isEditing}
@@ -80,9 +82,10 @@ export default function OwnerMode({
       />
 
       <div className="whop-content">
+        {/* Sekce pro úpravu slug a ceny */}
         <OwnerSlugPrice
           whopData={whopData}
-          setWhopData={setWhopData}              // nyní skutečně posíláme setWhopData
+          setWhopData={setWhopData}
           isEditing={isEditing}
           isSlugEditing={isSlugEditing}
           setIsSlugEditing={setIsSlugEditing}
@@ -92,7 +95,9 @@ export default function OwnerMode({
           handleSlugSave={handleSlugSave}
         />
 
+        {/* Akční tlačítka majitele */}
         <OwnerActionButtons
+          whopData={whopData}
           isEditing={isEditing}
           handleSave={handleSave}
           setIsEditing={setIsEditing}
@@ -101,6 +106,7 @@ export default function OwnerMode({
           setIsCampaignModalOpen={setIsCampaignModalOpen}
         />
 
+        {/* Sekce vlastních funkcí (Features) */}
         <FeaturesSection
           whopData={whopData}
           isEditing={isEditing}
@@ -111,6 +117,7 @@ export default function OwnerMode({
           addFeature={addFeature}
         />
 
+        {/* Sekce kampaní (pouze pokud je uživatel vlastníkem) */}
         {whopData.is_owner && (
           <CampaignsSection
             whopData={whopData}
@@ -121,6 +128,7 @@ export default function OwnerMode({
           />
         )}
 
+        {/* Sekce členů (pouze pokud je uživatel vlastníkem) */}
         {whopData.is_owner && (
           <MembersSection
             membersLoading={membersLoading}
@@ -131,6 +139,7 @@ export default function OwnerMode({
         )}
       </div>
 
+      {/* Modal pro vytvoření nové kampaně */}
       {isCampaignModalOpen && (
         <CampaignModal
           isOpen={isCampaignModalOpen}
