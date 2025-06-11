@@ -1,6 +1,7 @@
 // src/pages/WhopDashboard/components/CampaignsSection.jsx
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../../../styles/whop-dashboard/_owner.scss";
 
 export default function CampaignsSection({
@@ -8,11 +9,14 @@ export default function CampaignsSection({
   campaigns,
   campaignsLoading,
   campaignsError,
-  handleExpire,       // funkce „Refund & Expire“ (manuálně volaná ownerem)
+  handleExpire,       // funkce „Refund & Expire“
 }) {
+  const navigate = useNavigate();
+
   return (
     <div className="whop-campaigns-section">
       <h2 className="campaigns-section-title">Kampaně</h2>
+
       {campaignsLoading ? (
         <p className="campaigns-loading">Načítám kampaně…</p>
       ) : campaignsError ? (
@@ -22,15 +26,12 @@ export default function CampaignsSection({
       ) : (
         <div className="whop-campaigns-list">
           {campaigns.map((camp) => {
-            // 1) Parsujeme expiration_datetime (např. "2025-06-10 15:30:00")
-            //    (nahrazujeme mezeru písmenem 'T', aby JS Date korektně pochopil)
+            // Parsování expiration_datetime → JS Date
             const now = new Date();
             const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
-
-            // 2) Kampaň považujeme za expired, pokud is_active === 0 nebo expDate <= now
             const isExpired = camp.is_active === 0 || expDate <= now;
 
-            // 3) Když kampaň ještě neexpiruje, vypočítáme, kolik zbývá do konce (dny/hodiny)
+            // Výpočet zbývajícího času
             let timeInfo;
             if (isExpired) {
               timeInfo = "EXPIRED";
@@ -44,8 +45,16 @@ export default function CampaignsSection({
             }
 
             return (
-              <div key={camp.id} className="whop-campaign-item">
-                <h3 className="campaign-item-title">{camp.campaign_name}</h3>
+              <div
+                key={camp.id}
+                className="whop-campaign-item"
+                onClick={() => navigate(`/dashboard/submissions/${camp.id}`)}
+                style={{ cursor: "pointer" }}
+              >
+                <h3 className="campaign-item-title">
+                  {camp.campaign_name}
+                </h3>
+
                 <p className="campaign-item-detail">
                   <strong>Kategorie:</strong> {camp.category}
                 </p>
@@ -59,8 +68,6 @@ export default function CampaignsSection({
                 <p className="campaign-item-detail">
                   <strong>Typ:</strong> {camp.type}
                 </p>
-
-                {/* 4) Zobrazení aktuálního stavu (ACTIVE / EXPIRED) */}
                 <p className="campaign-item-detail">
                   <strong>Status:</strong>{" "}
                   {isExpired ? (
@@ -69,21 +76,23 @@ export default function CampaignsSection({
                     <span className="active-label">ACTIVE</span>
                   )}
                 </p>
-
-                {/* 5) Zobrazení zbývajícího času nebo „EXPIRED“ */}
                 <p className="campaign-item-detail">
                   <strong>Expires:</strong>{" "}
-                  <span className={isExpired ? "expired-text" : "active-text"}>
+                  <span
+                    className={isExpired ? "expired-text" : "active-text"}
+                  >
                     {timeInfo}
                   </span>
                 </p>
 
                 <div className="campaign-status-row">
-                  {/* 6) Owner může manuálně „Refund & Expire“ (pouze pokud ještě neexpiruje) */}
                   {!isExpired && (
                     <button
                       className="expire-btn"
-                      onClick={() => handleExpire(camp.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExpire(camp.id);
+                      }}
                     >
                       Refund &amp; Expire
                     </button>

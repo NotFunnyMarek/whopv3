@@ -1,3 +1,5 @@
+// src/components/Card.jsx
+
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import '../styles/card.scss';

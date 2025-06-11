@@ -10,16 +10,29 @@ export default async function fetchMembers(
   setMembersError("");
   try {
     const res = await fetch(
-      `https://app.byxbot.com/php/get_whop_members.php?whop_id=${whopId}`,
-      { method: "GET", credentials: "include" }
+      `https://app.byxbot.com/php/get_dashboard_data.php?whop_id=${encodeURIComponent(
+        whopId
+      )}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json",
+        },
+      }
     );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    setMembershipsList(Array.isArray(data) ? data : []);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const json = await res.json();
+    // Očekáme, že json.members je pole členů s type 'paid' nebo 'free'
+    if (json.status === "success" || json.members) {
+      setMembershipsList(json.members || []);
+    } else {
+      throw new Error("Neplatná odpověď od serveru");
+    }
   } catch (err) {
-    console.error("Chyba při načítání členů Whopu:", err);
-    setMembersError("Nepodařilo se načíst členy Whopu.");
-    setMembershipsList([]);
+    setMembersError("Chyba při načítání členů Whopu: " + err.message);
   } finally {
     setMembersLoading(false);
   }

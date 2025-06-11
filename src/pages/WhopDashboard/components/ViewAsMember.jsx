@@ -1,3 +1,5 @@
+// src/pages/WhopDashboard/components/ViewAsMember.jsx
+
 import React from "react";
 import MemberSidebar from "./MemberSidebar";
 import MemberMain from "./MemberMain";
