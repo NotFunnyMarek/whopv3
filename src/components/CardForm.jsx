@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import {
   FaInstagram,
   FaTiktok,
-  FaYoutube,
   FaQuestionCircle,
   FaGoogleDrive,
   FaPlus,
@@ -26,7 +25,6 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
   const [platforms, setPlatforms] = useState({
     instagram: false,
     tiktok: false,
-    youtube: false,
   });
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [contentLinks, setContentLinks] = useState([]);
@@ -152,8 +150,6 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         return <FaInstagram size={size} className="cf-icon-instagram" />;
       case 'tiktok':
         return <FaTiktok size={size} className="cf-icon-tiktok" />;
-      case 'youtube':
-        return <FaYoutube size={size} className="cf-icon-youtube" />;
       default:
         return null;
     }
@@ -289,7 +285,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
             <FaQuestionCircle title="Vyberte sociální sítě pro kampaň." />
           </legend>
           <div className="cf-platforms-row">
-            {['instagram', 'tiktok', 'youtube'].map((name) => (
+            {['instagram', 'tiktok'].map((name) => (
               <label key={name} className="cf-platform-label">
                 <input
                   type="checkbox"
