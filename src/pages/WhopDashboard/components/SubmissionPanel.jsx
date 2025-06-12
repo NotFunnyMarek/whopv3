@@ -15,7 +15,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const [errorSubs, setErrorSubs] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
-  // Funkce pro načtení všech submissionů daného uživatele ke konkrétní kampani
+  // Load submissions for this user + campaign
   const fetchMySubmissions = async () => {
     setLoadingSubs(true);
     setErrorSubs("");
@@ -23,19 +23,26 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
       const res = await fetch(
         `https://app.byxbot.com/php/submissions.php?campaign_id=${campaign.id}`,
         {
-          method: "GET",
           credentials: "include",
         }
       );
+
+      // Always read as text first, then try JSON.parse
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error("Neplatná odpověď od serveru");
+      }
+
       if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP ${res.status}`);
       }
-      const json = await res.json();
-      if (json.status === "success" && Array.isArray(json.data)) {
-        setMySubmissions(json.data);
-      } else {
-        setErrorSubs("Neplatná odpověď od serveru");
+      if (json.status !== "success" || !Array.isArray(json.data)) {
+        throw new Error(json.message || "Neplatná struktura dat");
       }
+      setMySubmissions(json.data);
     } catch (err) {
       setErrorSubs("Nelze načíst vaše submissiony: " + err.message);
     } finally {
@@ -43,13 +50,13 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     }
   };
 
-  // Načíst okamžitě po prvním renderu, aby se tlačítko „My Submission (X)“ zobrazilo správně
+  // initial load
   useEffect(() => {
     fetchMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Při přepnutí záložky „My Submissions“ znovu aktualizujeme data
+  // refresh when switching to "My Submissions"
   useEffect(() => {
     if (activeTab === "My Submissions") {
       fetchMySubmissions();
@@ -57,7 +64,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // Po úspěšném odeslání nejprve znovu načteme a poté přepneme tab
+  // after a new submission, reload list and switch tab
   const handleAfterSubmit = async () => {
     await fetchMySubmissions();
     setActiveTab("My Submissions");
@@ -67,7 +74,6 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const handleRowClick = (submission) => {
     setSelectedSubmission(submission);
   };
-
   const closeDetailModal = () => {
     setSelectedSubmission(null);
   };
@@ -98,6 +104,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
 
       {activeTab === "Rewards" && (
         <div className="submission-rewards">
+          {/* Banner */}
           <div className="submission-banner">
             {whopData.banner_url ? (
               <img
@@ -106,10 +113,13 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
                 className="submission-banner-img"
               />
             ) : (
-              <div className="submission-banner-placeholder">Žádný banner</div>
+              <div className="submission-banner-placeholder">
+                Žádný banner
+              </div>
             )}
           </div>
 
+          {/* Submit button */}
           <div className="submission-submit-section">
             <button
               className="btn-open-modal"
@@ -120,6 +130,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             </button>
           </div>
 
+          {/* Paid progress bar */}
           <div className="submission-paid-bar">
             <div className="paid-info">
               {campaign.currency}
@@ -141,6 +152,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             </div>
           </div>
 
+          {/* Details */}
           <div className="submission-details">
             <p>
               <strong>Reward Rate:</strong> {campaign.currency}
@@ -165,6 +177,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             </p>
           </div>
 
+          {/* Requirements */}
           <div className="submission-requirements">
             <h4>Requirements:</h4>
             {campaign.requirements && campaign.requirements.length > 0 ? (
@@ -178,13 +191,18 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             )}
           </div>
 
+          {/* Assets */}
           <div className="submission-assets">
             <h4>Assets:</h4>
             {campaign.content_links && campaign.content_links.length > 0 ? (
               <ul>
                 {campaign.content_links.map((url, idx) => (
                   <li key={idx}>
-                    <a href={url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {url}
                     </a>
                   </li>
@@ -195,14 +213,16 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             )}
           </div>
 
+          {/* Disclaimer */}
           <div className="submission-disclaimer">
             <p>
               <strong>Disclaimer:</strong>
             </p>
             <p>
-              Creators may reject submissions that don't meet requirements. By
-              submitting, you grant full usage rights and agree to follow the
-              FTC guidelines and the Content Rewards Terms.
+              Creators may reject submissions that don't meet
+              requirements. By submitting, you grant full usage rights
+              and agree to follow the FTC guidelines and the Content
+              Rewards Terms.
             </p>
           </div>
 

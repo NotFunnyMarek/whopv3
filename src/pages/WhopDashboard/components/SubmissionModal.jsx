@@ -1,117 +1,125 @@
-// src/pages/WhopDashboard/components/SubmissionModal.jsx
-
 import React, { useState } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import "./_submission-modal.scss";
+import LinkAccountModal from "../../../components/LinkAccountModal";
+import { useNotifications } from "../../../components/NotificationProvider";
+
+// Produkční URL
+const SCRAPER_URL    = "https://app.byxbot.com/scrape/api/video";
+const PHP_SUBMIT_URL = "https://app.byxbot.com/php/submissions.php";
 
 export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
-  const [link, setLink] = useState("");
-  const [error, setError] = useState("");
+  const [link, setLink]               = useState("");
+  const [error, setError]             = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const validateLink = (url) => {
-    const urlLower = url.toLowerCase();
-    for (let plat of campaign.platforms) {
-      if (urlLower.includes(plat.toLowerCase())) {
-        return true;
-      }
-    }
-    return false;
-  };
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const { showNotification }           = useNotifications();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (!link.trim()) {
+    const trimmed = link.trim();
+    if (!trimmed) {
       setError("Link je povinný.");
       return;
     }
-    if (!validateLink(link.trim())) {
-      setError("Link neodpovídá povolené platformě kampaně.");
+
+    let urlObj;
+    try { urlObj = new URL(trimmed); }
+    catch {
+      setError("Neplatná URL adresa.");
+      return;
+    }
+    if (!urlObj.hostname.includes("instagram.com")) {
+      setError("Link musí být z Instagramu.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        campaign_id: campaign.id,
-        link: link.trim()
-      };
-
-      const res = await fetch("https://app.byxbot.com/php/submissions.php", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+      // 1) Scraper
+      const resScr = await fetch(`${SCRAPER_URL}?url=${encodeURIComponent(trimmed)}`, {
+        credentials: "omit"
       });
+      const textScr = await resScr.text();
+      let dataScr;
+      try { dataScr = JSON.parse(textScr); }
+      catch { throw new Error("Unexpected scraper response: " + textScr.slice(0,100)); }
+      if (!resScr.ok) throw new Error(dataScr.error || `Scraper error ${resScr.status}`);
+      const owner = dataScr.username;
+      if (!owner) throw new Error("Username not returned");
 
+      // 2) PHP submit
+      const res = await fetch(PHP_SUBMIT_URL, {
+        method: "POST",
+        credentials: "include",  // posílat cookies
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ campaign_id: campaign.id, link: trimmed })
+      });
+      const text = await res.text();
+      let body = {};
+      try { body = JSON.parse(text); }
+      catch { throw new Error("Invalid server response: " + text.slice(0,100)); }
+
+      if (res.status === 403) {
+        // Otevřít modal pro propojení účtu
+        setShowLinkModal(true);
+        showNotification({ type: "error", message: body.message });
+        return;
+      }
       if (!res.ok) {
-        let errMsg = `HTTP ${res.status}`;
-        try {
-          const errJson = await res.json();
-          if (errJson.message) {
-            errMsg = errJson.message;
-          }
-        } catch {
-          // ignore JSON parse errors
-        }
-        throw new Error(errMsg);
+        throw new Error(body.message || `Submit error ${res.status}`);
       }
 
-      // při úspěšném odeslání
+      showNotification({ type: "success", message: "Submission úspěšně odeslána." });
       onAfterSubmit();
+
     } catch (err) {
-      // specifická hláška pro duplicitní odeslání (PHP vrátí 409)
-      if (err.message.includes("409") || err.message.includes("Toto video")) {
-        setError("Toto video jste již pro tuto kampaň odeslali.");
-      } else {
-        setError("Chyba při odesílání: " + err.message);
-      }
       console.error(err);
+      const msg = err.message || "Neznámá chyba";
+      if (msg.includes("Already submitted")) {
+        setError("Toto video jste již odeslali.");
+      } else {
+        setError("Chyba při odesílání: " + msg);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleLinkModalClose = (reload) => {
+    setShowLinkModal(false);
+    if (reload) {
+      showNotification({ type: "info", message: "Účet ověřen – zkuste odeslat znovu." });
+    }
+  };
+
+  if (showLinkModal) {
+    return <LinkAccountModal mode={{ action: "create" }} onClose={handleLinkModalClose} />;
+  }
+
   return (
     <div className="modal-overlay">
       <div className="modal-content submission-modal">
-        <button className="modal-close-btn" onClick={onClose}>
-          &times;
-        </button>
-        <h2>Create Submission</h2>
-        <p>
-          Only views after you submit count towards payout. Submit as soon as
-          you post to get paid for all of your views.
-        </p>
-        <p>
-          Submit your social media post. Share your post's link below. Once
-          approved, you'll start earning rewards based on the views your
-          content generates.
-        </p>
+        <button className="modal-close-btn" onClick={onClose}>&times;</button>
+        <h2>Vytvořit Submission</h2>
+        <p>Vložte odkaz na svůj Instagram příspěvek (post nebo reel). Pouze ověřené účty budou přijaty.</p>
         <form onSubmit={handleSubmit} className="submission-form">
           <label>
-            Provide Link:
+            Odkaz:
             <input
               type="text"
               value={link}
-              placeholder="Zadejte link (např. Instagram Reels…)"
-              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://www.instagram.com/reel/…"
+              onChange={e => setLink(e.target.value)}
+              disabled={isSubmitting}
             />
           </label>
-
           {error && <p className="error-text">{error}</p>}
-
-          <button
-            type="submit"
-            className="btn-submit-modal"
-            disabled={isSubmitting || !link.trim()}
-          >
-            {isSubmitting ? "Submitting…" : "Submit"}
+          <button type="submit" className="btn-submit-modal" disabled={isSubmitting}>
+            {isSubmitting ? "Odesílá se…" : "Odeslat"}
           </button>
+          {isSubmitting && <div className="loading-indicator">Probíhá odesílání…</div>}
         </form>
       </div>
     </div>
