@@ -27,7 +27,6 @@ export default function Card() {
   const [platforms, setPlatforms]               = useState({
     instagram: false,
     tiktok:    false,
-    youtube:   false,
   });
   const [thumbnailUrl, setThumbnailUrl]         = useState('');
   const [newContentLink, setNewContentLink]     = useState('');
@@ -172,7 +171,7 @@ export default function Card() {
         setRewardPerThousand('');
         setMinPayout('');
         setMaxPayout('');
-        setPlatforms({ instagram: false, tiktok: false, youtube: false });
+        setPlatforms({ instagram: false, tiktok: false});
         setThumbnailUrl('');
         setNewContentLink('');
         setContentLinks([]);
@@ -336,7 +335,7 @@ export default function Card() {
           <fieldset className="form-group cf-fieldset">
             <legend>Platforms</legend>
             <div className="cf-platforms-row">
-              {['instagram', 'tiktok', 'youtube'].map((name) => (
+              {['instagram', 'tiktok'].map((name) => (
                 <label key={name} className="cf-platform-label">
                   <input
                     type="checkbox"
