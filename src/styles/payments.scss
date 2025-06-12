@@ -1,40 +1,80 @@
 .payments-container {
-  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: var(--font-family);
 }
 
-.payments-total {
+.payments-title {
+  font-size: 1.75rem;
   margin-bottom: 1rem;
-  font-size: 1.1rem;
+  color: var(--accent-color);
+}
+
+  span {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    color: var(--text-color);
+  }
+  .summary-amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .summary-amount.positive {
+    color: #27ae60; // zeleně
+  }
+  .summary-amount.negative {
+    color: #c0392b; // červeně
+  }
+
+
+.payments-empty {
+  text-align: center;
+  color: var(--muted-color);
+  font-size: 1rem;
 }
 
 .payments-table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
+
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+  }
+
+  th {
+    background: var(--surface-color);
+    color: var(--text-color);
+    font-weight: 600;
+  }
+  
+  tbody tr:hover {
+    background: var(--border-color-hover);
+  }
+
+  .amount {
+    font-weight: 600;
+  }
+  .amount.positive {
+    color: #27ae60; // zelená pro + 
+  }
+  .amount.negative {
+    color: #c0392b; // červená pro -
+  }
+
+  .type {
+    text-transform: capitalize;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
 }
 
-.payments-table th,
-.payments-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  text-align: left;
-}
-
-.payments-table th {
-  background-color: #f5f5f5;
-}
-
-/* Plně refundované (contain "refunded") */
-.payments-table td.refunded {
-  color: #b98c00; /* tmavě žlutá pro refund */
-  font-weight: bold;
-}
-
-/* Úspěšné (one_time/recurring) */
-.payments-table td.success {
-  color: #1a7f27; /* tmavá zelená pro úspěšné platby */
-}
-
-/* Neúspěšné */
-.payments-table td.failed {
-  color: #b30e0e; /* tmavá červená pro neúspěšné platby */
+.payments-loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: var(--muted-color);
 }

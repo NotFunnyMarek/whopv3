@@ -1,5 +1,3 @@
-// src/pages/Payments.jsx
-
 import React, { useEffect, useState } from "react";
 import { useNotifications } from "../components/NotificationProvider";
 import "../styles/payments.scss";
@@ -8,7 +6,7 @@ export default function Payments() {
   const { showNotification } = useNotifications();
 
   const [payments, setPayments] = useState([]);
-  const [totalSpent, setTotalSpent] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +27,7 @@ export default function Payments() {
         throw new Error(json.message || "Nepodařilo se načíst platby.");
       }
       setPayments(json.data.payments);
-      setTotalSpent(json.data.total_spent);
+      setTotalEarned(json.data.total_spent);
       showNotification({ type: "success", message: "Platby načteny." });
     } catch (err) {
       console.error("Chyba při načítání plateb:", err);
@@ -48,12 +46,10 @@ export default function Payments() {
 
   return (
     <div className="payments-container">
-      <h2>Historie Plateb</h2>
-      <div className="payments-total">
-        <strong>Celkem utraceno:</strong> ${parseFloat(totalSpent).toFixed(2)}
-      </div>
+      <h2 className="payments-title">Historie plateb</h2>
+
       {payments.length === 0 ? (
-        <p>Žádné platby k zobrazení.</p>
+        <p className="payments-empty">Žádné platby k zobrazení.</p>
       ) : (
         <table className="payments-table">
           <thead>
@@ -66,31 +62,31 @@ export default function Payments() {
             </tr>
           </thead>
           <tbody>
-            {payments.map((p) => (
-              <tr key={p.id}>
-                <td>{new Date(p.payment_date).toLocaleString()}</td>
-                <td>{p.whop_name}</td>
-                <td>{parseFloat(p.amount).toFixed(2)}</td>
-                <td>{p.currency}</td>
-                <td
-                  className={
-                    p.type === "one_time" || p.type === "recurring"
-                      ? "success"
-                      : p.type === "refunded"
-                      ? "refunded"
-                      : "failed"
-                  }
-                >
-                  {p.type === "one_time"
-                    ? "Jednorázově"
-                    : p.type === "recurring"
-                    ? "Opakovaně"
-                    : p.type === "refunded"
-                    ? "Refundováno"
-                    : "Neúspěšná platba"}
-                </td>
-              </tr>
-            ))}
+            {payments.map((p) => {
+              const amt = parseFloat(p.amount);
+              const isPayout = p.type === 'payout';
+              const sign = isPayout ? '+' : '-';
+              const cls = isPayout ? 'positive' : 'negative';
+              return (
+                <tr key={p.id}>
+                  <td>{new Date(p.payment_date).toLocaleString()}</td>
+                  <td>{p.whop_name}</td>
+                  <td className={`amount ${cls}`}>{sign}{Math.abs(amt).toFixed(2)}</td>
+                  <td>{p.currency}</td>
+                  <td className={`type ${p.type}`}>{
+                    p.type === 'one_time'
+                      ? 'Jednorázově'
+                      : p.type === 'recurring'
+                      ? 'Opakovaně'
+                      : p.type === 'refunded'
+                      ? 'Refundováno'
+                      : p.type === 'payout'
+                      ? 'Výplata'
+                      : 'Neznámý typ'
+                  }</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

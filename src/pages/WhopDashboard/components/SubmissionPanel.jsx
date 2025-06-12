@@ -15,7 +15,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const [errorSubs, setErrorSubs] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
-  // Funkce pro načtení všech submissionů daného uživatele ke konkrétní kampani
+  // 1) Načtení všech submissionů pro danou kampaň
   const fetchMySubmissions = async () => {
     setLoadingSubs(true);
     setErrorSubs("");
@@ -23,18 +23,16 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
       const res = await fetch(
         `https://app.byxbot.com/php/submissions.php?campaign_id=${campaign.id}`,
         {
-          method: "GET",
           credentials: "include",
+          headers: { Accept: "application/json" },
         }
       );
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.status === "success" && Array.isArray(json.data)) {
         setMySubmissions(json.data);
       } else {
-        setErrorSubs("Neplatná odpověď od serveru");
+        throw new Error(json.message || "Neplatná odpověď serveru");
       }
     } catch (err) {
       setErrorSubs("Nelze načíst vaše submissiony: " + err.message);
@@ -43,13 +41,13 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     }
   };
 
-  // Načíst okamžitě po prvním renderu, aby se tlačítko „My Submission (X)“ zobrazilo správně
+  // Volání při prvním renderu
   useEffect(() => {
     fetchMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Při přepnutí záložky „My Submissions“ znovu aktualizujeme data
+  // Při přepnutí na „My Submissions“ záložku
   useEffect(() => {
     if (activeTab === "My Submissions") {
       fetchMySubmissions();
@@ -57,7 +55,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // Po úspěšném odeslání nejprve znovu načteme a poté přepneme tab
+  // Po úspěšném submitu v modal
   const handleAfterSubmit = async () => {
     await fetchMySubmissions();
     setActiveTab("My Submissions");
@@ -67,7 +65,6 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const handleRowClick = (submission) => {
     setSelectedSubmission(submission);
   };
-
   const closeDetailModal = () => {
     setSelectedSubmission(null);
   };
@@ -88,7 +85,9 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             Rewards
           </button>
           <button
-            className={activeTab === "My Submissions" ? "tab active" : "tab"}
+            className={
+              activeTab === "My Submissions" ? "tab active" : "tab"
+            }
             onClick={() => setActiveTab("My Submissions")}
           >
             My Submissions ({mySubmissions.length})
@@ -106,7 +105,9 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
                 className="submission-banner-img"
               />
             ) : (
-              <div className="submission-banner-placeholder">Žádný banner</div>
+              <div className="submission-banner-placeholder">
+                Žádný banner
+              </div>
             )}
           </div>
 
@@ -124,7 +125,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             <div className="paid-info">
               {campaign.currency}
               {campaign.paid_out.toFixed(2)} / {campaign.currency}
-              {campaign.total_paid_out.toFixed(2)} vyplaceno
+              {campaign.total_paid_out.toFixed(2)} paid out
             </div>
             <div className="progress-container">
               <div
@@ -200,9 +201,9 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
               <strong>Disclaimer:</strong>
             </p>
             <p>
-              Creators may reject submissions that don't meet requirements. By
-              submitting, you grant full usage rights and agree to follow the
-              FTC guidelines and the Content Rewards Terms.
+              Creators may reject submissions that don't meet requirements.
+              By submitting, you grant full usage rights and agree to follow
+              the FTC guidelines and the Content Rewards Terms.
             </p>
           </div>
 
