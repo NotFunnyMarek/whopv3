@@ -1,3 +1,5 @@
+// src/pages/WhopDashboard/components/SubmissionModal.jsx
+
 import React, { useState } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import "./_submission-modal.scss";

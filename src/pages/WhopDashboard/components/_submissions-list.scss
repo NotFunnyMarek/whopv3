@@ -20,23 +20,27 @@
     tr.submission-row {
       cursor: pointer;
       transition: background var(--transition);
+
       &:nth-child(even) {
         background: var(--surface-color);
       }
       &:hover {
         background: var(--border-color);
       }
+
       td {
         padding: var(--spacing-sm);
         font-size: 0.875rem;
         color: var(--text-color);
         border-bottom: 1px solid var(--border-color);
       }
+
       .status {
         padding: 0.25rem 0.5rem;
         border-radius: var(--radius-base);
         font-size: 0.75rem;
         color: #fff;
+
         &.pending {
           background: #ffcc80;
           color: #663c00;
@@ -50,12 +54,22 @@
           color: #721c24;
         }
       }
+
       .icon-img {
         width: 24px;
         height: 24px;
       }
       .link-text {
         font-size: 0.875rem;
+        color: var(--primary-color);
+      }
+
+      .paid-cell {
+        font-weight: 600;
+        color: var(--success-color);
+      }
+      .pending-cell {
+        font-weight: 600;
         color: var(--primary-color);
       }
     }
@@ -73,7 +87,8 @@
 @media (max-width: 768px) {
   .submissions-table.fullwidth {
     font-size: 0.8rem;
-    th, td {
+    th,
+    td {
       padding: var(--spacing-xs);
     }
     .icon-img {

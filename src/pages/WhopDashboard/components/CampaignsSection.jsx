@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/CampaignsSection.jsx
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../styles/whop-dashboard/_owner.scss";
 
@@ -12,6 +12,33 @@ export default function CampaignsSection({
   handleExpire,       // funkce „Refund & Expire“
 }) {
   const navigate = useNavigate();
+  // Ref pro sledování již zpracovaných automatických expirací
+  const expiredProcessed = useRef(new Set());
+
+  useEffect(() => {
+    if (!campaigns || !campaigns.length) return;
+
+    campaigns.forEach((camp) => {
+      // Parsování expiration_datetime → JS Date
+      const now = new Date();
+      const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
+
+      // Kampaň expired časem
+      const byTime = expDate <= now;
+      // Kampaň expired vyčerpáním budgetu
+      const byBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
+      // Kampaň stále aktivní v DB?
+      const stillActive = camp.is_active === 1;
+
+      if (stillActive && (byTime || byBudget)) {
+        // Pokud jsme ji už neoznačili, zavoláme handleExpire
+        if (!expiredProcessed.current.has(camp.id)) {
+          expiredProcessed.current.add(camp.id);
+          handleExpire(camp.id);
+        }
+      }
+    });
+  }, [campaigns, handleExpire]);
 
   return (
     <div className="whop-campaigns-section">
@@ -26,12 +53,12 @@ export default function CampaignsSection({
       ) : (
         <div className="whop-campaigns-list">
           {campaigns.map((camp) => {
-            // Parsování expiration_datetime → JS Date
             const now = new Date();
             const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
-            const isExpired = camp.is_active === 0 || expDate <= now;
+            const byTime = expDate <= now;
+            const byBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
+            const isExpired = camp.is_active === 0 || byTime || byBudget;
 
-            // Výpočet zbývajícího času
             let timeInfo;
             if (isExpired) {
               timeInfo = "EXPIRED";
@@ -78,9 +105,7 @@ export default function CampaignsSection({
                 </p>
                 <p className="campaign-item-detail">
                   <strong>Expires:</strong>{" "}
-                  <span
-                    className={isExpired ? "expired-text" : "active-text"}
-                  >
+                  <span className={isExpired ? "expired-text" : "active-text"}>
                     {timeInfo}
                   </span>
                 </p>

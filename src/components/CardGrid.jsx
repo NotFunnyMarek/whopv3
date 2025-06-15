@@ -7,87 +7,85 @@ import '../styles/activeUsers.scss';
 import ActiveUsersIndicator from './ActiveUsersIndicator';
 
 export default function CardGrid({ cardsData }) {
-  // Zobrazíme jen kampaně, které mají is_active === 1 (aktivní – expirace řešíme časem a v back-endu)
-  const activeCampaigns = cardsData.filter((camp) => camp.is_active === 1);
+  // Filtrujeme pouze aktivní a nevyčerpané kampaně
+  const activeCampaigns = cardsData.filter(c =>
+    c.is_active === 1 &&
+    c.paid_out < c.total_paid_out
+  );
 
   return (
     <div className="card-container">
-      {!activeCampaigns.length && (
+      {!activeCampaigns.length ? (
         <div className="card-empty">Žádné kampaně k zobrazení.</div>
-      )}
-
-      {activeCampaigns.length > 0 && (
+      ) : (
         <div className="cards-grid">
-          {activeCampaigns.map((camp) => {
-            // Parsování expiration_datetime a výpočet zbývajícího času včetně minut
+          {activeCampaigns.map(camp => {
+            // Čas do expirace
             const now = new Date();
             const expDate = new Date(camp.expiration_datetime.replace(' ', 'T'));
-            const diffMs = expDate.getTime() - now.getTime();
-            const isExpired = diffMs <= 0;
+            const timeLeftMs = expDate.getTime() - now.getTime();
+            const expiredByTime = timeLeftMs <= 0;
 
-            let endingText;
-            if (isExpired) {
-              endingText = 'EXPIRED';
-            } else {
-              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-              const diffHours = Math.floor(
-                (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-              );
-              const diffMins = Math.floor(
-                (diffMs % (1000 * 60 * 60)) / (1000 * 60)
-              );
-              endingText = `Ending in: ${diffDays}d ${diffHours}h ${diffMins}m`;
-            }
+            // Oříznutí paid_out na budget
+            const paidOut = Math.min(camp.paid_out, camp.total_paid_out);
+            const percent = camp.total_paid_out > 0
+              ? Math.min(Math.round((paidOut / camp.total_paid_out) * 100), 100)
+              : 0;
+            const expiredByBudget = paidOut >= camp.total_paid_out;
+
+            // Celkové vypršení
+            const isExpired = camp.is_active === 0 || expiredByTime || expiredByBudget;
+
+            // Text ukončení
+            const endingText = isExpired
+              ? 'EXPIRED'
+              : (() => {
+                  const d = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+                  const h = Math.floor((timeLeftMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const m = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                  return `Ending in: ${d}d ${h}h ${m}m`;
+                })();
 
             return (
               <Link
                 key={camp.id}
-                to={`/c/${camp.whop_slug}`}
-                className="card-item-link"
+                to={isExpired ? '#' : `/c/${camp.whop_slug}`}
+                className={`card-item-link${isExpired ? ' disabled' : ''}`}
               >
-                <div className="card-item">
+                <div className={`card-item${isExpired ? ' expired' : ''}`}>
                   <div className="card-header">
                     <div className="card-icon">
-                      {camp.thumbnail_url ? (
-                        <img src={camp.thumbnail_url} alt="Thumb" />
-                      ) : (
-                        camp.username.charAt(0).toUpperCase()
-                      )}
+                      {camp.thumbnail_url
+                        ? <img src={camp.thumbnail_url} alt="Thumb" />
+                        : camp.username.charAt(0).toUpperCase()}
                     </div>
                     <h3>{camp.campaign_name}</h3>
                     <span className="card-tag">
-                      {camp.currency}
-                      {camp.reward_per_thousand.toFixed(2)} / 1K
+                      {camp.currency}{camp.reward_per_thousand.toFixed(2)} / 1K
                     </span>
-
-                    <span
-                      className={
-                        isExpired ? 'card-ending expired' : 'card-ending'
-                      }
-                    >
+                    <span className={isExpired ? 'card-ending expired' : 'card-ending'}>
                       {endingText}
                     </span>
-
                     <ActiveUsersIndicator campaignId={camp.id} />
                   </div>
 
                   <div className="card-body">
+                    {/* Autor kampaně */}
                     <div className="card-author">
                       <strong>Author:</strong> {camp.username}
                     </div>
 
+                    <div className="card-line views">
+                      <strong>Views:</strong> {camp.total_views}
+                    </div>
+
                     <div className="card-line">
-                      {camp.currency}
-                      {camp.paid_out.toFixed(2)} of {camp.currency}
-                      {camp.total_paid_out.toFixed(2)} paid out
-                      <span className="card-percent">{camp.paid_percent}%</span>
+                      {camp.currency}{paidOut.toFixed(2)} of {camp.currency}{camp.total_paid_out.toFixed(2)} paid out
+                      <span className="card-percent"> {percent}%</span>
                     </div>
 
                     <div className="card-progress-bar">
-                      <div
-                        className="card-progress-fill"
-                        style={{ width: `${camp.paid_percent}%` }}
-                      />
+                      <div className="card-progress-fill" style={{ width: `${percent}%` }} />
                     </div>
 
                     <ul className="card-info-list">
@@ -100,9 +98,9 @@ export default function CardGrid({ cardsData }) {
                         ))}
                       </li>
                       <li>
-                        <strong>Views:</strong>{' '}
+                        <strong>Paid Views:</strong>{' '}
                         {camp.reward_per_thousand > 0
-                          ? Math.round((camp.paid_out / camp.reward_per_thousand) * 1000)
+                          ? Math.round((paidOut / camp.reward_per_thousand) * 1000)
                           : 0}
                       </li>
                     </ul>

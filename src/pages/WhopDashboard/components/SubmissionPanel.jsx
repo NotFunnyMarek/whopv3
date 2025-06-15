@@ -15,7 +15,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const [errorSubs, setErrorSubs] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
-  // Load submissions for this user + campaign
+  // Načtení submissions pro tento campaign + user
   const fetchMySubmissions = async () => {
     setLoadingSubs(true);
     setErrorSubs("");
@@ -27,19 +27,9 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
           headers: { Accept: "application/json" },
         }
       );
-
-      // Always read as text first, then try JSON.parse
       const text = await res.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch {
-        throw new Error("Neplatná odpověď od serveru");
-      }
-
-      if (!res.ok) {
-        throw new Error(json.message || `HTTP ${res.status}`);
-      }
+      const json = JSON.parse(text);
+      if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
       if (json.status !== "success" || !Array.isArray(json.data)) {
         throw new Error(json.message || "Neplatná struktura dat");
       }
@@ -51,13 +41,13 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     }
   };
 
-  // initial load
+  // Initial load
   useEffect(() => {
     fetchMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // refresh when switching to "My Submissions"
+  // Refresh při přepnutí do My Submissions
   useEffect(() => {
     if (activeTab === "My Submissions") {
       fetchMySubmissions();
@@ -65,24 +55,39 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // after a new submission, reload list and switch tab
+  // Po odeslání nové submission
   const handleAfterSubmit = async () => {
     await fetchMySubmissions();
     setActiveTab("My Submissions");
     setModalOpen(false);
   };
 
-  const handleRowClick = (submission) => {
-    setSelectedSubmission(submission);
-  };
-  const closeDetailModal = () => {
-    setSelectedSubmission(null);
-  };
+  const handleRowClick = (submission) => setSelectedSubmission(submission);
+  const closeDetailModal = () => setSelectedSubmission(null);
 
-  const isExpired = campaign.is_active === 0;
+  // Expirace času
+  const now = new Date();
+  const expDate = new Date(campaign.expiration_datetime.replace(" ", "T"));
+  const expiredByTime = expDate.getTime() - now.getTime() <= 0;
+
+  // Oříznutí vyplacené částky podle budgetu
+  const paidOut = Math.min(campaign.paid_out, campaign.total_paid_out);
+  const percent =
+    campaign.total_paid_out > 0
+      ? Math.min(
+          Math.round((paidOut / campaign.total_paid_out) * 100),
+          100
+        )
+      : 0;
+  const expiredByBudget = paidOut >= campaign.total_paid_out;
+
+  // Konečný flag expired
+  const isExpired =
+    campaign.is_active === 0 || expiredByTime || expiredByBudget;
 
   return (
     <div className="submission-panel">
+      {/* Header & Tabs */}
       <div className="submission-header">
         <button className="btn-back" onClick={onBack}>
           ← Back to Dashboard
@@ -95,9 +100,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             Rewards
           </button>
           <button
-            className={
-              activeTab === "My Submissions" ? "tab active" : "tab"
-            }
+            className={activeTab === "My Submissions" ? "tab active" : "tab"}
             onClick={() => setActiveTab("My Submissions")}
           >
             My Submissions ({mySubmissions.length})
@@ -105,6 +108,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
         </div>
       </div>
 
+      {/* Rewards Tab */}
       {activeTab === "Rewards" && (
         <div className="submission-rewards">
           {/* Banner */}
@@ -122,40 +126,43 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             )}
           </div>
 
-          {/* Submit button */}
+          {/* Submit Button */}
           <div className="submission-submit-section">
             <button
               className="btn-open-modal"
               onClick={() => setModalOpen(true)}
               disabled={isExpired}
+              title={
+                isExpired
+                  ? "Kampaň je ukončena – nelze přidat nové video"
+                  : "Přidat nové video"
+              }
             >
               Submit
             </button>
           </div>
 
-          {/* Paid progress bar */}
+          {/* Paid Progress Bar */}
           <div className="submission-paid-bar">
             <div className="paid-info">
               {campaign.currency}
-              {campaign.paid_out.toFixed(2)} / {campaign.currency}
+              {paidOut.toFixed(2)} / {campaign.currency}
               {campaign.total_paid_out.toFixed(2)} paid out
             </div>
             <div className="progress-container">
               <div
                 className="progress-fill"
                 style={{
-                  width: isExpired
-                    ? "100%"
-                    : `${campaign.paid_percent}%`,
+                  width: isExpired ? "100%" : `${percent}%`,
                 }}
               />
             </div>
             <div className="percent-text">
-              {isExpired ? "100%" : `${campaign.paid_percent}%`}
+              {isExpired ? "100%" : `${percent}%`}
             </div>
           </div>
 
-          {/* Details */}
+          {/* Campaign Details */}
           <div className="submission-details">
             <p>
               <strong>Reward Rate:</strong> {campaign.currency}
@@ -229,6 +236,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             </p>
           </div>
 
+          {/* Submission Modal */}
           {modalOpen && (
             <SubmissionModal
               campaign={campaign}
@@ -239,6 +247,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
         </div>
       )}
 
+      {/* My Submissions Tab */}
       {activeTab === "My Submissions" && (
         <div className="submission-my-list">
           {loadingSubs ? (
@@ -255,6 +264,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
         </div>
       )}
 
+      {/* Detail Modal */}
       {selectedSubmission && (
         <SubmissionDetailModal
           submission={selectedSubmission}

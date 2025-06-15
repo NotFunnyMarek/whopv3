@@ -13,7 +13,10 @@ export default function SubmissionDetailModal({
   const getYouTubeEmbedUrl = (url) => {
     try {
       const urlObj = new URL(url);
-      if (urlObj.hostname.includes("youtube.com") || urlObj.hostname.includes("youtu.be")) {
+      if (
+        urlObj.hostname.includes("youtube.com") ||
+        urlObj.hostname.includes("youtu.be")
+      ) {
         let videoId = "";
         if (urlObj.hostname.includes("youtu.be")) {
           videoId = urlObj.pathname.slice(1);
@@ -32,15 +35,28 @@ export default function SubmissionDetailModal({
 
   const embedUrl = getYouTubeEmbedUrl(submission.link);
 
-  // Spočítáme odhadované výplaty
+  // Views a rate
   const views = submission.total_views || 0;
   const ratePerThousand = campaign.reward_per_thousand || 0;
-  const paidOut = ((views / 1000) * ratePerThousand).toFixed(2);
-  const pendingPayout = submission.status === "pending"
-    ? paidOut
-    : submission.status === "approved"
-    ? paidOut
-    : "0.00";
+  const currency = campaign.currency || "";
+
+  // Výpočet základního payoutu podle views
+  const rawPayout = (views / 1000) * ratePerThousand;
+
+  // Minimální hranice pro payout
+  const minPayout = campaign.min_payout !== null ? parseFloat(campaign.min_payout) : 0;
+
+  // Pending (pro approved lze např. dosadit stejnou hodnotu jako raw, případně 0 pokud není schváleno)
+  const pendingPayout =
+    submission.status === "approved" && rawPayout >= minPayout
+      ? rawPayout.toFixed(2)
+      : "0.00";
+
+  // Formátované hodnoty
+  const formattedRaw = rawPayout.toFixed(2);
+
+  // Zda už uživatel dosáhl minPayout
+  const reachedMin = rawPayout >= minPayout;
 
   return (
     <div className="modal-overlay detail-modal-overlay">
@@ -49,6 +65,7 @@ export default function SubmissionDetailModal({
           &times;
         </button>
         <h2 className="submission-detail-title">{campaign.campaign_name}</h2>
+
         <div className="video-container">
           {embedUrl ? (
             <iframe
@@ -57,7 +74,7 @@ export default function SubmissionDetailModal({
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-            ></iframe>
+            />
           ) : (
             <p className="no-video-msg">
               Nelze přehrát video.{" "}
@@ -67,37 +84,47 @@ export default function SubmissionDetailModal({
             </p>
           )}
         </div>
+
         <div className="stats-container">
+          {/* Views Generated */}
           <div className="stat-item">
             <span className="stat-label">Views generated</span>
             <span className="stat-value">{views}</span>
           </div>
+
+          {/* Paid Out nebo upozornění na minimum */}
           <div className="stat-item">
             <span className="stat-label">Paid out</span>
             <span className="stat-value">
-              {campaign.currency}${paidOut}
+              {reachedMin
+                ? `${currency}$${formattedRaw}`
+                : "Minimum payout not reached"}
             </span>
           </div>
+
+          {/* Pending payout (pouze pokud schváleno a min dosaženo) */}
           <div className="stat-item">
             <span className="stat-label">Pending payout</span>
             <span className="stat-value">
-              {campaign.currency}${pendingPayout}
+              {reachedMin
+                ? `${currency}$${pendingPayout}`
+                : `${currency}$0.00`}
             </span>
           </div>
         </div>
 
+        {/* Status boxy */}
         {submission.status === "pending" && (
           <div className="status-box pending-box">
-            This submission has not yet been reviewed by the creator. Once the
-            creator makes a decision, your submission will either begin
-            receiving payouts or be rejected due to their content guidelines.
+            Tato submission dosud nebyla schválena. Jakmile tvůrce rozhodne,
+            výplaty začnou nebo bude submission odmítnuta.
           </div>
         )}
         {submission.status === "approved" && (
           <div className="status-box approved-box">
-            Approved! Once your estimated payout exceeds 50¢, you'll get paid
-            out hourly for the views generated up to the Content Reward budget
-            or until the Content Reward expires.
+            Approved! Jakmile váš odhadovaný payout překročí min. hranici,
+            budete pravidelně dostávat výplaty za zhlédnutí až do vyčerpání budgetu
+            nebo expirace kampaně.
           </div>
         )}
         {submission.status === "rejected" && (

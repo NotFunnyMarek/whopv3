@@ -39,22 +39,24 @@ export default function Home() {
     }
   };
 
-  // Nejprve vezmeme pouze live kampaně (is_active === 1),
-  // protože backend auto-expiruje a přepíná is_active na 0.
+  // Zobrazíme pouze kampaně, které jsou aktivní a ještě nemají vyčerpán rozpočet
   const liveCampaigns = useMemo(
-    () => cardsData.filter((c) => c.is_active === 1),
+    () => cardsData.filter(c =>
+      c.is_active === 1 &&
+      c.paid_out < c.total_paid_out
+    ),
     [cardsData]
   );
 
-  // Aplikujeme filtry a řazení pouze na live kampaně
+  // Aplikace filtrů a řazení
   const filteredData = useMemo(() => {
     let arr = [...liveCampaigns];
 
     if (filterType !== 'All') {
-      arr = arr.filter((c) => c.type === filterType);
+      arr = arr.filter(c => c.type === filterType);
     }
     if (filterCategory !== 'All') {
-      arr = arr.filter((c) => c.category === filterCategory);
+      arr = arr.filter(c => c.category === filterCategory);
     }
 
     switch (sortOption) {
@@ -65,14 +67,10 @@ export default function Home() {
         arr.sort((a, b) => a.budget - b.budget);
         break;
       case 'Nejnovější':
-        arr.sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
+        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
       case 'Nejstarší':
-        arr.sort(
-          (a, b) => new Date(a.created_at) - new Date(b.created_at)
-        );
+        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         break;
       default:
         break;
@@ -86,18 +84,13 @@ export default function Home() {
         <h1 className="home-title">Content Rewards</h1>
         <p className="home-subtitle">
           Post content on social media and get paid for the views you generate. Pokud chcete spustit kampaň{' '}
-          <Link className="home-link" to="/intro">
-            klikněte sem
-          </Link>
-          .
+          <Link className="home-link" to="/intro">klikněte sem</Link>.
         </p>
       </div>
 
       <div className="home-controls">
         <div className="home-count">
-          {loading
-            ? 'Načítám kampaně…'
-            : `${filteredData.length} live kampaní`}
+          {loading ? 'Načítám kampaně…' : `${filteredData.length} live kampaní`}
         </div>
 
         <div className="home-filters">
@@ -106,7 +99,7 @@ export default function Home() {
             <select
               className="home-select"
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              onChange={e => setFilterType(e.target.value)}
             >
               <option>All</option>
               <option>Clipping</option>
@@ -119,7 +112,7 @@ export default function Home() {
             <select
               className="home-select"
               value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              onChange={e => setFilterCategory(e.target.value)}
             >
               <option>All</option>
               <option>Personal brand</option>
@@ -134,7 +127,7 @@ export default function Home() {
           <select
             className="home-select"
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
+            onChange={e => setSortOption(e.target.value)}
           >
             <option>Nejvyšší rozpočet</option>
             <option>Nejnižší rozpočet</option>
