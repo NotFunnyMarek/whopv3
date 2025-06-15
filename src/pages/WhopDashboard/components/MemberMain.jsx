@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/MemberMain.jsx
 
-import React, { useEffect } from "react";
+import React from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 
 export default function MemberMain({
@@ -9,7 +9,7 @@ export default function MemberMain({
   campaigns,
   campaignsLoading,
   campaignsError,
-  onSelectCampaign, // funkce z MemberMode
+  onSelectCampaign,
 }) {
   return (
     <div className="member-main">
@@ -52,6 +52,7 @@ export default function MemberMain({
       {activeTab === "Earn" && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Earn</h3>
+
           {campaignsLoading ? (
             <div className="spinner spinner-small"></div>
           ) : campaignsError ? (
@@ -61,23 +62,35 @@ export default function MemberMain({
           ) : (
             <ul className="member-campaign-list">
               {campaigns.map((camp) => {
-                // Parsování expiration_datetime a výpočet zbývajícího času včetně minut
                 const now = new Date();
-                const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
-                const diffMs = expDate.getTime() - now.getTime();
-                const isExpired = camp.is_active === 0 || diffMs <= 0;
+                const expDate = new Date(
+                  camp.expiration_datetime.replace(" ", "T")
+                );
+                const timeDiff = expDate.getTime() - now.getTime();
+                const expiredByTime = timeDiff <= 0;
+                const expiredByBudget = camp.paid_out >= camp.total_paid_out;
+                const isExpired = camp.is_active === 0 || expiredByTime || expiredByBudget;
 
                 let timeInfo;
                 if (isExpired) {
                   timeInfo = "EXPIRED";
                 } else {
-                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                  const diffHours = Math.floor(
-                    (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+                  const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor(
+                    (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
                   );
-                  const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                  timeInfo = `Ending in: ${diffDays}d ${diffHours}h ${diffMins}m`;
+                  const mins = Math.floor(
+                    (timeDiff % (1000 * 60 * 60)) / (1000 * 60)
+                  );
+                  timeInfo = `Ending in: ${days}d ${hours}h ${mins}m`;
                 }
+
+                // Clamp paid_out so it never exceeds campaign budget
+                const paidOut = Math.min(camp.paid_out, camp.total_paid_out);
+                const percent = Math.min(
+                  Math.round((paidOut / camp.total_paid_out) * 100),
+                  100
+                );
 
                 return (
                   <li
@@ -85,10 +98,7 @@ export default function MemberMain({
                     className={`member-campaign-card ${
                       isExpired ? "expired" : "active"
                     }`}
-                    onClick={() => {
-                      // Umožníme vstup do SubmissionPanelu i u expired kampaní
-                      onSelectCampaign(camp);
-                    }}
+                    onClick={() => onSelectCampaign(camp)}
                     style={{ cursor: "pointer" }}
                   >
                     <div className="camp-header">
@@ -106,32 +116,32 @@ export default function MemberMain({
                       Autor: <span className="author-name">{camp.username}</span>
                     </p>
 
-                    {/* Zobrazení countdown (dny, hodiny, minuty) nebo „EXPIRED“ */}
-                    <p className={`countdown ${isExpired ? "expired-text" : "active-text"}`}>
+                    <p
+                      className={`countdown ${
+                        isExpired ? "expired-text" : "active-text"
+                      }`}
+                    >
                       {timeInfo}
                     </p>
 
                     <div className="paid-bar">
                       <div className="paid-info">
                         {camp.currency}
-                        {camp.paid_out.toFixed(2)} z{" "}
+                        {paidOut.toFixed(2)} z{" "}
                         {camp.currency}
                         {camp.total_paid_out.toFixed(2)} vyplaceno
                       </div>
                       <div className="progress-container">
                         <div
                           className="progress-fill"
-                          style={{
-                            width: isExpired
-                              ? "100%"
-                              : `${camp.paid_percent}%`,
-                          }}
+                          style={{ width: `${percent}%` }}
                         />
                       </div>
                       <div className="percent-text">
-                        {isExpired ? "100%" : `${camp.paid_percent}%`}
+                        {percent}%
                       </div>
                     </div>
+
                     <ul className="camp-details">
                       <li>
                         <strong>Typ:</strong> {camp.type}
@@ -140,7 +150,7 @@ export default function MemberMain({
                         <strong>Kategorie:</strong> {camp.category}
                       </li>
                       <li>
-                        <strong>Platformy:</strong>
+                        <strong>Platformy:</strong>{" "}
                         {camp.platforms.map((p, i) => (
                           <span key={i} className="platform-pill">
                             {p}
@@ -150,10 +160,7 @@ export default function MemberMain({
                       <li>
                         <strong>Zhlédnutí:</strong>{" "}
                         {camp.reward_per_thousand > 0
-                          ? Math.round(
-                              (camp.paid_out / camp.reward_per_thousand) *
-                                1000
-                            )
+                          ? Math.round((paidOut / camp.reward_per_thousand) * 1000)
                           : 0}
                       </li>
                     </ul>
