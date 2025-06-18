@@ -9,61 +9,53 @@ export default function SubmissionDetailModal({
   campaign,
   onClose
 }) {
-  // Extrahuje YouTube video ID z URL, pokud existuje
+  // YouTube embed helper
   const getYouTubeEmbedUrl = (url) => {
     try {
-      const urlObj = new URL(url);
-      if (
-        urlObj.hostname.includes("youtube.com") ||
-        urlObj.hostname.includes("youtu.be")
-      ) {
-        let videoId = "";
-        if (urlObj.hostname.includes("youtu.be")) {
-          videoId = urlObj.pathname.slice(1);
-        } else {
-          videoId = urlObj.searchParams.get("v");
-        }
-        if (videoId) {
-          return `https://www.youtube.com/embed/${videoId}`;
-        }
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      let vid = "";
+      if (host.includes("youtu.be")) {
+        vid = u.pathname.slice(1);
+      } else if (host.includes("youtube.com")) {
+        vid = u.searchParams.get("v");
       }
+      return vid ? `https://www.youtube.com/embed/${vid}` : null;
     } catch {
       return null;
     }
-    return null;
   };
-
   const embedUrl = getYouTubeEmbedUrl(submission.link);
 
-  // Views a rate
-  const views = submission.total_views || 0;
-  const ratePerThousand = campaign.reward_per_thousand || 0;
-  const currency = campaign.currency || "";
+  // Bezpečné čísla
+  const totalViews     = Number(submission.total_views  ?? 0);
+  const ratePerK       = Number(campaign.reward_per_thousand ?? 0);
+  const minPayout      = campaign.min_payout != null ? Number(campaign.min_payout) : null;
+  const currency       = campaign.currency || "";
 
-  // Výpočet základního payoutu podle views
-  const rawPayout = (views / 1000) * ratePerThousand;
+  // Kolik views je třeba pro minPayout
+  const neededViews = minPayout !== null && ratePerK > 0
+    ? Math.ceil((minPayout / ratePerK) * 1000)
+    : null;
 
-  // Minimální hranice pro payout
-  const minPayout = campaign.min_payout !== null ? parseFloat(campaign.min_payout) : 0;
+  // Hrubý výdělek z dosavadních views
+  const rawPayout = (totalViews / 1000) * ratePerK;
+  const payoutStr = rawPayout.toFixed(2);
 
-  // Pending (pro approved lze např. dosadit stejnou hodnotu jako raw, případně 0 pokud není schváleno)
-  const pendingPayout =
-    submission.status === "approved" && rawPayout >= minPayout
-      ? rawPayout.toFixed(2)
-      : "0.00";
+  // Splněná podmínka = dostatek views
+  const reachedMin = neededViews !== null
+    ? totalViews >= neededViews
+    : true;
 
-  // Formátované hodnoty
-  const formattedRaw = rawPayout.toFixed(2);
-
-  // Zda už uživatel dosáhl minPayout
-  const reachedMin = rawPayout >= minPayout;
+  // Pending: pokud min. už splněno, nic k vyplacení; jinak ještě raw
+  const pendingStr = reachedMin
+    ? "0.00"
+    : rawPayout.toFixed(2);
 
   return (
     <div className="modal-overlay detail-modal-overlay">
       <div className="modal-content submission-detail-modal">
-        <button className="modal-close-btn" onClick={onClose}>
-          &times;
-        </button>
+        <button className="modal-close-btn" onClick={onClose}>&times;</button>
         <h2 className="submission-detail-title">{campaign.campaign_name}</h2>
 
         <div className="video-container">
@@ -89,26 +81,28 @@ export default function SubmissionDetailModal({
           {/* Views Generated */}
           <div className="stat-item">
             <span className="stat-label">Views generated</span>
-            <span className="stat-value">{views}</span>
+            <span className="stat-value">
+              {neededViews !== null && totalViews < neededViews
+                ? `${totalViews} / ${neededViews}`
+                : totalViews}
+            </span>
           </div>
 
-          {/* Paid Out nebo upozornění na minimum */}
+          {/* Paid Out */}
           <div className="stat-item">
             <span className="stat-label">Paid out</span>
             <span className="stat-value">
               {reachedMin
-                ? `${currency}$${formattedRaw}`
+                ? `${currency}$${payoutStr}`
                 : "Minimum payout not reached"}
             </span>
           </div>
 
-          {/* Pending payout (pouze pokud schváleno a min dosaženo) */}
+          {/* Pending Payout */}
           <div className="stat-item">
             <span className="stat-label">Pending payout</span>
             <span className="stat-value">
-              {reachedMin
-                ? `${currency}$${pendingPayout}`
-                : `${currency}$0.00`}
+              {currency}${pendingStr}
             </span>
           </div>
         </div>
@@ -116,33 +110,29 @@ export default function SubmissionDetailModal({
         {/* Status boxy */}
         {submission.status === "pending" && (
           <div className="status-box pending-box">
-            Tato submission dosud nebyla schválena. Jakmile tvůrce rozhodne,
-            výplaty začnou nebo bude submission odmítnuta.
+            Submission dosud nebyla schválena. Čekejte na rozhodnutí tvůrce.
           </div>
         )}
         {submission.status === "approved" && (
           <div className="status-box approved-box">
-            Approved! Jakmile váš odhadovaný payout překročí min. hranici,
-            budete pravidelně dostávat výplaty za zhlédnutí až do vyčerpání budgetu
-            nebo expirace kampaně.
+            Approved! Výplaty budou probíhat dle intervalů až do vyčerpání budgetu.
           </div>
         )}
         {submission.status === "rejected" && (
-          <div className="status-box rejected-box">
-            This submission has been rejected.
-          </div>
-        )}
-
-        {submission.status === "rejected" && (
-          <div className="rejection-reason-container">
-            <span className="rejection-label">Rejection reason</span>
-            <textarea
-              className="rejection-reason"
-              value={submission.rejection_reason || ""}
-              readOnly
-              placeholder="(zatím žádný důvod)"
-            />
-          </div>
+          <>
+            <div className="status-box rejected-box">
+              Tato submission byla odmítnuta.
+            </div>
+            <div className="rejection-reason-container">
+              <span className="rejection-label">Rejection reason</span>
+              <textarea
+                className="rejection-reason"
+                readOnly
+                value={submission.rejection_reason || ""}
+                placeholder="(zatím žádný důvod)"
+              />
+            </div>
+          </>
         )}
       </div>
     </div>

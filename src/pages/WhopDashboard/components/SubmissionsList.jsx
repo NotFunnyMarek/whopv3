@@ -13,14 +13,18 @@ export default function SubmissionsList({
     return <p className="no-submissions-msg">Zatím žádné submissiony.</p>;
   }
 
-  // Campaign parameters
-  const budget = campaign.total_paid_out;
-  const rate = campaign.reward_per_thousand;
-  const minPayout = campaign.min_payout || 0;
-  const currency = campaign.currency;
+  // Kampanové konstanty (fallback na 0)
+  const rate         = Number(campaign.reward_per_thousand ?? 0);
+  const budget       = Number(campaign.total_paid_out     ?? 0);
+  const minPayout    = campaign.min_payout != null 
+                         ? Number(campaign.min_payout) 
+                         : null;
+  const currency     = campaign.currency || "";
 
-  // Minimum views required to unlock any payout
-  const minViewsForPayout = Math.ceil((minPayout / rate) * 1000);
+  // Views potřebné pro min. payout (rounded up)
+  const neededViews  = minPayout !== null && rate > 0
+    ? Math.ceil((minPayout / rate) * 1000)
+    : null;
 
   return (
     <table className="submissions-table fullwidth">
@@ -30,23 +34,44 @@ export default function SubmissionsList({
           <th>Status</th>
           <th>Views</th>
           <th>Submission</th>
-          <th>Reward Rate</th>
+          <th>Rate</th>
           <th>Paid Out</th>
-          <th>Pending Payout</th>
+          <th>Pending</th>
         </tr>
       </thead>
       <tbody>
-        {submissions.map(sub => {
-          const views = sub.total_views || 0;
-          // Raw payout based on current views
-          const rawPayout = (views / 1000) * rate;
-          // Already‐paid stored in sub.paid_out (clamped to campaign budget)
-          const paidOut = Math.min(sub.paid_out || 0, budget);
-          // Pending payout: only if raw >= minPayout, and clamp to remaining budget
-          const pending =
-            rawPayout < minPayout
-              ? 0
-              : Math.min(rawPayout - paidOut, budget - paidOut);
+        {submissions.map((sub) => {
+          const totalViews     = Number(sub.total_views    ?? 0);
+          const processedViews = Number(sub.processed_views ?? 0);
+
+          // čistý raw payout ze všech views
+          const rawPayout      = (totalViews / 1000) * rate;
+
+          // jestli už dosáhl minimum
+          const reachedMin     = neededViews !== null
+            ? totalViews >= neededViews
+            : true;
+
+          // paidOut logika
+          const paidOutDisplay = reachedMin
+            ? `${currency}$${rawPayout.toFixed(2)}`
+            : "Minimum payout not reached";
+
+          // pending: 0 jakmile došlo k vyplacení minuma, jinak rawPayout
+          const pendingDisplay = reachedMin
+            ? `${currency}$0.00`
+            : `${currency}$${rawPayout.toFixed(2)}`;
+
+          // ikona platformy
+          let icon = <span className="link-text">Link</span>;
+          const l = (sub.link || "").toLowerCase();
+          if (l.includes("instagram.com")) {
+            icon = <img src="https://i.ibb.co/C5LwBvpj/visualhunter-a8ec508b37.png" alt="IG" className="icon-img"/>;
+          } else if (l.includes("tiktok.com")) {
+            icon = <img src="https://i.ibb.co/WWMNJRBJ/visualhunter-9f70954296.png" alt="TT" className="icon-img"/>;
+          } else if (l.includes("youtube.com")) {
+            icon = <img src="https://i.ibb.co/G3PQrFcM/kisspng-youtube-play-button-computer-icons-youtube-red-cli-youtube-logo-play-icon-png-5ab1be26ea2d46.png" alt="YT" className="icon-img"/>;
+          }
 
           return (
             <tr
@@ -60,50 +85,18 @@ export default function SubmissionsList({
                   {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
                 </span>
               </td>
-              <td data-label="Views (gen/needed)">
-                {views}
+              <td data-label="Views">
+                {neededViews && totalViews < neededViews
+                  ? `${totalViews} / ${neededViews}`
+                  : totalViews}
               </td>
-              <td data-label="Submission">
-                {(() => {
-                  const linkLower = sub.link.toLowerCase();
-                  if (linkLower.includes("instagram.com")) {
-                    return (
-                      <img
-                        src="https://i.ibb.co/C5LwBvpj/visualhunter-a8ec508b37.png"
-                        alt="Instagram"
-                        className="icon-img"
-                      />
-                    );
-                  }
-                  if (linkLower.includes("tiktok.com")) {
-                    return (
-                      <img
-                        src="https://i.ibb.co/WWMNJRBJ/visualhunter-9f70954296.png"
-                        alt="TikTok"
-                        className="icon-img"
-                      />
-                    );
-                  }
-                  if (linkLower.includes("youtube.com")) {
-                    return (
-                      <img
-                        src="https://i.ibb.co/G3PQrFcM/kisspng-youtube-play-button-computer-icons-youtube-red-cli-youtube-logo-play-icon-png-5ab1be26ea2d46.png"
-                        alt="YouTube"
-                        className="icon-img"
-                      />
-                    );
-                  }
-                  return <span className="link-text">Link</span>;
-                })()}
-              </td>
-              <td data-label="Reward Rate">
-                {currency}${rate.toFixed(2)}/1K
-              </td>
+              <td data-label="Submission">{icon}</td>
+              <td data-label="Rate">{currency}${rate.toFixed(2)}/1K</td>
               <td data-label="Paid Out" className="paid-cell">
-                {currency}${paidOut.toFixed(2)}
+                {paidOutDisplay}
               </td>
-              <td data-label="Pending Payout" className="pending-cell">
-                {currency}${pending.toFixed(2)}
+              <td data-label="Pending" className="pending-cell">
+                {pendingDisplay}
               </td>
             </tr>
           );
