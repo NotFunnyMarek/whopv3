@@ -13,8 +13,6 @@ export default function BottomBar() {
   const [hoveredX, setHoveredX] = useState(null);
   const [joinedWhops, setJoinedWhops] = useState([]);
   const [loadingWhops, setLoadingWhops] = useState(true);
-
-  // Nový stav pro zůstatek
   const [balance, setBalance] = useState(0);
 
   const iconsContainerRef = useRef(null);
@@ -49,10 +47,11 @@ export default function BottomBar() {
   const formatBalance = (amount) =>
     amount >= 1000 ? `${(amount / 1000).toFixed(2)}k` : amount.toFixed(2);
 
+  // Načte whopy, kde je uživatel členem nebo vlastníkem
   const fetchJoinedWhops = async () => {
     setLoadingWhops(true);
     try {
-      // 1) Whopy, kde je uživatel členem
+      // Whopy, kde je uživatel členem
       const resMembers = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
@@ -60,7 +59,7 @@ export default function BottomBar() {
       if (!resMembers.ok) throw new Error(`Chyba ${resMembers.status}`);
       const membersData = await resMembers.json();
 
-      // 2) Whopy, kde je uživatel vlastníkem
+      // Whopy, kde je uživatel vlastníkem
       const resOwned = await fetch('https://app.byxbot.com/php/get_whop.php?owner=me', {
         method: 'GET',
         credentials: 'include',
@@ -71,14 +70,14 @@ export default function BottomBar() {
         throw new Error('Nepodařilo se načíst vlastněné Whopy');
       const ownedData = ownedJson.data;
 
-      // 3) Spojíme obě množiny bez duplicit (rozdílné podle slug)
+      // Spojíme obě množiny bez duplicit (rozdílné podle slug)
       const mapBySlug = new Map();
-
       for (const w of membersData) {
         mapBySlug.set(w.slug, {
           id: w.whop_id ?? w.id,
           slug: w.slug,
           banner_url: w.banner_url,
+          name: w.name ?? w.slug,
         });
       }
       for (const w of ownedData) {
@@ -86,6 +85,7 @@ export default function BottomBar() {
           id: w.id,
           slug: w.slug,
           banner_url: w.banner_url,
+          name: w.name ?? w.slug,
         });
       }
 
@@ -129,7 +129,7 @@ export default function BottomBar() {
 
   return (
     <div className="bottombar">
-      {/* Levá část: Menu + ikonka + balance (jako jeden odkaz) + dropdown */}
+      {/* Levá část: Menu + balance-link + dropdown */}
       <div className="bottombar__left">
         <button
           className="bottombar__left-button"
@@ -141,7 +141,6 @@ export default function BottomBar() {
           <FiMenu size={20} /> Menu
         </button>
 
-        {/* ZDE SESKUPENO: ikona + balance */}
         <NavLink to="/balances" className="bottombar__balance-link">
           <img
             src="https://i.ibb.co/gFPZjybL/846174-notes-512x512.png"
@@ -223,29 +222,12 @@ export default function BottomBar() {
               <div key={idx} className="bottombar__center-icon skeleton-circle" />
             ))
           : joinedWhops.map((whop, idx) => {
-              // Pokud myš není nad ikonami, vykreslíme základní state
-              if (hoveredX === null) {
-                return (
-                  <div
-                    key={whop.slug}
-                    className="bottombar__center-icon"
-                    onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
-                  >
-                    <img
-                      src={whop.banner_url}
-                      alt={`Banner ${whop.slug}`}
-                      className="bottombar__center-img"
-                    />
-                  </div>
-                );
-              }
-
-              // “Fidgety” efekt při hoveru
+              // Výpočet “fidgety” efektu
               const container = iconsContainerRef.current;
-              const { left, width } = container.getBoundingClientRect();
+              const { left = 0, width = 0 } = container?.getBoundingClientRect() || {};
               const segment = width / (joinedWhops.length || 1);
               const iconCenterX = left + segment * (idx + 0.5);
-              const dx = Math.abs(hoveredX - iconCenterX);
+              const dx = hoveredX !== null ? Math.abs(hoveredX - iconCenterX) : Infinity;
               const maxRadius = segment * 2;
               let t = 1 - dx / maxRadius;
               if (t < 0) t = 0;
@@ -256,11 +238,15 @@ export default function BottomBar() {
                   key={whop.slug}
                   className="bottombar__center-icon"
                   style={{
-                    transform: `translateY(${translateY}px)`,
+                    transform:
+                      hoveredX === null
+                        ? undefined
+                        : `translateY(${translateY}px)`,
                     transition: 'transform var(--transition-default)',
                   }}
                   onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
                 >
+                  <div className="bottombar__tooltip">{whop.name}</div>
                   <img
                     src={whop.banner_url}
                     alt={`Banner ${whop.slug}`}

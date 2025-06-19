@@ -1,3 +1,5 @@
+// src/styles/bottombar.scss
+
 @import './variables';
 @import './_theme.scss';
 
@@ -20,7 +22,6 @@
   justify-content: space-between;
   box-shadow: var(--shadow-sm);
 
-  /* ---------- Levá část: Menu + balance-link + dropdown ---------- */
   &__left {
     position: relative;
     display: flex;
@@ -40,7 +41,8 @@
       font-weight: 600;
       cursor: pointer;
       box-shadow: var(--shadow-soft);
-      transition: background var(--transition-default), transform var(--transition-default);
+      transition: background var(--transition-default),
+        transform var(--transition-default);
 
       &:hover {
         background: var(--primary-hover);
@@ -53,7 +55,6 @@
       }
     }
 
-    /* Kontejner pro ikonku + text zůstatku, jako jeden odkaz */
     .bottombar__balance-link {
       display: inline-flex;
       align-items: center;
@@ -63,17 +64,13 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-base);
       box-shadow: var(--shadow-soft);
-      transition: background var(--transition-default), transform var(--transition-default);
+      transition: background var(--transition-default),
+        transform var(--transition-default);
       cursor: pointer;
-      text-decoration: none; /* zruší podtržení odkazu */
+      text-decoration: none;
       color: var(--text-color);
 
-      &:hover {
-        background-color: var(--border-color);
-        transform: translateY(-1px);
-      }
-
-      /* pokud je /balances aktivní route, přidá se třída .active */
+      &:hover,
       &.active {
         background-color: var(--border-color);
         transform: translateY(-1px);
@@ -96,28 +93,21 @@
       }
     }
 
-&-dropdown {
-  position: absolute;
-  bottom: calc(var(--bottombar-height) + var(--spacing-sm));
-  left: 0;
-  width: 16rem;
-
-  /* rozostří pozadí za tímto elementem */
-  backdrop-filter: blur(10px);
-
-  /* průhlednější vrstva „skla” */
-  background-color: rgba(255, 255, 255, 0.75);
-
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-md);
-
-  display: none;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  z-index: 10000;
-
+    &-dropdown {
+      position: absolute;
+      bottom: calc(var(--bottombar-height) + var(--spacing-sm));
+      left: 0;
+      width: 16rem;
+      backdrop-filter: blur(10px);
+      background-color: rgba(255, 255, 255, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-md);
+      display: none;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      z-index: 10000;
 
       &.visible {
         display: flex;
@@ -184,7 +174,8 @@
         padding: var(--spacing-xs) var(--spacing-sm);
         border-radius: var(--radius-base);
         box-shadow: var(--shadow-sm);
-        transition: background-color var(--transition-default), transform var(--transition-default);
+        transition: background-color var(--transition-default),
+          transform var(--transition-default);
 
         &:hover {
           background-color: var(--primary-hover);
@@ -199,7 +190,8 @@
         padding: var(--spacing-xs) var(--spacing-sm);
         border-radius: var(--radius-base);
         box-shadow: var(--shadow-sm);
-        transition: background-color var(--transition-default), transform var(--transition-default);
+        transition: background-color var(--transition-default),
+          transform var(--transition-default);
 
         &:hover {
           background-color: var(--error-color-dark);
@@ -209,7 +201,6 @@
     }
   }
 
-  /* ---------- Střední část: bannery Whopů ---------- */
   &__center-icons {
     position: absolute;
     left: 50%;
@@ -217,7 +208,7 @@
     display: flex;
     align-items: flex-end;
     gap: var(--spacing-md);
-    overflow: visible; /* Ikony se při hoveru nezastřihnou */
+    overflow: visible;
     z-index: 9999;
   }
 
@@ -231,17 +222,14 @@
     justify-content: center;
     border: 1px solid rgba(0, 0, 0, 0.356);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     z-index: 1;
-
-    /* Velmi plynulá, lehce zpomalená animace s jemnou křivkou */
     transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.7s ease,
-                z-index 0s;
+      box-shadow 0.7s ease, z-index 0s;
 
     &:hover {
-      z-index: 10000; /* Předsunout nad všechny prvky */
+      z-index: 10000;
       transform: translateY(-16px) scale(1.25);
       box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
     }
@@ -252,9 +240,32 @@
       height: 95%;
       object-fit: cover;
     }
+
+    /* Tooltip */
+    .bottombar__tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background-color: rgba(238, 238, 238, 0.521);
+      color: rgb(39, 39, 39);
+      border: 1px solid rgba(0, 0, 0, 0.226);
+      white-space: nowrap;
+      font-size: 0.8rem;
+      border-radius: var(--radius-base);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 10001;
+    }
+
+    &:hover .bottombar__tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-12px);
+    }
   }
 
-  /* Skeleton Placeholder (kruh) */
   .skeleton-circle {
     background-color: var(--border-color);
     border-radius: 50%;
@@ -273,7 +284,6 @@
   }
 }
 
-/* Jemné fade-in pro dropdown */
 @keyframes fadeIn {
   from {
     opacity: 0;
