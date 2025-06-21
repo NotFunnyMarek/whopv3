@@ -1,6 +1,4 @@
-// src/components/CardForm.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaInstagram,
   FaTiktok,
@@ -18,7 +16,6 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
   const [category, setCategory] = useState('');
   const [type, setType] = useState('Clipping');
   const [budget, setBudget] = useState('');
-  const [currency, setCurrency] = useState('USD');
   const [rewardPerThousand, setRewardPerThousand] = useState('');
   const [minPayout, setMinPayout] = useState('');
   const [maxPayout, setMaxPayout] = useState('');
@@ -31,8 +28,16 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
   const [newContentLink, setNewContentLink] = useState('');
   const [requirements, setRequirements] = useState([]);
   const [newRequirement, setNewRequirement] = useState('');
-  const [expirationDateTime, setExpirationDateTime] = useState(''); // Nové pole
+  const [expirationDateTime, setExpirationDateTime] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Clamp rewardPerThousand whenever budget changes
+  useEffect(() => {
+    const b = parseFloat(budget) || 0;
+    if (parseFloat(rewardPerThousand) > b) {
+      setRewardPerThousand(b.toString());
+    }
+  }, [budget]);
 
   const handlePlatformChange = (e) => {
     const { name, checked } = e.target;
@@ -63,47 +68,29 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
     e.preventDefault();
     setErrorMsg('');
 
-    // Povinná pole: type + expirationDateTime
-    if (!type.trim()) {
-      setErrorMsg('Zadejte prosím typ kampaně (Clipping/UGC).');
-      return;
-    }
-    if (
-      !campaignName.trim() ||
-      !category.trim() ||
-      !budget ||
-      !rewardPerThousand ||
-      !expirationDateTime
-    ) {
-      setErrorMsg('Vyplňte všechna povinná pole (*) včetně data a času vypršení!');
+    if (!type || !campaignName.trim() || !category || !budget || !rewardPerThousand || !expirationDateTime) {
+      setErrorMsg('Please fill out all required fields * and expiration date/time.');
       return;
     }
 
-    // Připravíme payload
-    // expirationDateTime má formát "YYYY-MM-DDTHH:mm"
-    // PHP očekává "YYYY-MM-DD HH:mm:00" → přidáme ":00" pokud chybí v minutách
     let expFormatted = expirationDateTime.replace('T', ' ');
-    // Pokud chybí sekundy, dokážeme je přidat ručně: 
-    // např. "2025-06-10 15:30" → "2025-06-10 15:30:00"
-    if (expFormatted.length === 16) {
-      expFormatted += ':00';
-    }
+    if (expFormatted.length === 16) expFormatted += ':00';
 
     const payload = {
       whop_id: whopId,
       campaign_name: campaignName.trim(),
-      category: category.trim(),
-      type: type.trim(),
+      category,
+      type,
       budget: parseFloat(budget),
-      currency: currency,
+      currency: 'USD',
       reward_per_thousand: parseFloat(rewardPerThousand),
       min_payout: minPayout ? parseFloat(minPayout) : null,
       max_payout: maxPayout ? parseFloat(maxPayout) : null,
       platforms: Object.keys(platforms).filter((k) => platforms[k]),
-      thumbnail_url: thumbnailUrl.trim(),
+      thumbnail_url: thumbnailUrl.trim() || null,
       content_links: contentLinks,
-      requirements: requirements,
-      expiration_datetime: expFormatted, // Nové pole ve formátu "YYYY-MM-DD HH:mm:00"
+      requirements,
+      expiration_datetime: expFormatted,
     };
 
     try {
@@ -115,28 +102,25 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
       });
 
       if (res.status === 401) {
-        setErrorMsg('Nejste přihlášen. Přihlaste se prosím.');
+        setErrorMsg('Unauthorized. Please log in.');
         return;
       }
       if (res.status === 201) {
-        onRefresh();
-        onClose();
+        onRefresh(); onClose();
       } else {
         const data = await res.json();
-        setErrorMsg(data.error || `Chyba ${res.status}`);
+        setErrorMsg(data.error || `Error ${res.status}`);
       }
-    } catch (e) {
-      setErrorMsg('Síťová chyba: ' + e.message);
+    } catch (err) {
+      setErrorMsg('Network error: ' + err.message);
     }
   };
 
   const renderTypeSelect = () => (
     <div className="cf-input-group">
-      <label>
-        Typ kampaně <span className="cf-required">*</span>
-      </label>
+      <label>Campaign Type <span className="cf-required">*</span></label>
       <select value={type} onChange={(e) => setType(e.target.value)} required>
-        <option value="">— Vyberte typ —</option>
+        <option value="">— Select type —</option>
         <option value="Clipping">Clipping</option>
         <option value="UGC">UGC</option>
       </select>
@@ -145,61 +129,45 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
 
   const renderPlatformIcon = (name) => {
     const size = 20;
-    switch (name) {
-      case 'instagram':
-        return <FaInstagram size={size} className="cf-icon-instagram" />;
-      case 'tiktok':
-        return <FaTiktok size={size} className="cf-icon-tiktok" />;
-      default:
-        return null;
-    }
+    if (name === 'instagram') return <FaInstagram size={size} />;
+    if (name === 'tiktok') return <FaTiktok size={size} />;
+    return null;
   };
 
   return (
     <div className="cf-form-container">
-      <h2>Vytvořit kampaň</h2>
+      <h2>Create Campaign</h2>
       {errorMsg && <div className="cf-error">{errorMsg}</div>}
       <form onSubmit={handleSubmit} className="cf-form">
-        {/* Název kampaně */}
         <div className="cf-input-group">
-          <label>
-            Název kampaně <span className="cf-required">*</span>
-          </label>
+          <label>Campaign Name <span className="cf-required">*</span></label>
           <input
             type="text"
             value={campaignName}
             onChange={(e) => setCampaignName(e.target.value)}
-            placeholder="Zadejte název kampaně"
+            placeholder="Enter campaign name"
             required
           />
         </div>
 
-        {/* Výběr typu kampaně */}
         {renderTypeSelect()}
 
-        {/* Kategorie */}
         <div className="cf-input-group">
-          <label>
-            Kategorie <span className="cf-required">*</span>
-          </label>
+          <label>Category <span className="cf-required">*</span></label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
           >
-            <option value="">— Vyberte kategorii —</option>
+            <option value="">— Select category —</option>
             <option value="Personal brand">Personal brand</option>
             <option value="Product review">Product review</option>
             <option value="Entertainment">Entertainment</option>
           </select>
         </div>
 
-        {/* Rozpočet + měna */}
         <div className="cf-input-group">
-          <label>
-            Rozpočet kampaně ($) <span className="cf-required">*</span>{' '}
-            <FaQuestionCircle title="Celkový rozpočet na kampaň." />
-          </label>
+          <label>Total Budget (USD) <span className="cf-required">*</span> <FaQuestionCircle title="Total budget for the campaign" /></label>
           <div className="cf-currency-row">
             <span className="cf-currency-symbol">$</span>
             <input
@@ -211,20 +179,11 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               placeholder="0.00"
               required
             />
-            <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
-            </select>
           </div>
         </div>
 
-        {/* Odměna za 1000 zhlédnutí */}
         <div className="cf-input-group">
-          <label>
-            Odměna (za 1000 views) <span className="cf-required">*</span>{' '}
-            <FaQuestionCircle title="$ za 1000 zhlédnutí" />
-          </label>
+          <label>Reward per 1000 Views <span className="cf-required">*</span> <FaQuestionCircle title="USD per 1000 views" /></label>
           <div className="cf-reward-row">
             <span className="cf-currency-symbol">$</span>
             <input
@@ -232,7 +191,12 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               min="0"
               step="0.01"
               value={rewardPerThousand}
-              onChange={(e) => setRewardPerThousand(e.target.value)}
+              onChange={(e) => {
+                let val = parseFloat(e.target.value) || '';
+                const b = parseFloat(budget) || 0;
+                if (val > b) val = b;
+                setRewardPerThousand(val.toString());
+              }}
               placeholder="0.00"
               required
             />
@@ -240,13 +204,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Min & Max payout */}
         <div className="cf-grid-two-cols">
           <div className="cf-input-group">
-            <label>
-              Minimální výplata ($){' '}
-              <FaQuestionCircle title="Minimální částka, kterou influencer obdrží." />
-            </label>
+            <label>Minimum Payout (USD) <FaQuestionCircle title="Minimum amount the influencer will receive" /></label>
             <div className="cf-currency-row">
               <span className="cf-currency-symbol">$</span>
               <input
@@ -260,10 +220,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
             </div>
           </div>
           <div className="cf-input-group">
-            <label>
-              Maximální výplata ($){' '}
-              <FaQuestionCircle title="Maximální částka, kterou influencer může získat." />
-            </label>
+            <label>Maximum Payout (USD) <FaQuestionCircle title="Maximum amount the influencer can earn" /></label>
             <div className="cf-currency-row">
               <span className="cf-currency-symbol">$</span>
               <input
@@ -278,29 +235,22 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Platformy */}
         <fieldset className="cf-fieldset">
-          <legend>
-            Platformy <span className="cf-required">*</span>{' '}
-            <FaQuestionCircle title="Vyberte sociální sítě pro kampaň." />
-          </legend>
+          <legend>Platforms <span className="cf-required">*</span> <FaQuestionCircle title="Select social platforms for the campaign" /></legend>
           <div className="cf-platforms-row">
-            {['instagram', 'tiktok'].map((name) => (
+            {['instagram','tiktok'].map((name) => (
               <label key={name} className="cf-platform-label">
                 <input
                   type="checkbox"
                   name={name}
                   checked={platforms[name]}
                   onChange={handlePlatformChange}
-                />
-                {renderPlatformIcon(name)}
-                <span className="cf-platform-text">{name}</span>
+                />{renderPlatformIcon(name)} {name.charAt(0).toUpperCase()+name.slice(1)}
               </label>
             ))}
           </div>
         </fieldset>
 
-        {/* Thumbnail URL */}
         <div className="cf-input-group">
           <label>Thumbnail URL</label>
           <input
@@ -311,12 +261,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
           />
         </div>
 
-        {/* Available Content Links */}
         <div className="cf-input-group">
-          <h4 className="cf-subtitle">Dostupný obsah (URL)</h4>
-          <label className="cf-small-note">
-            Přidejte odkazy (např. Google Drive, YouTube):
-          </label>
+          <h4 className="cf-subtitle">Available Content Links</h4>
+          <label className="cf-small-note">Add links (e.g. Google Drive, YouTube):</label>
           <div className="cf-list-input-row">
             <input
               type="text"
@@ -324,83 +271,43 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               onChange={(e) => setNewContentLink(e.target.value)}
               placeholder="https://drive.google.com/..."
             />
-            <button
-              type="button"
-              onClick={addContentLink}
-              className="cf-list-add-button"
-            >
-              <FaPlus />
-            </button>
+            <button type="button" onClick={addContentLink} className="cf-list-add-button"><FaPlus /></button>
           </div>
           <ul className="cf-list-container">
             {contentLinks.map((link, idx) => (
               <li key={idx} className="cf-list-item">
                 <FaGoogleDrive className="cf-list-icon" />
-                <a
-                  href={/^https?:\/\//.test(link) ? link : `https://${link}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="cf-list-text"
-                >
-                  {link}
-                </a>
-                <button
-                  type="button"
-                  onClick={() => removeContentLink(idx)}
-                  className="cf-list-delete-button"
-                  aria-label="Odstranit odkaz"
-                >
-                  <FaTrash />
-                </button>
+                <a href={/^https?:\/\//.test(link)?link:`https://${link}`} target="_blank" rel="noopener noreferrer" className="cf-list-text">{link}</a>
+                <button type="button" onClick={() => removeContentLink(idx)} className="cf-list-delete-button" aria-label="Remove link"><FaTrash /></button>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Content Requirements */}
         <div className="cf-input-group">
-          <h4 className="cf-subtitle">Požadavky na obsah</h4>
-          <label className="cf-small-note">
-            Přidejte pravidla, která musí uživatel splnit:
-          </label>
+          <h4 className="cf-subtitle">Content Requirements</h4>
+          <label className="cf-small-note">Add rules creators must follow:</label>
           <div className="cf-list-input-row">
             <input
               type="text"
               value={newRequirement}
               onChange={(e) => setNewRequirement(e.target.value)}
-              placeholder="Např. Must tag @whop in caption"
+              placeholder="e.g. Must tag @whop in caption"
             />
-            <button
-              type="button"
-              onClick={addRequirement}
-              className="cf-list-add-button"
-            >
-              <FaPlus />
-            </button>
+            <button type="button" onClick={addRequirement} className="cf-list-add-button"><FaPlus /></button>
           </div>
           <ul className="cf-list-container">
             {requirements.map((item, idx) => (
               <li key={idx} className="cf-list-item">
                 <span className="cf-list-text">{item}</span>
-                <button
-                  type="button"
-                  onClick={() => removeRequirement(idx)}
-                  className="cf-list-delete-button"
-                  aria-label="Odstranit požadavek"
-                >
-                  <FaTrash />
-                </button>
+                <button type="button" onClick={() => removeRequirement(idx)} className="cf-list-delete-button" aria-label="Remove requirement"><FaTrash /></button>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Expiration Date/Time */}
         <div className="cf-input-group">
-          <label>
-            Datum a čas ukončení <span className="cf-required">*</span>{' '}
-            <FaQuestionCircle title="Datum a čas, kdy kampaň vyprší." />
-          </label>
+          <label>Expiration Date/Time <span className="cf-required">*</span> <FaQuestionCircle title="Date and time when campaign expires" /></label>
           <input
             type="datetime-local"
             value={expirationDateTime}
@@ -409,10 +316,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
           />
         </div>
 
-        {/* Tlačítko Uložit */}
-        <button type="submit" className="cf-submit-button">
-          Uložit kampaň
-        </button>
+        <button type="submit" className="cf-submit-button">Save Campaign</button>
       </form>
     </div>
   );
