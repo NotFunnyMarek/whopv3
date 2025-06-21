@@ -18,7 +18,8 @@ export default function Dashboard() {
 
   const [whopId, setWhopId] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [role, setRole] = useState(""); // "owner", "moderator" nebo ""
+  const [role, setRole] = useState("");
+  const [waitlistRequests, setWaitlistRequests] = useState([]);
   const [members, setMembers] = useState([]);
   const [payments, setPayments] = useState([]);
   const [grossRevenue, setGrossRevenue] = useState(0);
@@ -28,15 +29,12 @@ export default function Dashboard() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
 
-  // Data pro graf (All-Time Revenue)
   const [chartData, setChartData] = useState([]);
-
-  // Platební tabulka – filtrování a stránkování
   const [filterText, setFilterText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
 
-  // 1) Načtení whop_id z URL query
+  // 1) Načtení whop_id z URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const wid = params.get("whop_id");
@@ -47,11 +45,10 @@ export default function Dashboard() {
     setWhopId(wid);
   }, [showNotification]);
 
-  // 2) Po získání whopId stáhneme data
+  // 2) Stáhnout data
   useEffect(() => {
     if (!whopId) return;
     setDataLoaded(false);
-
     fetch(
       `https://app.byxbot.com/php/get_dashboard_data.php?whop_id=${encodeURIComponent(
         whopId
@@ -68,6 +65,7 @@ export default function Dashboard() {
       .then((json) => {
         if (json.status === "success") {
           setRole(json.role);
+          setWaitlistRequests(json.waitlist_requests || []);
           setMembers(json.members || []);
           setPayments(json.payments || []);
           setGrossRevenue(parseFloat(json.grossRevenue || 0));
@@ -89,11 +87,11 @@ export default function Dashboard() {
       });
   }, [whopId, showNotification]);
 
-  // 3) Připravíme data pro line chart (All-Time Revenue)
+  // 3) Připravit data pro graf
   const prepareChartData = (paymentsList) => {
     const sums = {};
     paymentsList.forEach((p) => {
-      const dateKey = p.payment_date.split(" ")[0]; // "YYYY-MM-DD"
+      const dateKey = p.payment_date.split(" ")[0];
       sums[dateKey] = (sums[dateKey] || 0) + parseFloat(p.amount);
     });
     const arr = Object.keys(sums)
@@ -105,10 +103,9 @@ export default function Dashboard() {
     setChartData(arr);
   };
 
-  // 4) Pomocná funkce pro obnovení všech dat (po kick/refund/ban/invite/unban)
+  // 4) Reload všech dat
   const reloadDashboardData = () => {
     if (!whopId) return;
-
     fetch(
       `https://app.byxbot.com/php/get_dashboard_data.php?whop_id=${encodeURIComponent(
         whopId
@@ -125,6 +122,7 @@ export default function Dashboard() {
       .then((json) => {
         if (json.status === "success") {
           setRole(json.role);
+          setWaitlistRequests(json.waitlist_requests || []);
           setMembers(json.members || []);
           setPayments(json.payments || []);
           setGrossRevenue(parseFloat(json.grossRevenue || 0));
@@ -148,14 +146,97 @@ export default function Dashboard() {
       });
   };
 
-  // 5) Kick (odstranit člena) – dostupné owner i moderator
+  // 5) Accept waitlist
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      await showConfirm("Opravdu chcete přijmout tuto žádost?");
+    } catch {
+      return;
+    }
+    setLoadingAction(true);
+    fetch("https://app.byxbot.com/php/accept_waitlist.php", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch {
+          throw new Error(text);
+        }
+        if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
+        return json;
+      })
+      .then((json) => {
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
+      })
+      .catch((err) => {
+        console.error("Chyba accept_waitlist:", err);
+        showNotification({
+          type: "error",
+          message: err.message || "Nepodařilo se přijmout žádost.",
+        });
+      })
+      .finally(() => setLoadingAction(false));
+  };
+
+  // 6) Reject waitlist
+  const handleRejectRequest = async (requestId) => {
+    try {
+      await showConfirm("Opravdu chcete odmítnout tuto žádost?");
+    } catch {
+      return;
+    }
+    setLoadingAction(true);
+    fetch("https://app.byxbot.com/php/reject_waitlist.php", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch {
+          throw new Error(text);
+        }
+        if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
+        return json;
+      })
+      .then((json) => {
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
+      })
+      .catch((err) => {
+        console.error("Chyba reject_waitlist:", err);
+        showNotification({
+          type: "error",
+          message: err.message || "Nepodařilo se odmítnout žádost.",
+        });
+      })
+      .finally(() => setLoadingAction(false));
+  };
+
+  // 7) Kick uživatele
   const handleRemoveMember = async (memberUserId) => {
     try {
       await showConfirm("Opravdu chcete odstranit tohoto uživatele z Whopu?");
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/remove_member.php", {
       method: "POST",
@@ -171,15 +252,13 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
         if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
           setMembers((prev) => prev.filter((m) => m.user_id !== memberUserId));
           setMembersCount((prev) => prev - 1);
-        } else {
-          showNotification({
-            type: "error",
-            message: json.message || "Chyba při odstraňování.",
-          });
         }
       })
       .catch((err) => {
@@ -189,19 +268,16 @@ export default function Dashboard() {
           message: err.message || "Nepodařilo se odstranit člena.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 6) Ban uživatele – dostupné owner i moderator
+  // 8) Ban uživatele
   const handleBanUser = async (banUserId) => {
     try {
       await showConfirm("Opravdu chcete zabanovat tohoto uživatele?");
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/ban_user.php", {
       method: "POST",
@@ -217,12 +293,11 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
-        if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
-          reloadDashboardData();
-        } else {
-          throw new Error(json.message || "Chyba při banování.");
-        }
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
       })
       .catch((err) => {
         console.error("Chyba ban_user:", err);
@@ -231,28 +306,22 @@ export default function Dashboard() {
           message: err.message || "Chyba při banování.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 7) Unban uživatele – dostupné owner i moderator
+  // 9) Unban uživatele
   const handleUnbanUser = async (banUserId) => {
     try {
       await showConfirm("Opravdu chcete odbanovat tohoto uživatele?");
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/unban_user.php", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        whop_id: whopId,
-        ban_user_id: banUserId, // klíč musí pasovat s tím, co PHP očekává
-      }),
+      body: JSON.stringify({ ban_user_id: banUserId, whop_id: whopId }),
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -262,12 +331,11 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
-        if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
-          reloadDashboardData();
-        } else {
-          throw new Error(json.message || "Chyba při odbanování.");
-        }
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
       })
       .catch((err) => {
         console.error("Chyba unban_user:", err);
@@ -276,19 +344,16 @@ export default function Dashboard() {
           message: err.message || "Chyba při odbanování.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 8) Refund platby – pouze owner
+  // 10) Refund platby
   const handleRefund = async (paymentId) => {
     try {
       await showConfirm("Opravdu chcete vrátit tuto platbu?");
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/refund_payment.php", {
       method: "POST",
@@ -304,12 +369,11 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
-        if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
-          reloadDashboardData();
-        } else {
-          throw new Error(json.message || "Chyba při refundu.");
-        }
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
       })
       .catch((err) => {
         console.error("Chyba refund:", err);
@@ -318,18 +382,15 @@ export default function Dashboard() {
           message: err.message || "Chyba při refundu platby.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 9) Pozvat moderátora – pouze owner
+  // 11) Pozvat moderátora
   const handleInvite = async () => {
     if (!inviteEmail.trim()) {
       showNotification({ type: "error", message: "Zadejte email uživatele." });
       return;
     }
-
     try {
       await showConfirm(
         `Opravdu chcete pozvat ${inviteEmail.trim()} jako moderátora?`
@@ -337,7 +398,6 @@ export default function Dashboard() {
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/invite_moderator.php", {
       method: "POST",
@@ -353,12 +413,13 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
         if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
           reloadDashboardData();
           setInviteEmail("");
-        } else {
-          throw new Error(json.message || "Chyba při přidávání moderátora.");
         }
       })
       .catch((err) => {
@@ -368,19 +429,16 @@ export default function Dashboard() {
           message: err.message || "Chyba při pozvání moderátora.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 10) Odebrat moderátora – pouze owner
+  // 12) Odebrat moderátora
   const handleRemoveModerator = async (modUserId) => {
     try {
       await showConfirm("Opravdu chcete odebrat tohoto moderátora?");
     } catch {
       return;
     }
-
     setLoadingAction(true);
     fetch("https://app.byxbot.com/php/remove_moderator.php", {
       method: "POST",
@@ -396,12 +454,11 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
-        if (json.status === "success") {
-          showNotification({ type: "success", message: json.message });
-          reloadDashboardData();
-        } else {
-          throw new Error(json.message || "Chyba při odebírání moderátora.");
-        }
+        showNotification({
+          type: json.status === "success" ? "success" : "error",
+          message: json.message,
+        });
+        if (json.status === "success") reloadDashboardData();
       })
       .catch((err) => {
         console.error("Chyba remove_moderator:", err);
@@ -410,27 +467,24 @@ export default function Dashboard() {
           message: err.message || "Chyba při odebírání moderátora.",
         });
       })
-      .finally(() => {
-        setLoadingAction(false);
-      });
+      .finally(() => setLoadingAction(false));
   };
 
-  // 11) Filtrace plateb podle username nebo email (case-insensitive)
+  // platební filtrování a stránkování
   const filteredPayments = useMemo(() => {
     if (!filterText.trim()) return payments;
-    const query = filterText.trim().toLowerCase();
+    const q = filterText.trim().toLowerCase();
     return payments.filter(
       (p) =>
-        p.username.toLowerCase().includes(query) ||
-        p.email.toLowerCase().includes(query)
+        p.username.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q)
     );
   }, [payments, filterText]);
 
-  // 12) Paginated payments podle PAGE_SIZE
   const totalPaymentPages = Math.ceil(filteredPayments.length / PAGE_SIZE);
   const paginatedPayments = useMemo(() => {
-    const startIdx = (currentPage - 1) * PAGE_SIZE;
-    return filteredPayments.slice(startIdx, startIdx + PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredPayments.slice(start, start + PAGE_SIZE);
   }, [filteredPayments, currentPage]);
 
   if (!dataLoaded) {
@@ -441,7 +495,63 @@ export default function Dashboard() {
     <div className="dashboard-container">
       <h1 className="dashboard-title">Whop Dashboard</h1>
 
-      {/* ───────── STATISTIKY ───────── */}
+      {/* WAITLIST REQUESTS */}
+      {(role === "owner" || role === "moderator") && waitlistRequests.length > 0 && (
+        <div className="table-section">
+          <h2>Waitlist Requests</h2>
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Submitted At</th>
+                <th>Answers</th>
+                <th>Akce</th>
+              </tr>
+            </thead>
+            <tbody>
+              {waitlistRequests.map((req) => (
+                <tr key={`req-${req.user_id}`}>
+                  <td>{req.username}</td>
+                  <td>{req.email}</td>
+                  <td>{new Date(req.requested_at).toLocaleString()}</td>
+                  <td>
+                    {req.answers?.length > 0 ? (
+                      <ul className="waitlist-answers">
+                        {req.answers.map((ans, i) => (
+                          <li key={i}>
+                            <strong>Q{i + 1}:</strong> {ans}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      className="btn-accept"
+                      disabled={loadingAction}
+                      onClick={() => handleAcceptRequest(req.user_id)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="btn-reject"
+                      disabled={loadingAction}
+                      onClick={() => handleRejectRequest(req.user_id)}
+                    >
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* STATISTIKY */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Aktivní členové</h3>
@@ -461,7 +571,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ───────── GRAF (All-Time Revenue) ───────── */}
+      {/* GRAF */}
       <div className="chart-section">
         <h2>All-Time Revenue Trend</h2>
         {chartData.length > 0 ? (
@@ -486,7 +596,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───────── SEZNAM ČLENŮ ───────── */}
+      {/* SEZNAM ČLENŮ */}
       <div className="table-section">
         <h2>Aktivní členové</h2>
         <div className="filter-input-wrapper">
@@ -525,11 +635,15 @@ export default function Dashboard() {
                   );
                 })
                 .map((m) => (
-                  <tr key={`${m.user_id}-${m.type}`}>
+                  <tr key={`member-${m.user_id}-${m.type}`}>
                     <td>{m.username}</td>
                     <td>{m.email}</td>
                     <td>{new Date(m.start_at).toLocaleString()}</td>
-                    <td className={m.type === "paid" ? "label-paid" : "label-free"}>
+                    <td
+                      className={
+                        m.type === "paid" ? "label-paid" : "label-free"
+                      }
+                    >
                       {m.type === "paid" ? "Placený" : "Free"}
                     </td>
                     <td>
@@ -561,10 +675,9 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───────── SEZNAM PLATEB (filtrovatelné + stránkované) ───────── */}
+      {/* SEZNAM PLATEB */}
       <div className="table-section">
         <h2>Seznam plateb</h2>
-
         <div className="filter-input-wrapper">
           <input
             type="text"
@@ -577,7 +690,6 @@ export default function Dashboard() {
             }}
           />
         </div>
-
         {filteredPayments.length === 0 ? (
           <p className="no-data-text">Žádné platby odpovídající filtru.</p>
         ) : (
@@ -596,7 +708,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {paginatedPayments.map((p) => (
-                  <tr key={p.payment_id}>
+                  <tr key={`payment-${p.payment_id}`}>
                     <td>{p.payment_id}</td>
                     <td>{p.username}</td>
                     <td>{p.email}</td>
@@ -623,7 +735,9 @@ export default function Dashboard() {
                     </td>
                     <td>
                       {role === "owner" ? (
-                        !["refunded", "failed_refunded", "failed"].includes(p.type) ? (
+                        !["refunded", "failed_refunded", "failed"].includes(
+                          p.type
+                        ) ? (
                           <button
                             className="btn-refund"
                             disabled={loadingAction}
@@ -642,20 +756,20 @@ export default function Dashboard() {
                 ))}
               </tbody>
             </table>
-
-            {/* Stránkování */}
             <div className="pagination">
               <button
                 className="page-btn"
                 disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.max(prev - 1, 1))
+                }
               >
                 ←
               </button>
               {Array.from({ length: totalPaymentPages }, (_, i) => i + 1).map(
                 (num) => (
                   <button
-                    key={num}
+                    key={`page-${num}`}
                     className={`page-btn ${num === currentPage ? "active" : ""}`}
                     onClick={() => setCurrentPage(num)}
                   >
@@ -667,7 +781,9 @@ export default function Dashboard() {
                 className="page-btn"
                 disabled={currentPage === totalPaymentPages}
                 onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPaymentPages))
+                  setCurrentPage((prev) =>
+                    Math.min(prev + 1, totalPaymentPages)
+                  )
                 }
               >
                 →
@@ -677,7 +793,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───────── SEZNAM BANŮ ───────── */}
+      {/* SEZNAM BANŮ */}
       <div className="table-section">
         <h2>Seznam zabanovaných</h2>
         <div className="filter-input-wrapper">
@@ -715,7 +831,7 @@ export default function Dashboard() {
                   );
                 })
                 .map((b) => (
-                  <tr key={b.user_id}>
+                  <tr key={`ban-${b.user_id}`}>
                     <td>{b.username}</td>
                     <td>{b.email}</td>
                     <td>{new Date(b.banned_at).toLocaleString()}</td>
@@ -739,7 +855,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ───────── Team (Moderátoři) ───────── */}
+      {/* TEAM (Moderátoři) */}
       <div className="table-section">
         <h2>Team (Moderátoři)</h2>
         {role === "owner" ? (
@@ -774,7 +890,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {moderators.map((m) => (
-                    <tr key={m.user_id}>
+                    <tr key={`mod-${m.user_id}`}>
                       <td>{m.username}</td>
                       <td>{m.email}</td>
                       <td>{new Date(m.added_at).toLocaleString()}</td>

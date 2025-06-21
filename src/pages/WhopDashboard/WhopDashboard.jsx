@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-
 import { useNotifications } from "../../components/NotificationProvider";
 
 import fetchWhopData from "./fetchWhopData";
@@ -20,6 +19,7 @@ import handleBack from "./handleBack";
 import handleExpireCampaign from "./handleExpireCampaign";
 import fetchMembers from "./fetchMembers";
 import handleCancelMember from "./handleCancelMember";
+import handleRequestWaitlist from "./handleRequestWaitlist";
 
 import LoadingOverlay from "./components/LoadingOverlay";
 import ErrorView from "./components/ErrorView";
@@ -36,7 +36,7 @@ export default function WhopDashboard() {
   const location = useLocation();
   const { showNotification, showConfirm } = useNotifications();
 
-  // Overlay pro placené/free subscriby
+  // Overlay for subscribe/join flows
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayFading, setOverlayFading] = useState(false);
   const [windowSize, setWindowSize] = useState({
@@ -44,12 +44,12 @@ export default function WhopDashboard() {
     height: window.innerHeight,
   });
 
-  // Stav načítání whopData
+  // Loading / error / whopData
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [whopData, setWhopData] = useState(null);
 
-  // Stav pro owner‐editaci
+  // Owner-edit states
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -57,40 +57,36 @@ export default function WhopDashboard() {
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [bannerError, setBannerError] = useState("");
 
-  // Změna slugu
+  // Slug-edit
   const [isSlugEditing, setIsSlugEditing] = useState(false);
   const [newSlugValue, setNewSlugValue] = useState("");
   const [slugError, setSlugError] = useState("");
 
-  // Editace features (owner)
+  // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
 
-  // Kampaňový modal (owner vytváří novou)
-  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+  // Waitlist
+  const [waitlistEnabled, setWaitlistEnabled] = useState(false);
+  const [waitlistQuestions, setWaitlistQuestions] = useState(["", "", "", "", ""]);
 
-  // Stav pro kampaně (owner + member)
+  // Campaign modal & list
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
   const [campaignsError, setCampaignsError] = useState("");
 
-  // Členský režim (taby + stav „leave“)
+  // Member-mode tabs & loading
   const [activeTab, setActiveTab] = useState("Home");
   const [memberLoading, setMemberLoading] = useState(false);
 
-  // View‐as‐Member mód (owner vidí vlastně jako člen)
+  // Owner “view as member”
   const [viewAsMemberMode, setViewAsMemberMode] = useState(false);
 
-  // “Bound” verze fetchCampaigns, která předá všechny čtyři parametry najednou
-  const fetchCampaignsBound = (whopId) => {
-    return fetchCampaigns(
-      whopId,
-      setCampaigns,
-      setCampaignsLoading,
-      setCampaignsError
-    );
-  };
+  // Bound version of fetchCampaigns
+  const fetchCampaignsBound = (wid) =>
+    fetchCampaigns(wid, setCampaigns, setCampaignsLoading, setCampaignsError);
 
-  // 10) Načtení whopData na mount / slug change
+  // 1️⃣ Load whop data on mount / slug change
   useEffect(() => {
     const slugToFetch = location.pathname.startsWith("/c/")
       ? location.pathname.split("/c/")[1].split("?")[0]
@@ -106,29 +102,40 @@ export default function WhopDashboard() {
       setEditBannerUrl,
       setNewSlugValue,
       setEditFeatures,
-      fetchCampaignsBound // předáme bound verzi
+      fetchCampaignsBound,
+      setWaitlistEnabled,
+      setWaitlistQuestions
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSlug, location.pathname]);
 
-  // 11) Načtení kampaní
+  // 2️⃣ Initialize waitlist toggles when whopData arrives
+  useEffect(() => {
+    if (whopData?.is_owner) {
+      setWaitlistEnabled(Boolean(whopData.waitlist_enabled));
+      setWaitlistQuestions(
+        Array.isArray(whopData.waitlist_questions) && whopData.waitlist_questions.length
+          ? whopData.waitlist_questions
+          : ["", "", "", "", ""]
+      );
+    }
+  }, [whopData]);
+
+  // 3️⃣ Fetch campaigns if owner or member
   useEffect(() => {
     if (whopData && (whopData.is_owner || whopData.is_member)) {
       fetchCampaignsBound(whopData.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [whopData]);
 
-  // 12) Resize listener pro konfety
+  // 4️⃣ Window resize for overlay
   useEffect(() => {
-    const handleResize = () => {
+    const onResize = () =>
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // 13) HANDLE SUBSCRIBE (platba nebo free)
+  // 5️⃣ Subscribe / join free / leave
   const onSubscribe = async () => {
     await handleSubscribe(
       whopData,
@@ -139,12 +146,10 @@ export default function WhopDashboard() {
       windowSize,
       navigate,
       showNotification,
-      fetchCampaignsBound, // bound verze
+      fetchCampaignsBound,
       setWhopData
     );
   };
-
-  // 14) JOIN FREE
   const onJoinFree = async () => {
     await handleJoinFree(
       whopData,
@@ -154,64 +159,43 @@ export default function WhopDashboard() {
       windowSize,
       navigate,
       showNotification,
-      fetchCampaignsBound, // bound verze
+      fetchCampaignsBound,
       setWhopData
     );
   };
-
-  // 15) LEAVE
   const onLeave = async () => {
     await handleLeave(
       whopData,
       showConfirm,
       setMemberLoading,
       showNotification,
-      fetchCampaignsBound, // bound verze
+      fetchCampaignsBound,
       setWhopData,
       navigate
     );
   };
 
-  // 16) Upload banner (owner)
+  // 6️⃣ Upload handlers
   const onBannerUpload = async (file) => {
-    await handleBannerUpload(
-      file,
-      setEditBannerUrl,
-      setBannerError,
-      setIsUploadingBanner,
-      showNotification
-    );
+    await handleBannerUpload(file, setEditBannerUrl, setBannerError, setIsUploadingBanner, showNotification);
   };
-
-  // 17) Upload feature image (owner)
   const onFeatureImageUpload = async (id, file) => {
-    await handleFeatureImageUpload(
-      id,
-      file,
-      setEditFeatures,
-      showNotification
-    );
+    await handleFeatureImageUpload(id, file, setEditFeatures, showNotification);
   };
 
-  // 18) Add / Remove / Change Feature (owner)
-  const {
-    addFeature,
-    removeFeature,
-    handleFeatChange,
-  } = manageFeatures(editFeatures, setEditFeatures, showNotification);
+  // 7️⃣ Manage features
+  const { addFeature, removeFeature, handleFeatChange } = manageFeatures(
+    editFeatures,
+    setEditFeatures,
+    showNotification
+  );
 
-  // 19) Save new slug (owner)
+  // 8️⃣ Slug save
   const onSlugSave = async () => {
-    await handleSlugSave(
-      whopData,
-      newSlugValue,
-      showNotification,
-      setSlugError,
-      navigate
-    );
+    await handleSlugSave(whopData, newSlugValue, showNotification, setSlugError, navigate);
   };
 
-  // 20) Save Whop (owner)
+  // 9️⃣ Save Whop (with waitlist)
   const onSaveWhop = async () => {
     await handleSaveWhop(
       whopData,
@@ -226,66 +210,70 @@ export default function WhopDashboard() {
       setEditBannerUrl,
       setEditFeatures,
       setSlugError,
-      fetchCampaignsBound, // bound verze
-      setWhopData
+      fetchCampaignsBound,
+      setWhopData,
+      waitlistEnabled,
+      waitlistQuestions
     );
   };
 
-  // 21) Delete Whop (owner)
+  // 🔟 Delete Whop
   const onDeleteWhop = async () => {
-    await handleDeleteWhop(
-      whopData,
-      showConfirm,
-      showNotification,
-      navigate,
-      setError
-    );
+    await handleDeleteWhop(whopData, showConfirm, showNotification, navigate, setError);
   };
 
-  // 22) Back (owner)
-  const onBack = () => {
-    handleBack(navigate);
+  // 1️⃣1️⃣ Back
+  const onBack = () => handleBack(navigate);
+
+  // 1️⃣2️⃣ Expire a campaign
+  const onExpireCampaign = async (cid) => {
+    await handleExpireCampaign(cid, showConfirm, showNotification, whopData, fetchCampaignsBound);
   };
 
-  // 23) Expire Campaign (owner)
-  const onExpireCampaign = async (campaignId) => {
-    await handleExpireCampaign(
-      campaignId,
-      showConfirm,
-      showNotification,
-      whopData,
-      fetchCampaignsBound // bound verze
-    );
-  };
-
-  // 24) Fetch paid members list (owner)
+  // 1️⃣3️⃣ Fetch paid members list (owner)
   const [membershipsList, setMembershipsList] = useState([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [membersError, setMembersError] = useState("");
   useEffect(() => {
     if (whopData?.is_owner) {
-      fetchMembers(
-        whopData.id,
-        setMembersLoading,
-        setMembersError,
-        setMembershipsList
-      );
+      fetchMembers(whopData.id, setMembersLoading, setMembersError, setMembershipsList);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [whopData]);
 
-  // 25) Cancel one paid member (owner helper)
-  const onCancelMember = async (memberUserId) => {
-    await handleCancelMember(
-      memberUserId,
-      whopData,
-      showConfirm,
-      showNotification,
-      fetchMembers
-    );
+  // 1️⃣4️⃣ Cancel one paid member
+  const onCancelMember = async (uid) => {
+    await handleCancelMember(uid, whopData, showConfirm, showNotification, fetchMembers);
   };
 
-  // **RENDER**
+  // ⭐ Request waitlist
+  const onRequestWaitlist = async (wid, answers) => {
+    setMemberLoading(true);
+    try {
+      await handleRequestWaitlist(wid, answers, showNotification);
+      // on success, refresh whopData
+      fetchWhopData(
+        whopData.slug,
+        setLoading,
+        setError,
+        setWhopData,
+        setEditName,
+        setEditDescription,
+        setEditBannerUrl,
+        setNewSlugValue,
+        setEditFeatures,
+        fetchCampaignsBound,
+        setWaitlistEnabled,
+        setWaitlistQuestions
+      );
+    } catch {
+      // showNotification invoked inside handleRequestWaitlist
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
+  // ====== RENDER ======
+
   if (overlayVisible || overlayFading) {
     return (
       <LoadingOverlay
@@ -302,17 +290,11 @@ export default function WhopDashboard() {
     );
   }
 
-  if (loading) {
-    return <LoadingOverlay loadingOnly />;
-  }
-
-  if (error) {
-    return <ErrorView error={error} onBack={() => navigate("/onboarding")} />;
-  }
-
+  if (loading) return <LoadingOverlay loadingOnly />;
+  if (error) return <ErrorView error={error} onBack={() => navigate("/onboarding")} />;
   if (!whopData) return null;
 
-  // “View as Member” (owner)
+  // Owner “view as member”
   if (viewAsMemberMode) {
     return (
       <ViewAsMember
@@ -329,7 +311,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // MEMBER MODE (skutečný člen)
+  // Member mode (real member)
   if (whopData.is_member && !whopData.is_owner) {
     return (
       <MemberMode
@@ -345,18 +327,20 @@ export default function WhopDashboard() {
     );
   }
 
-  // LANDING PAGE (návštěvník)
+  // Landing page (visitor)
   if (!whopData.is_owner && !whopData.is_member) {
     return (
       <LandingPage
         whopData={whopData}
         memberLoading={memberLoading}
         handleSubscribe={onSubscribe}
+        handleRequestWaitlist={onRequestWaitlist}
+        showNotification={showNotification}
       />
     );
   }
 
-  // OWNER MODE
+  // Owner mode
   return (
     <OwnerMode
       whopData={whopData}
@@ -396,7 +380,11 @@ export default function WhopDashboard() {
       handleCancelMember={onCancelMember}
       handleBack={onBack}
       isCampaignModalOpen={isCampaignModalOpen}
-      fetchCampaigns={fetchCampaignsBound} // bound verze
+      fetchCampaigns={fetchCampaignsBound}
+      waitlistEnabled={waitlistEnabled}
+      setWaitlistEnabled={setWaitlistEnabled}
+      waitlistQuestions={waitlistQuestions}
+      setWaitlistQuestions={setWaitlistQuestions}
     />
   );
 }
