@@ -1,0 +1,204 @@
+/* Fade-in */
+.landing-page,
+.lp-root {
+  opacity: 0;
+  transition: opacity 0.6s ease-in;
+}
+.landing-page.loaded,
+.lp-root.loaded {
+  opacity: 1;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  height: 60vh;
+  background-size: cover;
+  background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  color: #fff;
+}
+.hero-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+}
+.hero-content {
+  position: relative; z-index: 1; max-width: 700px; padding: 20px;
+}
+.hero-title {
+  font-size: 3rem; margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+.hero-desc {
+  font-size: 1.1rem; margin-bottom: 20px;
+}
+.hero-buttons {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: 8px; font-size: 1rem; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s; border: none;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
+.btn.primary {
+  background: #4a90e2; color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.btn.primary:hover {
+  background: #357ab8;
+}
+.btn.outline {
+  background: transparent; color: #fff; border: 2px solid #fff;
+}
+.btn.outline:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Stats & Socials */
+.hero-stats,
+.hero .stats {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 1rem; margin-bottom: 15px;
+}
+.hero-socials,
+.socials {
+  display: flex; gap: 12px; justify-content: center; font-size: 1.4rem;
+}
+.socials a {
+  color: #fff; transition: transform 0.2s;
+}
+.socials a:hover {
+  transform: scale(1.2);
+}
+
+/* Sections */
+.section,
+.lp-section {
+  padding: 60px 20px; text-align: center;
+}
+.alt {
+  background: #f0f0f0;
+}
+
+/* Flex grids */
+.reviews-grid,
+.features-grid,
+.about-container,
+.pricing-container,
+.affiliate-grid,
+.who-grid {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;
+}
+
+/* Card */
+.card,
+.lp-card {
+  background: #fff; color: #333;
+  border-radius: 12px; padding: 20px; width: 280px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover,
+.lp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Reviews */
+.review .review-rating,
+.review .rating {
+  margin-bottom: 10px; color: #f5a623;
+}
+.review .review-text {
+  font-style: italic; margin-bottom: 10px;
+}
+.review .review-meta {
+  display: flex; justify-content: space-between; font-size: 0.85rem; color: #666;
+}
+
+/* Features */
+.feature .feature-icon {
+  font-size: 1.5rem; color: #4a90e2; margin-bottom: 10px;
+}
+.feature .feature-title {
+  margin: 8px 0;
+}
+
+/* About Me */
+.about-container,
+.lp-about-container {
+  display: flex; justify-content: center;
+}
+.about,
+.lp-card.about {
+  max-width: 600px; text-align: center;
+}
+.about-bio,
+.bio {
+  margin-top: 15px; font-size: 0.95rem; line-height: 1.5;
+}
+
+/* FAQ Accordion */
+.faq-container,
+.lp-faq {
+  max-width: 600px; margin: 0 auto; text-align: left;
+}
+.faq-item,
+.lp-faq-item {
+  margin-bottom: 10px;
+}
+.faq-question,
+.lp-faq-question {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #fff; border: 1px solid #ddd; padding: 12px;
+  border-radius: 8px; font-size: 1rem; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.2s;
+  width: 100%;
+}
+.faq-question:hover,
+.lp-faq-question:hover {
+  background: #f9f9f9;
+}
+.faq-answer,
+.lp-faq-answer {
+  background: #fff; border-left: 3px solid #4a90e2; padding: 12px;
+  margin-top: 4px; border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  .reviews-grid,
+  .features-grid,
+  .about-container,
+  .pricing-container,
+  .affiliate-grid,
+  .who-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  .card,
+  .lp-card {
+    width: 100%;
+    max-width: 320px;
+  }
+}
