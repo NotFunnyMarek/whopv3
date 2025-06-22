@@ -1,7 +1,7 @@
 // src/components/Sidebar.jsx
 
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/sidebar.scss";
 import Logo from "../assets/logo.png";
 import {
@@ -14,13 +14,16 @@ import {
 } from "react-icons/fi";
 import { FaUserShield, FaDollarSign } from "react-icons/fa";
 import ChatModal from "./Chat/ChatModal";
+import SearchModal from "./SearchModal";
 
 export default function Sidebar() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const navigate = useNavigate();
 
+  // Načtení profilových dat uživatele (avatar)
   useEffect(() => {
-    // Načtení profilových dat uživatele
     fetch("https://app.byxbot.com/php/profile.php", {
       method: "GET",
       credentials: "include",
@@ -58,12 +61,21 @@ export default function Sidebar() {
                 <FiHome className="sidebar__icon" />
               </NavLink>
             </li>
+
             {/* Vyhledávání */}
             <li className="sidebar__nav-item">
-              <NavLink to="/search" className="sidebar__link">
+              <a
+                href="#"
+                className="sidebar__link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSearchOpen(true);
+                }}
+              >
                 <FiSearch className="sidebar__icon" />
-              </NavLink>
+              </a>
             </li>
+
             {/* Chat (otevře modal) */}
             <li className="sidebar__nav-item">
               <a
@@ -77,30 +89,35 @@ export default function Sidebar() {
                 <FiMessageSquare className="sidebar__icon" />
               </a>
             </li>
+
             {/* Notifikace */}
             <li className="sidebar__nav-item">
               <NavLink to="/notifications" className="sidebar__link">
                 <FiBell className="sidebar__icon" />
               </NavLink>
             </li>
+
             {/* Bilance */}
             <li className="sidebar__nav-item">
               <NavLink to="/balances" className="sidebar__link">
                 <FiBarChart2 className="sidebar__icon" />
               </NavLink>
             </li>
+
             {/* Předplatná */}
             <li className="sidebar__nav-item">
               <NavLink to="/memberships" className="sidebar__link">
                 <FaUserShield className="sidebar__icon" />
               </NavLink>
             </li>
+
             {/* Platby */}
             <li className="sidebar__nav-item">
               <NavLink to="/payments" className="sidebar__link">
                 <FaDollarSign className="sidebar__icon" />
               </NavLink>
             </li>
+
             {/* Profil */}
             <li className="sidebar__nav-item">
               <NavLink to="/profile" className="sidebar__link">
@@ -119,7 +136,10 @@ export default function Sidebar() {
         </nav>
       </aside>
 
-      {/* Chat modal */}
+      {/* Search Modal */}
+      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
+
+      {/* Chat Modal */}
       {chatOpen && <ChatModal onClose={() => setChatOpen(false)} />}
     </>
   );
