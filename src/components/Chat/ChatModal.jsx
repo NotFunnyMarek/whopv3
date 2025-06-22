@@ -1,12 +1,10 @@
-// src/components/Chat/ChatModal.jsx
-
 import React, { useEffect, useState } from "react";
 import "../../styles/chat.scss";
 import ChatWindow from "./ChatWindow";
 
 export default function ChatModal({ onClose }) {
   const [whops, setWhops] = useState([]);
-  const [sel, setSel]   = useState(null);
+  const [sel, setSel]     = useState(null);
 
   useEffect(() => {
     fetch("https://app.byxbot.com/php/chat/list_whops.php", {
@@ -18,7 +16,6 @@ export default function ChatModal({ onClose }) {
       });
   }, []);
 
-  // Prevent clicks inside modal from closing
   const onBackdropClick = e => {
     if (e.target === e.currentTarget) onClose();
   };

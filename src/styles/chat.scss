@@ -364,7 +364,7 @@
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: var(--muted-color);
+  color: #d3d3d3;
   &:hover {
     color: orange;
   }
@@ -437,4 +437,102 @@
   .member-tab-content {
     flex: 1; display: flex; flex-direction: column; min-height: 0;
   }
+}
+
+/* přidejte do chat.scss */
+
+.chat-input.muted {
+  input, .btn-send {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.chat-error {
+  color: red;
+  padding: 4px var(--spacing-sm);
+}
+
+.btn-emoji-picker {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: var(--spacing-xs);
+}
+
+.emoji-picker {
+  position: absolute;
+  display: flex;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-base);
+  padding: var(--spacing-xs);
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+
+.emoji-picker button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin: 0 var(--spacing-xs);
+}
+
+.reaction-display {
+  margin-right: var(--spacing-xs);
+  font-size: 0.9rem;
+}
+
+/* chat.scss additions */
+
+.chat-input.muted {
+  input, .btn-send {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+.chat-error {
+  color: red;
+  margin-bottom: 4px;
+}
+.btn-emoji-picker {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: 8px;
+}
+.emoji-picker {
+  position: absolute;
+  display: flex;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 20;
+}
+.emoji-picker button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin: 0 4px;
+}
+.reaction-display {
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.chat-reply-ref {
+  font-size: 0.7rem;
+  color: #d3d3d3;
+}
+
+.chat-text {
+  font-size: 1rem;
+  font-weight: bolder;
+  padding: 5px 3px;
 }
