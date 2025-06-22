@@ -2,6 +2,7 @@
 
 import React from "react";
 import "../../../styles/whop-dashboard/_member.scss";
+import ChatWindow from "../../../components/Chat/ChatWindow";
 
 export default function MemberMain({
   whopData,
@@ -13,6 +14,7 @@ export default function MemberMain({
 }) {
   return (
     <div className="member-main">
+      {/* HOME */}
       {activeTab === "Home" && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">{whopData.name}</h3>
@@ -40,21 +42,23 @@ export default function MemberMain({
         </div>
       )}
 
+      {/* CHAT */}
       {activeTab === "Chat" && (
-        <div className="member-tab-content">
-          <h3 className="member-subtitle">Chat</h3>
-          <p className="member-text">
-            Chatovací sekce se připravuje nebo tam může být vložen widget.
-          </p>
+        <div className="member-tab-content member-chat-tab">
+          <ChatWindow
+            whopId={whopData.id}
+            whopName={whopData.name}
+            whopLogo={whopData.logo_url}
+          />
         </div>
       )}
 
+      {/* EARN */}
       {activeTab === "Earn" && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Earn</h3>
-
           {campaignsLoading ? (
-            <div className="spinner spinner-small"></div>
+            <div className="spinner spinner-small" />
           ) : campaignsError ? (
             <p className="member-error">{campaignsError}</p>
           ) : campaigns.length === 0 ? (
@@ -66,27 +70,31 @@ export default function MemberMain({
                 const expDate = new Date(
                   camp.expiration_datetime.replace(" ", "T")
                 );
-                const timeDiff = expDate.getTime() - now.getTime();
+                const timeDiff = expDate - now;
                 const expiredByTime = timeDiff <= 0;
-                const expiredByBudget = camp.paid_out >= camp.total_paid_out;
-                const isExpired = camp.is_active === 0 || expiredByTime || expiredByBudget;
+                const expiredByBudget =
+                  camp.paid_out >= camp.total_paid_out;
+                const isExpired =
+                  camp.is_active === 0 || expiredByTime || expiredByBudget;
 
                 let timeInfo;
                 if (isExpired) {
                   timeInfo = "EXPIRED";
                 } else {
-                  const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                  const days = Math.floor(timeDiff / 86400000);
                   const hours = Math.floor(
-                    (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+                    (timeDiff % 86400000) / 3600000
                   );
                   const mins = Math.floor(
-                    (timeDiff % (1000 * 60 * 60)) / (1000 * 60)
+                    (timeDiff % 3600000) / 60000
                   );
                   timeInfo = `Ending in: ${days}d ${hours}h ${mins}m`;
                 }
 
-                // Clamp paid_out so it never exceeds campaign budget
-                const paidOut = Math.min(camp.paid_out, camp.total_paid_out);
+                const paidOut = Math.min(
+                  camp.paid_out,
+                  camp.total_paid_out
+                );
                 const percent = Math.min(
                   Math.round((paidOut / camp.total_paid_out) * 100),
                   100
@@ -99,10 +107,11 @@ export default function MemberMain({
                       isExpired ? "expired" : "active"
                     }`}
                     onClick={() => onSelectCampaign(camp)}
-                    style={{ cursor: "pointer" }}
                   >
                     <div className="camp-header">
-                      <span className="camp-title">{camp.campaign_name}</span>
+                      <span className="camp-title">
+                        {camp.campaign_name}
+                      </span>
                       {isExpired ? (
                         <span className="expired-label">EXPIRED</span>
                       ) : (
@@ -115,7 +124,6 @@ export default function MemberMain({
                     <p className="author">
                       Autor: <span className="author-name">{camp.username}</span>
                     </p>
-
                     <p
                       className={`countdown ${
                         isExpired ? "expired-text" : "active-text"
@@ -123,7 +131,6 @@ export default function MemberMain({
                     >
                       {timeInfo}
                     </p>
-
                     <div className="paid-bar">
                       <div className="paid-info">
                         {camp.currency}
@@ -137,11 +144,8 @@ export default function MemberMain({
                           style={{ width: `${percent}%` }}
                         />
                       </div>
-                      <div className="percent-text">
-                        {percent}%
-                      </div>
+                      <div className="percent-text">{percent}%</div>
                     </div>
-
                     <ul className="camp-details">
                       <li>
                         <strong>Typ:</strong> {camp.type}
@@ -160,7 +164,9 @@ export default function MemberMain({
                       <li>
                         <strong>Zhlédnutí:</strong>{" "}
                         {camp.reward_per_thousand > 0
-                          ? Math.round((paidOut / camp.reward_per_thousand) * 1000)
+                          ? Math.round(
+                              (paidOut / camp.reward_per_thousand) * 1000
+                            )
                           : 0}
                       </li>
                     </ul>
@@ -172,6 +178,7 @@ export default function MemberMain({
         </div>
       )}
 
+      {/* TOOLS */}
       {activeTab === "Tools" && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Tools</h3>

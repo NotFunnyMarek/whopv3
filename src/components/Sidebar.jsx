@@ -12,98 +12,115 @@ import {
   FiBarChart2,
   FiUser,
 } from "react-icons/fi";
-import { FaUserShield } from "react-icons/fa"; // ikona Memberships
-import { FaDollarSign } from "react-icons/fa"; // ikona pro Payments
+import { FaUserShield, FaDollarSign } from "react-icons/fa";
+import ChatModal from "./Chat/ChatModal";
 
-const Sidebar = () => {
+export default function Sidebar() {
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [error, setError] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
+    // Načtení profilových dat uživatele
     fetch("https://app.byxbot.com/php/profile.php", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
       credentials: "include",
+      headers: { "Content-Type": "application/json" },
     })
       .then((res) => {
-        if (res.status === 401) {
-          return null;
-        }
+        if (res.status === 401) return null;
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        if (data && data.status === "success") {
+        if (data?.status === "success") {
           setAvatarUrl(data.data.avatar_url || "");
         }
       })
       .catch((err) => {
         console.error("Chyba při načítání profilu (Sidebar):", err);
-        setError("Nepodařilo se načíst data.");
       });
   }, []);
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar__logo">
-        <img src={Logo} alt="Logo platformy" />
-      </div>
+    <>
+      <aside className="sidebar">
+        {/* Logo */}
+        <div className="sidebar__logo">
+          <img src={Logo} alt="Logo platformy" />
+        </div>
 
-      <nav className="sidebar__nav">
-        <ul>
-          <li className="sidebar__nav-item">
-            <NavLink to="/" className="sidebar__link" end>
-              <FiHome className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/search" className="sidebar__link">
-              <FiSearch className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/messages" className="sidebar__link">
-              <FiMessageSquare className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/notifications" className="sidebar__link">
-              <FiBell className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/balances" className="sidebar__link">
-              <FiBarChart2 className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/memberships" className="sidebar__link">
-              <FaUserShield className="sidebar__icon" />
-            </NavLink>
-          </li>
-          {/* Nový odkaz na Payments */}
-          <li className="sidebar__nav-item">
-            <NavLink to="/payments" className="sidebar__link">
-              <FaDollarSign className="sidebar__icon" />
-            </NavLink>
-          </li>
-          <li className="sidebar__nav-item">
-            <NavLink to="/profile" className="sidebar__link">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="Profilová fotka"
-                  className="sidebar__profile-img"
-                />
-              ) : (
-                <FiUser className="sidebar__icon" />
-              )}
-            </NavLink>
-          </li>
-        </ul>
-      </nav>
-    </aside>
+        {/* Navigace */}
+        <nav className="sidebar__nav">
+          <ul>
+            {/* Domů */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/" className="sidebar__link" end>
+                <FiHome className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Vyhledávání */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/search" className="sidebar__link">
+                <FiSearch className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Chat (otevře modal) */}
+            <li className="sidebar__nav-item">
+              <a
+                href="#"
+                className="sidebar__link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setChatOpen(true);
+                }}
+              >
+                <FiMessageSquare className="sidebar__icon" />
+              </a>
+            </li>
+            {/* Notifikace */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/notifications" className="sidebar__link">
+                <FiBell className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Bilance */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/balances" className="sidebar__link">
+                <FiBarChart2 className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Předplatná */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/memberships" className="sidebar__link">
+                <FaUserShield className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Platby */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/payments" className="sidebar__link">
+                <FaDollarSign className="sidebar__icon" />
+              </NavLink>
+            </li>
+            {/* Profil */}
+            <li className="sidebar__nav-item">
+              <NavLink to="/profile" className="sidebar__link">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profilová fotka"
+                    className="sidebar__profile-img"
+                  />
+                ) : (
+                  <FiUser className="sidebar__icon" />
+                )}
+              </NavLink>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Chat modal */}
+      {chatOpen && <ChatModal onClose={() => setChatOpen(false)} />}
+    </>
   );
-};
-
-export default Sidebar;
+}
