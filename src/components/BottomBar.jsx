@@ -1,5 +1,4 @@
 // src/components/BottomBar.jsx
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import '../styles/bottombar.scss';
@@ -51,44 +50,54 @@ export default function BottomBar() {
   const fetchJoinedWhops = async () => {
     setLoadingWhops(true);
     try {
-      // Whops where the user is a member
+      // 1) Whops where the user is a member
       const resMembers = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
       });
-      if (!resMembers.ok) throw new Error(`Error ${resMembers.status}`);
-      const membersData = await resMembers.json();
-
-      // Whops where the user is the owner
+      if (!resMembers.ok) throw new Error(`Members HTTP ${resMembers.status}`);
+      const membersJson = await resMembers.json();
+      // pokud API vrací { status, data: [...] }
+      let membersData = Array.isArray(membersJson)
+        ? membersJson
+        : Array.isArray(membersJson.data)
+        ? membersJson.data
+        : [];
+      
+      // 2) Whops where the user is the owner
       const resOwned = await fetch('https://app.byxbot.com/php/get_whop.php?owner=me', {
         method: 'GET',
         credentials: 'include',
       });
-      if (!resOwned.ok) throw new Error(`Error ${resOwned.status}`);
+      if (!resOwned.ok) throw new Error(`Owned HTTP ${resOwned.status}`);
       const ownedJson = await resOwned.json();
-      if (ownedJson.status !== 'success') {
+      if (ownedJson.status !== 'success' || !Array.isArray(ownedJson.data)) {
         throw new Error('Failed to load owned Whops');
       }
       const ownedData = ownedJson.data;
 
-      // Merge both sets without duplicates (based on slug)
+      // 3) Sloučení obou seznamů bez duplicit (klíč slug)
       const mapBySlug = new Map();
-      for (const w of membersData) {
-        mapBySlug.set(w.slug, {
-          id: w.whop_id ?? w.id,
-          slug: w.slug,
-          banner_url: w.banner_url,
-          name: w.name ?? w.slug,
-        });
-      }
-      for (const w of ownedData) {
-        mapBySlug.set(w.slug, {
-          id: w.id,
-          slug: w.slug,
-          banner_url: w.banner_url,
-          name: w.name ?? w.slug,
-        });
-      }
+      membersData.forEach(w => {
+        if (w?.slug) {
+          mapBySlug.set(w.slug, {
+            id: w.whop_id ?? w.id,
+            slug: w.slug,
+            banner_url: w.banner_url,
+            name: w.name ?? w.slug,
+          });
+        }
+      });
+      ownedData.forEach(w => {
+        if (w?.slug) {
+          mapBySlug.set(w.slug, {
+            id: w.id,
+            slug: w.slug,
+            banner_url: w.banner_url,
+            name: w.name ?? w.slug,
+          });
+        }
+      });
 
       setJoinedWhops(Array.from(mapBySlug.values()));
     } catch (err) {
@@ -130,7 +139,7 @@ export default function BottomBar() {
 
   return (
     <div className="bottombar">
-      {/* Left section: Menu button, balance link, and dropdown */}
+      {/* Levá sekce: Menu, zůstatek, dropdown */}
       <div className="bottombar__left">
         <button
           className="bottombar__left-button"
@@ -158,7 +167,7 @@ export default function BottomBar() {
           className={`bottombar__left-dropdown ${dropdownOpen ? 'visible' : ''}`}
           role="menu"
         >
-          {/* Theme toggle */}
+          {/* Přepínač motivu */}
           <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-theme">
             <label>
               <input
@@ -210,7 +219,7 @@ export default function BottomBar() {
         </div>
       </div>
 
-      {/* Center section: Whop banners */}
+      {/* Střední sekce: bannery Whops */}
       <div
         className="bottombar__center-icons"
         ref={iconsContainerRef}
@@ -218,12 +227,10 @@ export default function BottomBar() {
         onMouseLeave={handleMouseLeave}
       >
         {loadingWhops
-          ? // Skeleton placeholder: five circles
-            Array.from({ length: 5 }).map((_, idx) => (
+          ? Array.from({ length: 5 }).map((_, idx) => (
               <div key={idx} className="bottombar__center-icon skeleton-circle" />
             ))
           : joinedWhops.map((whop, idx) => {
-              // Calculate “fidgety” hover effect
               const container = iconsContainerRef.current;
               const { left = 0, width = 0 } = container?.getBoundingClientRect() || {};
               const segment = width / (joinedWhops.length || 1);
