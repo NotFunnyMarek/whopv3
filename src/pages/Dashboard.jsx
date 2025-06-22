@@ -150,239 +150,182 @@ export default function Dashboard() {
   const handleAcceptRequest = async (requestId) => {
     try {
       await showConfirm("Opravdu chcete přijmout tuto žádost?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/accept_waitlist.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        const text = await res.text();
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch {
-          throw new Error(text);
-        }
-        if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
-        return json;
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/accept_waitlist.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      // pokud uživatel zrušil confirm, err bude obsahovat text "cancel"
+      if (err.message !== "cancel") {
         console.error("Chyba accept_waitlist:", err);
         showNotification({
           type: "error",
           message: err.message || "Nepodařilo se přijmout žádost.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 6) Reject waitlist
   const handleRejectRequest = async (requestId) => {
     try {
       await showConfirm("Opravdu chcete odmítnout tuto žádost?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/reject_waitlist.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        const text = await res.text();
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch {
-          throw new Error(text);
-        }
-        if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
-        return json;
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/reject_waitlist.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_id: requestId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba reject_waitlist:", err);
         showNotification({
           type: "error",
           message: err.message || "Nepodařilo se odmítnout žádost.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 7) Kick uživatele
   const handleRemoveMember = async (memberUserId) => {
     try {
       await showConfirm("Opravdu chcete odstranit tohoto uživatele z Whopu?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/remove_member.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ remove_user_id: memberUserId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") {
-          setMembers((prev) => prev.filter((m) => m.user_id !== memberUserId));
-          setMembersCount((prev) => prev - 1);
-        }
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/remove_member.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ remove_user_id: memberUserId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      setMembers((prev) => prev.filter((m) => m.user_id !== memberUserId));
+      setMembersCount((prev) => prev - 1);
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba remove_member:", err);
         showNotification({
           type: "error",
           message: err.message || "Nepodařilo se odstranit člena.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 8) Ban uživatele
   const handleBanUser = async (banUserId) => {
     try {
       await showConfirm("Opravdu chcete zabanovat tohoto uživatele?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/ban_user.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ban_user_id: banUserId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/ban_user.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ban_user_id: banUserId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba ban_user:", err);
         showNotification({
           type: "error",
           message: err.message || "Chyba při banování.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 9) Unban uživatele
   const handleUnbanUser = async (banUserId) => {
     try {
       await showConfirm("Opravdu chcete odbanovat tohoto uživatele?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/unban_user.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ban_user_id: banUserId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/unban_user.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ban_user_id: banUserId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba unban_user:", err);
         showNotification({
           type: "error",
           message: err.message || "Chyba při odbanování.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 10) Refund platby
   const handleRefund = async (paymentId) => {
     try {
       await showConfirm("Opravdu chcete vrátit tuto platbu?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/refund_payment.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payment_id: paymentId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/refund_payment.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_id: paymentId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba refund:", err);
         showNotification({
           type: "error",
           message: err.message || "Chyba při refundu platby.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 11) Pozvat moderátora
@@ -395,79 +338,58 @@ export default function Dashboard() {
       await showConfirm(
         `Opravdu chcete pozvat ${inviteEmail.trim()} jako moderátora?`
       );
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/invite_moderator.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: inviteEmail.trim(), whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") {
-          reloadDashboardData();
-          setInviteEmail("");
-        }
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/invite_moderator.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail.trim(), whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      setInviteEmail("");
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba invite_moderator:", err);
         showNotification({
           type: "error",
           message: err.message || "Chyba při pozvání moderátora.",
         });
-      })
-      .finally(() => setLoadingAction(false));
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // 12) Odebrat moderátora
   const handleRemoveModerator = async (modUserId) => {
     try {
       await showConfirm("Opravdu chcete odebrat tohoto moderátora?");
-    } catch {
-      return;
-    }
-    setLoadingAction(true);
-    fetch("https://app.byxbot.com/php/remove_moderator.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mod_user_id: modUserId, whop_id: whopId }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => {
-        showNotification({
-          type: json.status === "success" ? "success" : "error",
-          message: json.message,
-        });
-        if (json.status === "success") reloadDashboardData();
-      })
-      .catch((err) => {
+      setLoadingAction(true);
+      const res = await fetch("https://app.byxbot.com/php/remove_moderator.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mod_user_id: modUserId, whop_id: whopId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") {
+        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+      }
+      showNotification({ type: "success", message: json.message });
+      reloadDashboardData();
+    } catch (err) {
+      if (err.message !== "cancel") {
         console.error("Chyba remove_moderator:", err);
-        showNotification({
-          type: "error",
-          message: err.message || "Chyba při odebírání moderátora.",
-        });
-      })
-      .finally(() => setLoadingAction(false));
+        showNotification({ type: "error", message: err.message || "Chyba při odebírání moderátora." });
+      }
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   // platební filtrování a stránkování
@@ -495,7 +417,6 @@ export default function Dashboard() {
     <div className="dashboard-container">
       <h1 className="dashboard-title">Whop Dashboard</h1>
 
-      {/* WAITLIST REQUESTS */}
       {(role === "owner" || role === "moderator") && waitlistRequests.length > 0 && (
         <div className="table-section">
           <h2>Waitlist Requests</h2>
@@ -551,7 +472,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* STATISTIKY */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Aktivní členové</h3>
@@ -571,7 +491,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* GRAF */}
       <div className="chart-section">
         <h2>All-Time Revenue Trend</h2>
         {chartData.length > 0 ? (
@@ -596,7 +515,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* SEZNAM ČLENŮ */}
       <div className="table-section">
         <h2>Aktivní členové</h2>
         <div className="filter-input-wrapper">
@@ -639,11 +557,7 @@ export default function Dashboard() {
                     <td>{m.username}</td>
                     <td>{m.email}</td>
                     <td>{new Date(m.start_at).toLocaleString()}</td>
-                    <td
-                      className={
-                        m.type === "paid" ? "label-paid" : "label-free"
-                      }
-                    >
+                    <td className={m.type === "paid" ? "label-paid" : "label-free"}>
                       {m.type === "paid" ? "Placený" : "Free"}
                     </td>
                     <td>
@@ -675,7 +589,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* SEZNAM PLATEB */}
       <div className="table-section">
         <h2>Seznam plateb</h2>
         <div className="filter-input-wrapper">
@@ -793,7 +706,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* SEZNAM BANŮ */}
       <div className="table-section">
         <h2>Seznam zabanovaných</h2>
         <div className="filter-input-wrapper">
@@ -855,7 +767,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* TEAM (Moderátoři) */}
       <div className="table-section">
         <h2>Team (Moderátoři)</h2>
         {role === "owner" ? (
