@@ -29,11 +29,11 @@ const App = () => {
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
         <Routes>
-          {/* Veřejné cesty */}
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Intro */}
+          {/* Intro page */}
           <Route
             path="/intro"
             element={
@@ -61,7 +61,7 @@ const App = () => {
             }
           />
 
-          {/* Setup Whopu */}
+          {/* Setup Whop */}
           <Route
             path="/setup"
             element={
@@ -115,7 +115,7 @@ const App = () => {
             }
           />
 
-          {/* Whop Dashboard (Member/Owner režim se řeší v rámci komponenty) */}
+          {/* Whop Dashboard (Member/Owner mode handled inside component) */}
           <Route
             path="/c/:slug"
             element={
@@ -131,7 +131,7 @@ const App = () => {
             }
           />
 
-          {/* OWNER DASHBOARD */}
+          {/* Owner Dashboard */}
           <Route
             path="/dashboard"
             element={
@@ -147,7 +147,7 @@ const App = () => {
             }
           />
 
-          {/* SUBMISSIONS OVERVIEW */}
+          {/* Submissions Overview */}
           <Route
             path="/dashboard/submissions/:campaignId"
             element={
@@ -163,7 +163,7 @@ const App = () => {
             }
           />
 
-          {/* Domovská stránka */}
+          {/* Home Page */}
           <Route
             path="/"
             element={
@@ -179,7 +179,7 @@ const App = () => {
             }
           />
 
-          {/* Profil */}
+          {/* Profile */}
           <Route
             path="/profile"
             element={
@@ -211,7 +211,7 @@ const App = () => {
             }
           />
 
-          {/* Moje předplatná */}
+          {/* My Memberships */}
           <Route
             path="/memberships"
             element={
@@ -227,7 +227,7 @@ const App = () => {
             }
           />
 
-          {/* Historie plateb */}
+          {/* Payment History */}
           <Route
             path="/payments"
             element={
@@ -243,7 +243,7 @@ const App = () => {
             }
           />
 
-          {/* Přesměrování neznámých cest → / */}
+          {/* Redirect unknown paths to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

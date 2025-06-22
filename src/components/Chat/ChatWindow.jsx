@@ -4,274 +4,397 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../styles/chat.scss";
 
 export default function ChatWindow({ whopId, whopName, whopLogo }) {
-  const [messages, setMessages]           = useState([]);
-  const [input, setInput]                 = useState("");
-  const [hasMore, setHasMore]             = useState(false);
-  const [loadingMore, setLoadingMore]     = useState(false);
-  const [showBack, setShowBack]           = useState(false);
-  const [replyTo, setReplyTo]             = useState(null);
-  const [suggestions, setSuggestions]     = useState([]);
-  const [activeSuggestion, setActiveSuggestion] = useState(0);
-  const [showSuggestions, setShowSuggestions]   = useState(false);
-  const [errorMsg, setErrorMsg]           = useState("");
-  const [muteUntil, setMuteUntil]         = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [replyToMessage, setReplyToMessage] = useState(null);
+  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [muteUntil, setMuteUntil] = useState(null);
   const [openEmojiPickerFor, setOpenEmojiPickerFor] = useState(null);
 
-  const firstIdRef   = useRef(null);
-  const lastIdRef    = useRef(null);
-  const containerRef = useRef(null);
-  const inputRef     = useRef(null);
+  const firstMessageIdRef = useRef(null);
+  const lastMessageIdRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const myUsername = sessionStorage.getItem("username");
+  const currentUsername = sessionStorage.getItem("username");
 
-  // All participants except self
+  // All participants except the current user
   const participants = Array.from(
     new Set(messages.map(m => m.username))
-  ).filter(u => u !== myUsername);
+  ).filter(u => u !== currentUsername);
 
-  // Load messages
-  const loadInitial = async () => {
-    const res = await fetch(`https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}`, { credentials: "include" });
-    const d = await res.json();
-    if (d.status === "success") {
-      setMessages(d.messages);
-      setHasMore(d.hasMore);
-      firstIdRef.current = d.messages[0]?.id ?? null;
-      lastIdRef.current  = d.messages.slice(-1)[0]?.id ?? null;
-      setTimeout(() => containerRef.current.scrollTop = containerRef.current.scrollHeight, 0);
+  // Load the initial batch of messages
+  const loadInitialMessages = async () => {
+    const response = await fetch(
+      `https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}`,
+      { credentials: "include" }
+    );
+    const data = await response.json();
+    if (data.status === "success") {
+      setMessages(data.messages);
+      setHasMore(data.hasMore);
+      firstMessageIdRef.current = data.messages[0]?.id ?? null;
+      lastMessageIdRef.current = data.messages.slice(-1)[0]?.id ?? null;
+      // Scroll to bottom after loading
+      setTimeout(() => {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }, 0);
     }
   };
 
-  // Load older
-  const loadMore = async () => {
+  // Load older messages
+  const loadMoreMessages = async () => {
     if (!hasMore || loadingMore) return;
     setLoadingMore(true);
-    const c = containerRef.current, prevH = c.scrollHeight;
-    const res = await fetch(
-      `https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}&before_id=${firstIdRef.current}`,
+    const container = messagesContainerRef.current;
+    const previousHeight = container.scrollHeight;
+
+    const response = await fetch(
+      `https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}&before_id=${firstMessageIdRef.current}`,
       { credentials: "include" }
     );
-    const d = await res.json();
-    if (d.status === "success" && d.messages.length) {
-      setMessages(old => [...d.messages, ...old]);
-      setHasMore(d.hasMore);
-      firstIdRef.current = d.messages[0].id;
-      setTimeout(() => c.scrollTop = c.scrollHeight - prevH, 0);
-      setShowBack(true);
+    const data = await response.json();
+    if (data.status === "success" && data.messages.length) {
+      setMessages(old => [...data.messages, ...old]);
+      setHasMore(data.hasMore);
+      firstMessageIdRef.current = data.messages[0].id;
+      // Maintain scroll position
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight - previousHeight;
+      }, 0);
+      setShowScrollToBottom(true);
     }
     setLoadingMore(false);
   };
 
-  // Polling
+  // Poll for new messages
   useEffect(() => {
-    let pollId;
+    let pollingId;
     (async () => {
-      await loadInitial();
-      pollId = setInterval(async () => {
-        if (!lastIdRef.current) return;
-        const res = await fetch(
-          `https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}&last_id=${lastIdRef.current}`,
+      await loadInitialMessages();
+      pollingId = setInterval(async () => {
+        if (!lastMessageIdRef.current) return;
+        const response = await fetch(
+          `https://app.byxbot.com/php/chat/fetch_messages.php?whop_id=${whopId}&last_id=${lastMessageIdRef.current}`,
           { credentials: "include" }
         );
-        const d = await res.json();
-        if (d.status === "success" && d.messages.length) {
-          setMessages(old => [...old, ...d.messages]);
-          lastIdRef.current = d.messages.slice(-1)[0].id;
-          setTimeout(() => containerRef.current.scrollTop = containerRef.current.scrollHeight, 0);
+        const data = await response.json();
+        if (data.status === "success" && data.messages.length) {
+          setMessages(old => [...old, ...data.messages]);
+          lastMessageIdRef.current = data.messages.slice(-1)[0].id;
+          setTimeout(() => {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+          }, 0);
         }
       }, 1000);
     })();
-    return () => clearInterval(pollId);
+    return () => clearInterval(pollingId);
   }, [whopId]);
 
-  // Send with JSON-parse fallback
-  const send = async () => {
-    setErrorMsg("");
+  // Send a message (with JSON-parse fallback)
+  const sendMessage = async () => {
+    setErrorMessage("");
     if (muteUntil && new Date() < muteUntil) {
-      setErrorMsg(`Zablokován do ${muteUntil.toLocaleTimeString("cs-CZ")}`);
+      setErrorMessage(`Blocked until ${muteUntil.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`);
       return;
     }
-    const text = input.trim();
+    const text = inputValue.trim();
     if (!text) return;
-    setInput("");
-    const res = await fetch("https://app.byxbot.com/php/chat/send_message.php", {
-      method: "POST", credentials: "include",
+    setInputValue("");
+
+    const response = await fetch("https://app.byxbot.com/php/chat/send_message.php", {
+      method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ whop_id: whopId, message: text, reply_to: replyTo?.id ?? null }),
+      body: JSON.stringify({
+        whop_id: whopId,
+        message: text,
+        reply_to: replyToMessage?.id ?? null
+      })
     });
-    let d;
-    const txt = await res.text();
-    try { d = JSON.parse(txt); } catch { d = null; }
-    if (d?.status === "error") {
-      setErrorMsg(d.message);
-      if (d.message.includes("muted")) {
-        const until = new Date(Date.now() + 30*1000);
-        setMuteUntil(until);
-        setTimeout(() => setErrorMsg(""), 30*1000);
+
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      data = null;
+    }
+    if (data?.status === "error") {
+      setErrorMessage(data.message);
+      if (data.message.includes("muted")) {
+        const unblockTime = new Date(Date.now() + 30 * 1000);
+        setMuteUntil(unblockTime);
+        setTimeout(() => setErrorMessage(""), 30 * 1000);
       }
     } else {
-      setReplyTo(null);
-      await loadInitial();
+      setReplyToMessage(null);
+      await loadInitialMessages();
     }
   };
 
-  // Reply handler
-  const onReply = msg => {
-    setReplyTo({
+  // Handle replying to a message
+  const handleReply = msg => {
+    setReplyToMessage({
       id: msg.id,
       username: msg.username,
-      excerpt: msg.message.length > 30 ? msg.message.slice(0,30) + "…" : msg.message
+      excerpt:
+        msg.message.length > 30
+          ? msg.message.slice(0, 30) + "…"
+          : msg.message
     });
     setTimeout(() => inputRef.current.focus(), 0);
   };
 
-  // Autocomplete
-  const onChange = e => {
-    const val = e.target.value;
-    setInput(val);
-    const match = /@([A-Za-z0-9_]*)$/.exec(val);
+  // Autocomplete for @mentions
+  const handleInputChange = e => {
+    const value = e.target.value;
+    setInputValue(value);
+    const match = /@([A-Za-z0-9_]*)$/.exec(value);
     if (match) {
       const term = match[1].toLowerCase();
-      const filtered = participants.filter(u => u.toLowerCase().startsWith(term));
-      setSuggestions(filtered);
-      setActiveSuggestion(0);
+      const filtered = participants.filter(u =>
+        u.toLowerCase().startsWith(term)
+      );
+      setAutocompleteSuggestions(filtered);
+      setActiveSuggestionIndex(0);
       setShowSuggestions(filtered.length > 0);
-    } else setShowSuggestions(false);
+    } else {
+      setShowSuggestions(false);
+    }
   };
-  const onKeyDown = e => {
+
+  const handleInputKeyDown = e => {
     if (showSuggestions) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setActiveSuggestion(i => Math.min(i+1, suggestions.length-1));
+        setActiveSuggestionIndex(i => Math.min(i + 1, autocompleteSuggestions.length - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setActiveSuggestion(i => Math.max(i-1, 0));
+        setActiveSuggestionIndex(i => Math.max(i - 1, 0));
       } else if (e.key === "Enter") {
         e.preventDefault();
-        chooseSuggestion(suggestions[activeSuggestion]);
+        chooseSuggestion(autocompleteSuggestions[activeSuggestionIndex]);
       }
-    } else if (e.key === "Enter") send();
+    } else if (e.key === "Enter") {
+      sendMessage();
+    }
   };
-  const chooseSuggestion = u => {
-    setInput(input.replace(/@([A-Za-z0-9_]*)$/, `@${u} `));
+
+  const chooseSuggestion = username => {
+    setInputValue(inputValue.replace(/@([A-Za-z0-9_]*)$/, `@${username} `));
     setShowSuggestions(false);
     setTimeout(() => inputRef.current.focus(), 0);
   };
 
   // Scroll helpers
   const scrollToMessage = id => {
-    const el = containerRef.current.querySelector(`[data-id="${id}"]`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-  const scrollToBottom = () => {
-    containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    setShowBack(false);
+    const element = messagesContainerRef.current.querySelector(`[data-id="${id}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
-  // Emoji map
-  const emojiMap = { like: "👍", smile: "😊", fire: "🔥", heart: "❤️", dislike: "👎" };
-  const react = async (msgId, type) => {
+  const scrollToBottom = () => {
+    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    setShowScrollToBottom(false);
+  };
+
+  // Emoji reactions
+  const emojiMap = {
+    like: "👍",
+    smile: "😊",
+    fire: "🔥",
+    heart: "❤️",
+    dislike: "👎"
+  };
+
+  const addReaction = async (messageId, type) => {
     await fetch("https://app.byxbot.com/php/chat/react_message.php", {
-      method: "POST", credentials: "include",
+      method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message_id: msgId, reaction_type: type }),
+      body: JSON.stringify({ message_id: messageId, reaction_type: type })
     });
     setOpenEmojiPickerFor(null);
-    await loadInitial();
+    await loadInitialMessages();
   };
 
-  // Render each message
+  // Render a single message bubble
   const renderMessage = msg => {
-    const time = isNaN(msg.ts)
+    const timeString = isNaN(msg.ts)
       ? ""
-      : new Date(msg.ts).toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"});
-    // find original reply
-    const orig = msg.reply_to ? messages.find(m=>m.id===msg.reply_to) : null;
+      : new Date(msg.ts).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+    const original = msg.reply_to
+      ? messages.find(m => m.id === msg.reply_to)
+      : null;
+
     return (
-      <div key={msg.id} data-id={msg.id} className={`chat-message ${msg.mine?"mine":"other"}`}>
-        {!msg.mine && msg.avatar_url && <img src={msg.avatar_url} className="chat-avatar" alt="" />}
+      <div
+        key={msg.id}
+        data-id={msg.id}
+        className={`chat-message ${msg.mine ? "mine" : "other"}`}
+      >
+        {!msg.mine && msg.avatar_url && (
+          <img src={msg.avatar_url} className="chat-avatar" alt="" />
+        )}
         <div className="chat-bubble">
           <div className="chat-bubble-header">
             <span className="chat-username">{msg.username}</span>
-            <button className="btn-reply" onClick={()=>onReply(msg)}>↩</button>
+            <button className="btn-reply" onClick={() => handleReply(msg)}>
+              ↩
+            </button>
           </div>
-          {orig && (
-            <div className="chat-reply-ref" onClick={()=>scrollToMessage(orig.id)}>
-              <strong>@{orig.username}</strong>: {orig.message.slice(0,30)}{orig.message.length>30?"…":""}
+          {original && (
+            <div
+              className="chat-reply-ref"
+              onClick={() => scrollToMessage(original.id)}
+            >
+              <strong>@{original.username}</strong>:{" "}
+              {original.message.slice(0, 30)}
+              {original.message.length > 30 ? "…" : ""}
             </div>
           )}
           <p className="chat-text">
-            {msg.message.split(/(@\w+)/g).map((part,i)=>
-              part.startsWith("@") ? <span key={i} className="mention">{part}</span> : <span key={i}>{part}</span>
+            {msg.message.split(/(@\w+)/g).map((part, i) =>
+              part.startsWith("@") ? (
+                <span key={i} className="mention">
+                  {part}
+                </span>
+              ) : (
+                <span key={i}>{part}</span>
+              )
             )}
           </p>
           <div className="chat-reactions">
-            {Object.entries(msg.reactions||{}).map(([type,cnt])=>
-              cnt>0 && <span key={type} className="reaction-display">{emojiMap[type]} {cnt}</span>
+            {Object.entries(msg.reactions || {}).map(
+              ([type, count]) =>
+                count > 0 && (
+                  <span key={type} className="reaction-display">
+                    {emojiMap[type]} {count}
+                  </span>
+                )
             )}
-            <button className="btn-emoji-picker" onClick={()=>setOpenEmojiPickerFor(msg.id)}>😊</button>
-            {openEmojiPickerFor===msg.id && (
+            <button
+              className="btn-emoji-picker"
+              onClick={() => setOpenEmojiPickerFor(msg.id)}
+            >
+              😊
+            </button>
+            {openEmojiPickerFor === msg.id && (
               <div className="emoji-picker">
-                {Object.entries(emojiMap).map(([type,emoji])=>(
-                  <button key={type} onClick={()=>react(msg.id,type)}>{emoji}</button>
+                {Object.entries(emojiMap).map(([type, emoji]) => (
+                  <button
+                    key={type}
+                    onClick={() => addReaction(msg.id, type)}
+                  >
+                    {emoji}
+                  </button>
                 ))}
               </div>
             )}
           </div>
-          <span className="chat-time">{time}</span>
+          <span className="chat-time">{timeString}</span>
         </div>
-        {msg.mine && msg.avatar_url && <img src={msg.avatar_url} className="chat-avatar" alt="" />}
+        {msg.mine && msg.avatar_url && (
+          <img src={msg.avatar_url} className="chat-avatar" alt="" />
+        )}
       </div>
     );
   };
 
-  const isMuted = muteUntil && new Date() < muteUntil;
+  const isCurrentlyMuted = muteUntil && new Date() < muteUntil;
 
   return (
     <div className="chat-window">
       <div className="chat-header">
-        {whopLogo && <img src={whopLogo} className="chat-whop-logo" alt={whopName} />}
+        {whopLogo && (
+          <img src={whopLogo} className="chat-whop-logo" alt={whopName} />
+        )}
         <h4>{whopName}</h4>
       </div>
-      <div className="chat-messages" ref={containerRef}>
+      <div className="chat-messages" ref={messagesContainerRef}>
         {hasMore && (
           <div className="load-more-wrapper">
-            <button className="btn-load-more" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore ? "Načítám…" : "Načíst další"}
+            <button
+              className="btn-load-more"
+              onClick={loadMoreMessages}
+              disabled={loadingMore}
+            >
+              {loadingMore ? "Loading…" : "Load More"}
             </button>
           </div>
         )}
         {messages.map(renderMessage)}
-        {showBack && <button className="btn-back-bottom" onClick={scrollToBottom}>↘ Zpět dolu</button>}
+        {showScrollToBottom && (
+          <button
+            className="btn-back-bottom"
+            onClick={scrollToBottom}
+          >
+            ↘ Back to Bottom
+          </button>
+        )}
       </div>
-      <div className={`chat-input ${isMuted?"muted":""}`}>
-        {errorMsg && <div className="chat-error">{errorMsg}</div>}
-        {replyTo && (
-          <div className="reply-indicator" onClick={()=>scrollToMessage(replyTo.id)}>
-            Replying to <strong>@{replyTo.username}</strong>: “{replyTo.excerpt}”
-            <button className="btn-cancel-reply" onClick={()=>setReplyTo(null)}>✕</button>
+      <div className={`chat-input ${isCurrentlyMuted ? "muted" : ""}`}>
+        {errorMessage && (
+          <div className="chat-error">{errorMessage}</div>
+        )}
+        {replyToMessage && (
+          <div
+            className="reply-indicator"
+            onClick={() => scrollToMessage(replyToMessage.id)}
+          >
+            Replying to <strong>@{replyToMessage.username}</strong>: “
+            {replyToMessage.excerpt}”
+            <button
+              className="btn-cancel-reply"
+              onClick={() => setReplyToMessage(null)}
+            >
+              ✕
+            </button>
           </div>
         )}
         <div className="input-wrapper">
           <input
             ref={inputRef}
-            placeholder={isMuted?"Zablokován…":"Napiš zprávu…"}
-            value={input}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            disabled={isMuted}
+            placeholder={
+              isCurrentlyMuted ? "You are muted…" : "Type a message…"
+            }
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleInputKeyDown}
+            disabled={isCurrentlyMuted}
           />
           {showSuggestions && (
             <ul className="suggestions-list">
-              {suggestions.map((u,idx)=>(
-                <li key={u} className={idx===activeSuggestion?"active":""} onClick={()=>chooseSuggestion(u)}>
-                  {u}
+              {autocompleteSuggestions.map((user, idx) => (
+                <li
+                  key={user}
+                  className={idx === activeSuggestionIndex ? "active" : ""}
+                  onClick={() => chooseSuggestion(user)}
+                >
+                  {user}
                 </li>
               ))}
             </ul>
           )}
         </div>
-        <button className="btn-send" onClick={send} disabled={isMuted}>Odeslat</button>
+        <button
+          className="btn-send"
+          onClick={sendMessage}
+          disabled={isCurrentlyMuted}
+        >
+          Send
+        </button>
       </div>
     </div>
   );

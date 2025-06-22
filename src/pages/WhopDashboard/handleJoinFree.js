@@ -1,17 +1,17 @@
 // src/pages/WhopDashboard/handleJoinFree.js
 
 /**
- * Zpracuje join zdarma (pokud price ≤ 0).
+ * Handles joining a free Whop (when price ≤ 0).
  *
- * @param {object} whopData              - data o Whopu (obsahují id, slug atp.)
- * @param {function} setOverlayVisible   - setter pro zobrazení fullscreen overlayu
- * @param {function} setOverlayFading    - setter pro fade‐out efekt overlayu
- * @param {function} setMemberLoading    - setter pro stav načítání „člena“
- * @param {{width:number, height:number}} windowSize - objekt s rozměry obrazovky
- * @param {function} navigate            - react‐router funkce pro navigaci
- * @param {function} showNotification    - funkce pro zobrazení toast notifikace
- * @param {function} fetchCampaigns      - bound verze funkce, která načte kampaně (bere whopId)
- * @param {function} setWhopData         - setter pro nové whopData
+ * @param {object} whopData              - Whop details (includes id, slug, etc.)
+ * @param {function} setOverlayVisible   - setter to show the full‐screen overlay
+ * @param {function} setOverlayFading    - setter to trigger the fade‐out effect of the overlay
+ * @param {function} setMemberLoading    - setter for the "member loading" state
+ * @param {{width:number, height:number}} windowSize - object with the viewport dimensions
+ * @param {function} navigate            - react‐router navigation function
+ * @param {function} showNotification    - function to display a toast notification
+ * @param {function} fetchCampaigns      - bound function to fetch campaigns (takes whopId)
+ * @param {function} setWhopData         - setter for updated whopData
  */
 export default async function handleJoinFree(
   whopData,
@@ -26,15 +26,17 @@ export default async function handleJoinFree(
 ) {
   if (!whopData) return;
 
+  // Show the joining overlay
   setOverlayVisible(true);
   setOverlayFading(false);
   setMemberLoading(true);
 
-  const resizeListener = () =>
-    setOverlayFading(false) /* dummy */; // nepotřebujeme víc
+  // Dummy resize listener to keep overlay state up-to-date
+  const resizeListener = () => setOverlayFading(false);
   window.addEventListener("resize", resizeListener);
 
   try {
+    // Send join request
     const res = await fetch("https://app.byxbot.com/php/join_whop.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,12 +46,13 @@ export default async function handleJoinFree(
     const json = await res.json();
 
     if (!res.ok) {
+      // If joining failed, show error notification
       showNotification({
         type: "error",
-        message: json.message || "Nepodařilo se připojit.",
+        message: json.message || "Failed to join.",
       });
     } else {
-      // On success: re‐fetch whopData & kampaně
+      // On success, refresh whopData and campaigns
       const refresh = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -62,17 +65,18 @@ export default async function handleJoinFree(
         await fetchCampaigns(refreshed.data.id);
         showNotification({
           type: "success",
-          message: "Úspěšně připojeno zdarma.",
+          message: "Successfully joined for free.",
         });
       }
     }
   } catch (err) {
-    console.error("Chyba při join free:", err);
+    console.error("Error joining free Whop:", err);
     showNotification({
       type: "error",
-      message: "Síťová chyba při připojování zdarma.",
+      message: "Network error while joining for free.",
     });
   } finally {
+    // Trigger fade-out after 2 seconds, hide loading spinner
     setTimeout(() => {
       setOverlayFading(true);
     }, 2000);

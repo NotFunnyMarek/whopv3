@@ -7,7 +7,7 @@ import '../styles/activeUsers.scss';
 import ActiveUsersIndicator from './ActiveUsersIndicator';
 
 export default function CardGrid({ cardsData }) {
-  // Filtrujeme pouze aktivní a nevyčerpané kampaně
+  // Filter only active campaigns that are not fully paid out
   const activeCampaigns = cardsData.filter(c =>
     c.is_active === 1 &&
     c.paid_out < c.total_paid_out
@@ -16,34 +16,34 @@ export default function CardGrid({ cardsData }) {
   return (
     <div className="card-container">
       {!activeCampaigns.length ? (
-        <div className="card-empty">Žádné kampaně k zobrazení.</div>
+        <div className="card-empty">No campaigns to display.</div>
       ) : (
         <div className="cards-grid">
           {activeCampaigns.map(camp => {
-            // Čas do expirace
+            // Time until expiration
             const now = new Date();
             const expDate = new Date(camp.expiration_datetime.replace(' ', 'T'));
             const timeLeftMs = expDate.getTime() - now.getTime();
             const expiredByTime = timeLeftMs <= 0;
 
-            // Oříznutí paid_out na budget
+            // Clamp paidOut to totalPaidOut
             const paidOut = Math.min(camp.paid_out, camp.total_paid_out);
             const percent = camp.total_paid_out > 0
               ? Math.min(Math.round((paidOut / camp.total_paid_out) * 100), 100)
               : 0;
             const expiredByBudget = paidOut >= camp.total_paid_out;
 
-            // Celkové vypršení
+            // Overall expiration status
             const isExpired = camp.is_active === 0 || expiredByTime || expiredByBudget;
 
-            // Text ukončení
+            // Expiration text
             const endingText = isExpired
               ? 'EXPIRED'
               : (() => {
-                  const d = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
-                  const h = Math.floor((timeLeftMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                  const m = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
-                  return `Ending in: ${d}d ${h}h ${m}m`;
+                  const days = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((timeLeftMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                  return `Ending in: ${days}d ${hours}h ${minutes}m`;
                 })();
 
             return (
@@ -56,7 +56,7 @@ export default function CardGrid({ cardsData }) {
                   <div className="card-header">
                     <div className="card-icon">
                       {camp.thumbnail_url
-                        ? <img src={camp.thumbnail_url} alt="Thumb" />
+                        ? <img src={camp.thumbnail_url} alt="Thumbnail" />
                         : camp.username.charAt(0).toUpperCase()}
                     </div>
                     <h3>{camp.campaign_name}</h3>
@@ -70,7 +70,7 @@ export default function CardGrid({ cardsData }) {
                   </div>
 
                   <div className="card-body">
-                    {/* Autor kampaně */}
+                    {/* Campaign author */}
                     <div className="card-author">
                       <strong>Author:</strong> {camp.username}
                     </div>

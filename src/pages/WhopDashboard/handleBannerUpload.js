@@ -8,13 +8,13 @@ export default async function handleBannerUpload(
   showNotification
 ) {
   if (!file) return;
-  const maxSize = 5 * 1024 * 1024;
+  const maxSize = 5 * 1024 * 1024; // 5 MB limit
   if (file.size > maxSize) {
-    setBannerError("Max 5 MB.");
+    setBannerError("Max file size is 5 MB.");
     return;
   }
   if (!file.type.startsWith("image/")) {
-    setBannerError("Vyberte obrázek.");
+    setBannerError("Please select an image file.");
     return;
   }
   setIsUploadingBanner(true);
@@ -30,17 +30,17 @@ export default async function handleBannerUpload(
         body: formData,
       }
     );
-    if (!res.ok) throw new Error(`Cloudinary chybička: ${res.status}`);
+    if (!res.ok) throw new Error(`Cloudinary error: ${res.status}`);
     const data = await res.json();
-    if (!data.secure_url) throw new Error("Chyba URL.");
+    if (!data.secure_url) throw new Error("Missing secure URL.");
     setEditBannerUrl(data.secure_url);
     setBannerError("");
-    showNotification({ type: "success", message: "Banner úspěšně nahrán." });
+    showNotification({ type: "success", message: "Banner uploaded successfully." });
   } catch (err) {
     console.error(err);
-    setBannerError("Nepodařilo se nahrát banner.");
+    setBannerError("Failed to upload banner.");
     setEditBannerUrl("");
-    showNotification({ type: "error", message: "Nepodařilo se nahrát banner." });
+    showNotification({ type: "error", message: "Failed to upload banner." });
   } finally {
     setIsUploadingBanner(false);
   }

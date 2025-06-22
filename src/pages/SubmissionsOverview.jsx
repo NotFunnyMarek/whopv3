@@ -51,8 +51,8 @@ export default function SubmissionsOverview() {
     setModalType(null);
   };
 
-  if (loading) return <div className="loading">Načítám…</div>;
-  if (error) return <div className="error">Chyba: {error}</div>;
+  if (loading) return <div className="loading">Loading…</div>;
+  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="submissions-overview">
@@ -73,7 +73,7 @@ export default function SubmissionsOverview() {
       </div>
 
       <div className="list">
-        {subs.length === 0 && <div className="empty">Žádné submissions</div>}
+        {subs.length === 0 && <div className="empty">No submissions</div>}
         {subs.map((sub) => (
           <SubmissionCard
             key={sub.id}

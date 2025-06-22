@@ -6,24 +6,24 @@ import "./_submission-modal.scss";
 import LinkAccountModal from "../../../components/LinkAccountModal";
 import { useNotifications } from "../../../components/NotificationProvider";
 
-// Only needed for Instagram
+// Only needed for Instagram scraping
 const SCRAPER_URL    = "https://app.byxbot.com/scrape/api/video";
 const PHP_SUBMIT_URL = "https://app.byxbot.com/php/submissions.php";
 
 export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
-  const [link, setLink]               = useState("");
-  const [error, setError]             = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [link, setLink]                   = useState("");
+  const [error, setError]                 = useState("");
+  const [isSubmitting, setIsSubmitting]   = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [pendingPlatform, setPendingPlatform] = useState(null);
-  const { showNotification }           = useNotifications();
+  const { showNotification }              = useNotifications();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     const trimmed = link.trim();
     if (!trimmed) {
-      setError("Link je povinný.");
+      setError("Link is required.");
       return;
     }
 
@@ -31,30 +31,28 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
     try {
       urlObj = new URL(trimmed);
     } catch {
-      setError("Neplatná URL adresa.");
+      setError("Invalid URL.");
       return;
     }
 
-    // Determine platform
+    // Determine platform and owner
     const host = urlObj.hostname.toLowerCase();
     let platform = null;
     let owner = null;
 
     if (host.includes("tiktok.com")) {
       platform = "tiktok";
-      // extract @username from pathname: /@username/...
+      // Extract @username from pathname: /@username/...
       const m = urlObj.pathname.match(/^\/@([^\/]+)(\/|$)/);
       if (!m) {
-        setError("Nelze extrahovat TikTok uživatele.");
+        setError("Unable to extract TikTok username.");
         return;
       }
       owner = m[1];
-    }
-    else if (host.includes("instagram.com")) {
+    } else if (host.includes("instagram.com")) {
       platform = "instagram";
-    }
-    else {
-      setError("Podporované platformy: Instagram, TikTok.");
+    } else {
+      setError("Supported platforms: Instagram, TikTok.");
       return;
     }
 
@@ -62,7 +60,7 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
     setPendingPlatform(platform);
 
     try {
-      // For Instagram, fetch scraper
+      // For Instagram, fetch metadata from scraper
       if (platform === "instagram") {
         const resScr = await fetch(
           `${SCRAPER_URL}?url=${encodeURIComponent(trimmed)}`
@@ -70,15 +68,15 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
         const textScr = await resScr.text();
         let dataScr;
         try { dataScr = JSON.parse(textScr); }
-        catch { throw new Error("Neplatná odpověď scraperu"); }
+        catch { throw new Error("Invalid scraper response"); }
         if (!resScr.ok) {
-          throw new Error(dataScr.error || `Scraper ${resScr.status}`);
+          throw new Error(dataScr.error || `Scraper error ${resScr.status}`);
         }
         owner = dataScr.username;
-        if (!owner) throw new Error("Username nenalezen");
+        if (!owner) throw new Error("Username not found");
       }
 
-      // 2) Submit to PHP, include platform + owner
+      // Submit to backend
       const res = await fetch(PHP_SUBMIT_URL, {
         method: "POST",
         credentials: "include",
@@ -94,26 +92,27 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
       const text = await res.text();
       let body = {};
       try { body = JSON.parse(text); }
-      catch { throw new Error("Neplatná odpověď serveru"); }
+      catch { throw new Error("Invalid server response"); }
 
       if (res.status === 403) {
+        // Requires account linking
         setShowLinkModal(true);
         showNotification({ type: "error", message: body.message });
         return;
       }
       if (!res.ok) {
-        throw new Error(body.message || `Submit ${res.status}`);
+        throw new Error(body.message || `Submit error ${res.status}`);
       }
 
-      showNotification({ type: "success", message: "Submission úspěšně odeslána." });
+      showNotification({ type: "success", message: "Submission successfully sent." });
       onAfterSubmit();
     } catch (err) {
       console.error(err);
-      const msg = err.message || "Neznámá chyba";
+      const msg = err.message || "Unknown error";
       if (msg.includes("Already submitted")) {
-        setError("Toto video jste již odeslali.");
+        setError("You have already submitted this video.");
       } else {
-        setError("Chyba při odesílání: " + msg);
+        setError("Submission error: " + msg);
       }
     } finally {
       setIsSubmitting(false);
@@ -123,7 +122,7 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
   const handleLinkModalClose = (reload) => {
     setShowLinkModal(false);
     if (reload) {
-      showNotification({ type: "info", message: "Účet ověřen – zkuste to znovu." });
+      showNotification({ type: "info", message: "Account verified – please try again." });
     }
   };
 
@@ -139,19 +138,21 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content submission-modal">
-        <button className="modal-close-btn" onClick={onClose}>&times;</button>
-        <h2>Vytvořit Submission</h2>
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+          &times;
+        </button>
+        <h2>Create Submission</h2>
         <p>
-          Vložte odkaz na svůj Instagram nebo TikTok.  
-          Pouze příspěvky z ověřeného účtu budou přijaty.
+          Paste a link to your Instagram or TikTok post.<br />
+          Only posts from a linked account will be accepted.
         </p>
         <form onSubmit={handleSubmit} className="submission-form">
           <label>
-            Odkaz:
+            Link:
             <input
               type="text"
               value={link}
-              placeholder="https://www.tiktok.com/@username/video/... nebo https://www.instagram.com/reel/..."
+              placeholder="https://www.tiktok.com/@username/video/... or https://www.instagram.com/reel/..."
               onChange={e => setLink(e.target.value)}
               disabled={isSubmitting}
             />
@@ -162,9 +163,9 @@ export default function SubmissionModal({ campaign, onClose, onAfterSubmit }) {
             className="btn-submit-modal"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Odesílá se…" : "Odeslat"}
+            {isSubmitting ? "Submitting…" : "Submit"}
           </button>
-          {isSubmitting && <div className="loading-indicator">Probíhá odesílání…</div>}
+          {isSubmitting && <div className="loading-indicator">Submitting…</div>}
         </form>
       </div>
     </div>

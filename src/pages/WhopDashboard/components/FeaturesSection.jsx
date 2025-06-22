@@ -31,12 +31,12 @@ export default function FeaturesSection({
                   onChange={(e) =>
                     handleFeatChange(feat.id, "title", e.target.value)
                   }
-                  placeholder="Název funkce"
+                  placeholder="Feature title"
                 />
               </div>
 
               <div className="feature-field-edit">
-                <label>Subtitle (volitelně)</label>
+                <label>Subtitle (optional)</label>
                 <textarea
                   className="feature-textarea-edit"
                   rows="1"
@@ -44,7 +44,7 @@ export default function FeaturesSection({
                   onChange={(e) =>
                     handleFeatChange(feat.id, "subtitle", e.target.value)
                   }
-                  placeholder="Krátký popisek"
+                  placeholder="Short description"
                 />
               </div>
 
@@ -52,7 +52,7 @@ export default function FeaturesSection({
                 <label>Image *</label>
                 <div className="feature-image-wrapper-edit">
                   {feat.isUploading ? (
-                    <div className="feature-image-uploading">Nahrávám…</div>
+                    <div className="feature-image-uploading">Uploading…</div>
                   ) : feat.imageUrl ? (
                     <img
                       src={feat.imageUrl}
@@ -61,7 +61,7 @@ export default function FeaturesSection({
                     />
                   ) : (
                     <div className="feature-image-placeholder-edit">
-                      Žádný obrázek
+                      No image
                     </div>
                   )}
 
@@ -86,7 +86,7 @@ export default function FeaturesSection({
                   className="feature-remove-btn-edit"
                   onClick={() => removeFeature(feat.id)}
                 >
-                  <FaTrash /> Odebrat
+                  <FaTrash /> Remove
                 </button>
               )}
             </div>
@@ -94,7 +94,7 @@ export default function FeaturesSection({
 
           {editFeatures.length < 6 && (
             <button className="feature-add-btn-edit" onClick={addFeature}>
-              <FaPlus /> Přidat Feature
+              <FaPlus /> Add Feature
             </button>
           )}
         </>

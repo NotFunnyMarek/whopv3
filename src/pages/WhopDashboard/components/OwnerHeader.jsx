@@ -22,7 +22,7 @@ export default function OwnerHeader({
         {isEditing ? (
           <div className="whop-banner-edit-wrapper">
             {isUploadingBanner ? (
-              <div className="banner-uploading">Nahrávám banner…</div>
+              <div className="banner-uploading">Uploading banner…</div>
             ) : editBannerUrl ? (
               <img
                 src={editBannerUrl}
@@ -30,7 +30,7 @@ export default function OwnerHeader({
                 className="whop-banner-image-edit"
               />
             ) : (
-              <div className="whop-banner-placeholder-edit">Žádný banner</div>
+              <div className="whop-banner-placeholder-edit">No banner</div>
             )}
             <input
               type="file"
@@ -52,7 +52,7 @@ export default function OwnerHeader({
             className="whop-banner-image"
           />
         ) : (
-          <div className="whop-banner-placeholder">Žádný banner</div>
+          <div className="whop-banner-placeholder">No banner</div>
         )}
       </div>
 
@@ -64,21 +64,21 @@ export default function OwnerHeader({
               className="whop-input-name"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              placeholder="Název Whopu"
+              placeholder="Whop Name"
             />
             <textarea
               className="whop-input-description"
               rows="2"
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Stručný popis"
+              placeholder="Brief description"
             />
           </>
         ) : (
           <div className="whop-header-view">
             <h1 className="whop-title">{whopData.name}</h1>
             <div className="whop-members-count">
-              <FaUsers /> {whopData.members_count} členů
+              <FaUsers /> {whopData.members_count} members
             </div>
             <p className="whop-description">{whopData.description}</p>
           </div>

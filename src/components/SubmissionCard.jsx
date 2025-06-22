@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/submission-card.scss";
 
 export default function SubmissionCard({ submission, onAction }) {
-  // YouTube embed or plain video
+  // Determine YouTube embed URL or fallback to plain video URL
   const embedUrl = (() => {
     try {
       const u = new URL(submission.link);
@@ -33,36 +33,52 @@ export default function SubmissionCard({ submission, onAction }) {
       </div>
       <div className="details">
         <div className="user">
-          <img src={`/avatars/${submission.username}.png`} alt="" className="avatar" />
+          <img
+            src={`/avatars/${submission.username}.png`}
+            alt={`${submission.username}'s avatar`}
+            className="avatar"
+          />
           <span className="username">{submission.username}</span>
         </div>
         <div className="chart-placeholder">
-          {/* tu vlož re-charts graf */}
-          <div className="placeholder-text">Graf výkonu</div>
+          {/* Insert recharts graph here */}
+          <div className="placeholder-text">Performance Chart</div>
         </div>
         <div className="actions">
           {submission.status === "pending" && (
             <>
-              <button className="btn approve" onClick={() => onAction(submission, "approve")}>
+              <button
+                className="btn approve"
+                onClick={() => onAction(submission, "approve")}
+              >
                 Approve
               </button>
-              <button className="btn reject" onClick={() => onAction(submission, "reject")}>
+              <button
+                className="btn reject"
+                onClick={() => onAction(submission, "reject")}
+              >
                 Reject
               </button>
             </>
           )}
           {submission.status === "approved" && (
-            <button className="btn reject" onClick={() => onAction(submission, "reject")}>
+            <button
+              className="btn reject"
+              onClick={() => onAction(submission, "reject")}
+            >
               Reject
             </button>
           )}
           {submission.status === "rejected" && (
-            <button className="btn approve" onClick={() => onAction(submission, "approve")}>
+            <button
+              className="btn approve"
+              onClick={() => onAction(submission, "approve")}
+            >
               Undo Rejection
             </button>
           )}
         </div>
       </div>
     </div>
-  );
+);
 }

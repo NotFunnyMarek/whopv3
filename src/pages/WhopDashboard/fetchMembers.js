@@ -25,14 +25,14 @@ export default async function fetchMembers(
       throw new Error(`HTTP ${res.status}`);
     }
     const json = await res.json();
-    // Očekáme, že json.members je pole členů s type 'paid' nebo 'free'
+    // Expect json.members to be an array of members with type 'paid' or 'free'
     if (json.status === "success" || json.members) {
       setMembershipsList(json.members || []);
     } else {
-      throw new Error("Neplatná odpověď od serveru");
+      throw new Error("Invalid response from server");
     }
   } catch (err) {
-    setMembersError("Chyba při načítání členů Whopu: " + err.message);
+    setMembersError("Error loading Whop members: " + err.message);
   } finally {
     setMembersLoading(false);
   }

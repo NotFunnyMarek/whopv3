@@ -14,24 +14,24 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    showNotification({ type: 'info', message: 'Registruji...' });
+    showNotification({ type: 'info', message: 'Registering...' });
     try {
       const res = await fetch('https://app.byxbot.com/php/register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ username, email, password }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        showNotification({ type: 'success', message: data.message || 'Registrace proběhla úspěšně. Přihlaste se.' });
+        showNotification({ type: 'success', message: data.message || 'Registration successful. Please log in.' });
         setUsername('');
         setEmail('');
         setPassword('');
         setTimeout(() => navigate('/login'), 1500);
       } else {
-        let errText = `Chyba při registraci (HTTP ${res.status})`;
+        let errText = `Registration error (HTTP ${res.status})`;
         try {
           const errJson = await res.json();
           if (errJson.message) errText = errJson.message;
@@ -39,17 +39,17 @@ const Register = () => {
         showNotification({ type: 'error', message: errText });
       }
     } catch (err) {
-      showNotification({ type: 'error', message: 'Chyba: ' + err.message });
+      showNotification({ type: 'error', message: 'Error: ' + err.message });
     }
   };
 
   return (
     <div className="register-page">
       <div className="register-card">
-        <h2>Registrace</h2>
+        <h2>Register</h2>
         <form onSubmit={handleSubmit} className="register-form">
           <label>
-            Uživatelské jméno
+            Username
             <input
               type="text"
               value={username}
@@ -58,7 +58,7 @@ const Register = () => {
             />
           </label>
           <label>
-            E-mail
+            Email
             <input
               type="email"
               value={email}
@@ -67,7 +67,7 @@ const Register = () => {
             />
           </label>
           <label>
-            Heslo (min. 6 znaků)
+            Password (min. 6 characters)
             <input
               type="password"
               value={password}
@@ -77,11 +77,11 @@ const Register = () => {
             />
           </label>
           <button type="submit" className="btn-primary">
-            Registrovat
+            Sign Up
           </button>
         </form>
         <p className="switch-link">
-          Už máte účet? <Link to="/login">Přejít na přihlášení</Link>
+          Already have an account? <Link to="/login">Go to Login</Link>
         </p>
       </div>
     </div>

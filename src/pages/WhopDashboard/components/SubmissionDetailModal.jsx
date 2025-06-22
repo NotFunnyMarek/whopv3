@@ -27,27 +27,27 @@ export default function SubmissionDetailModal({
   };
   const embedUrl = getYouTubeEmbedUrl(submission.link);
 
-  // Bezpečné čísla
+  // Safe numeric values
   const totalViews     = Number(submission.total_views  ?? 0);
   const ratePerK       = Number(campaign.reward_per_thousand ?? 0);
   const minPayout      = campaign.min_payout != null ? Number(campaign.min_payout) : null;
   const currency       = campaign.currency || "";
 
-  // Kolik views je třeba pro minPayout
+  // Views needed to reach minimum payout
   const neededViews = minPayout !== null && ratePerK > 0
     ? Math.ceil((minPayout / ratePerK) * 1000)
     : null;
 
-  // Hrubý výdělek z dosavadních views
+  // Gross earnings from current views
   const rawPayout = (totalViews / 1000) * ratePerK;
   const payoutStr = rawPayout.toFixed(2);
 
-  // Splněná podmínka = dostatek views
+  // Whether minimum payout threshold has been reached
   const reachedMin = neededViews !== null
     ? totalViews >= neededViews
     : true;
 
-  // Pending: pokud min. už splněno, nic k vyplacení; jinak ještě raw
+  // Pending payout: zero if threshold met, otherwise raw payout
   const pendingStr = reachedMin
     ? "0.00"
     : rawPayout.toFixed(2);
@@ -55,7 +55,9 @@ export default function SubmissionDetailModal({
   return (
     <div className="modal-overlay detail-modal-overlay">
       <div className="modal-content submission-detail-modal">
-        <button className="modal-close-btn" onClick={onClose}>&times;</button>
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+          &times;
+        </button>
         <h2 className="submission-detail-title">{campaign.campaign_name}</h2>
 
         <div className="video-container">
@@ -69,9 +71,9 @@ export default function SubmissionDetailModal({
             />
           ) : (
             <p className="no-video-msg">
-              Nelze přehrát video.{" "}
+              Unable to play video.{" "}
               <a href={submission.link} target="_blank" rel="noopener noreferrer">
-                Otevřít odkaz
+                Open link
               </a>
             </p>
           )}
@@ -93,7 +95,7 @@ export default function SubmissionDetailModal({
             <span className="stat-label">Paid out</span>
             <span className="stat-value">
               {reachedMin
-                ? `${currency}$${payoutStr}`
+                ? `${currency}${payoutStr}`
                 : "Minimum payout not reached"}
             </span>
           </div>
@@ -102,26 +104,26 @@ export default function SubmissionDetailModal({
           <div className="stat-item">
             <span className="stat-label">Pending payout</span>
             <span className="stat-value">
-              {currency}${pendingStr}
+              {currency}{pendingStr}
             </span>
           </div>
         </div>
 
-        {/* Status boxy */}
+        {/* Status boxes */}
         {submission.status === "pending" && (
           <div className="status-box pending-box">
-            Submission dosud nebyla schválena. Čekejte na rozhodnutí tvůrce.
+            Submission is pending approval. Please wait for the creator’s decision.
           </div>
         )}
         {submission.status === "approved" && (
           <div className="status-box approved-box">
-            Approved! Výplaty budou probíhat dle intervalů až do vyčerpání budgetu.
+            Approved! Payouts will occur at the set intervals until the budget is exhausted.
           </div>
         )}
         {submission.status === "rejected" && (
           <>
             <div className="status-box rejected-box">
-              Tato submission byla odmítnuta.
+              This submission was rejected.
             </div>
             <div className="rejection-reason-container">
               <span className="rejection-label">Rejection reason</span>
@@ -129,7 +131,7 @@ export default function SubmissionDetailModal({
                 className="rejection-reason"
                 readOnly
                 value={submission.rejection_reason || ""}
-                placeholder="(zatím žádný důvod)"
+                placeholder="(no reason provided)"
               />
             </div>
           </>

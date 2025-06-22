@@ -4,7 +4,7 @@ import React from 'react';
 import '../styles/modal.scss';
 
 /**
- * Modal ukáže obsah (children) pouze pokud isOpen=true.
+ * Modal displays its children only when isOpen is true.
  */
 export default function Modal({
   isOpen = false,
@@ -14,6 +14,7 @@ export default function Modal({
   if (!isOpen) return null;
 
   const handleOverlayClick = (e) => {
+    // Close the modal if the backdrop itself is clicked
     if (e.target === e.currentTarget) {
       onClose();
     }

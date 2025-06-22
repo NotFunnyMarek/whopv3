@@ -9,22 +9,22 @@ export default function LinkAccountModal({ mode, onClose }) {
 
   // If mode.id is set, we're already verifying an existing link
   const [platform, setPlatform] = useState(mode.platform || 'instagram');
-  const [url, setUrl] = useState('');
+  const [accountUrl, setAccountUrl] = useState('');
   const [step, setStep] = useState(mode.id ? 2 : 1);
   const [record, setRecord] = useState(mode.id ? mode : null);
-  const [code, setCode] = useState(mode.verify_code || '');
+  const [verifyCode, setVerifyCode] = useState(mode.verify_code || '');
 
   useEffect(() => {
     if (mode.id) {
       setStep(2);
       setRecord(mode);
-      setCode(mode.verify_code || '');
+      setVerifyCode(mode.verify_code || '');
     }
   }, [mode]);
 
   // URL validation per platform
-  const validateUrlFormat = (plat, u) => {
-    const t = u.trim();
+  const validateUrlFormat = (plat, url) => {
+    const trimmed = url.trim();
     let regex;
     switch (plat) {
       case 'instagram':
@@ -40,14 +40,14 @@ export default function LinkAccountModal({ mode, onClose }) {
       default:
         return false;
     }
-    return regex.test(t);
+    return regex.test(trimmed);
   };
 
   const handleCreate = async () => {
-    if (!validateUrlFormat(platform, url)) {
+    if (!validateUrlFormat(platform, accountUrl)) {
       showNotification({
         type: 'error',
-        message: `Neplatný formát URL pro ${platform}`
+        message: `Invalid URL format for ${platform}.`
       });
       return onClose(false);
     }
@@ -60,7 +60,7 @@ export default function LinkAccountModal({ mode, onClose }) {
         body: JSON.stringify({
           action: 'create',
           platform,
-          account_url: url.trim()
+          account_url: accountUrl.trim()
         })
       });
       const json = await res.json();
@@ -72,11 +72,11 @@ export default function LinkAccountModal({ mode, onClose }) {
 
       // Move to verification step
       setRecord(json.data);
-      setCode(json.data.verify_code);
+      setVerifyCode(json.data.verify_code);
       setStep(2);
     } catch (err) {
       console.error(err);
-      showNotification({ type: 'error', message: 'Síťová chyba, zkuste to znovu.' });
+      showNotification({ type: 'error', message: 'Network error, please try again.' });
       onClose(false);
     }
   };
@@ -90,7 +90,7 @@ export default function LinkAccountModal({ mode, onClose }) {
         body: JSON.stringify({
           action: 'verify',
           id: record.id,
-          platform // pass platform so PHP verifies correct row
+          platform // so the backend verifies the correct record
         })
       });
       const json = await res.json();
@@ -100,11 +100,11 @@ export default function LinkAccountModal({ mode, onClose }) {
         return;
       }
 
-      showNotification({ type: 'success', message: 'Účet byl úspěšně ověřen.' });
+      showNotification({ type: 'success', message: 'Account successfully verified.' });
       onClose(true);
     } catch (err) {
       console.error(err);
-      showNotification({ type: 'error', message: 'Chyba při ověřování účtu.' });
+      showNotification({ type: 'error', message: 'Error verifying account.' });
       onClose(false);
     }
   };
@@ -117,11 +117,11 @@ export default function LinkAccountModal({ mode, onClose }) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `id=${record.id}`
       });
-      showNotification({ type: 'info', message: 'Účet byl odpojen.' });
+      showNotification({ type: 'info', message: 'Account disconnected.' });
       onClose(true);
     } catch (err) {
       console.error(err);
-      showNotification({ type: 'error', message: 'Chyba při odpojování účtu.' });
+      showNotification({ type: 'error', message: 'Error disconnecting account.' });
     }
   };
 
@@ -129,37 +129,38 @@ export default function LinkAccountModal({ mode, onClose }) {
     <div className="modal-link-overlay">
       <div className="modal-link-content">
         <button
-  className="modal-close-btn"
-  onClick={() => {
-    if (record) {
-      // If we've already created a link record, disconnect it
-      handleDisconnect();
-    } else {
-      // Otherwise just close the modal
-      onClose(false);
-    }
-  }}
->
-  &times;
-</button>
+          className="modal-close-btn"
+          onClick={() => {
+            if (record) {
+              // If a link record exists, disconnect it
+              handleDisconnect();
+            } else {
+              // Otherwise just close the modal
+              onClose(false);
+            }
+          }}
+        >
+          &times;
+        </button>
 
         {step === 1 && (
           <>
-            <h3>Propojit nový účet</h3>
+            <h3>Link a New Account</h3>
             <label>
-              Platforma:
+              Platform:
               <select value={platform} onChange={e => setPlatform(e.target.value)}>
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
               </select>
             </label>
 
             <label>
-              Veřejná URL:
+              Public Profile URL:
               <input
                 type="text"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
+                value={accountUrl}
+                onChange={e => setAccountUrl(e.target.value)}
                 placeholder={
                   platform === 'instagram'
                     ? 'https://www.instagram.com/username/'
@@ -170,24 +171,28 @@ export default function LinkAccountModal({ mode, onClose }) {
               />
             </label>
 
-            <button className="btn create" onClick={handleCreate} disabled={!url.trim()}>
-              Vygenerovat ověřovací kód
+            <button
+              className="btn create"
+              onClick={handleCreate}
+              disabled={!accountUrl.trim()}
+            >
+              Generate Verification Code
             </button>
           </>
         )}
 
         {step === 2 && record && (
           <>
-            <h3>Ověření účtu</h3>
+            <h3>Verify Linked Account</h3>
             <p>
-              Do bio na <strong>{platform}</strong> vložte níže uvedený kód:
+              Please add the following code to your <strong>{platform}</strong> profile bio:
             </p>
-            <div className="code-display">{code}</div>
+            <div className="code-display">{verifyCode}</div>
             <button className="btn verify" onClick={handleVerify}>
-              Ověřit
+              Verify
             </button>
             <button className="btn disconnect" onClick={handleDisconnect}>
-              Odpojit účet
+              Disconnect Account
             </button>
           </>
         )}

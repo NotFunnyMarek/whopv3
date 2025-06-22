@@ -9,16 +9,17 @@ import '../styles/balances.scss';
 export default function Balances() {
   const { showNotification } = useNotifications();
 
-  const [balance, setBalance]           = useState(0);
+  const [balance, setBalance] = useState(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
 
-  const [isDepositOpen, setIsDepositOpen]   = useState(false);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
-  const [activeTab, setActiveTab]       = useState('deposits');
-  const [historyData, setHistoryData]   = useState([]);
+  const [activeTab, setActiveTab] = useState('deposits');
+  const [historyData, setHistoryData] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Load current balance on mount
   useEffect(() => {
     setLoadingBalance(true);
     fetch('https://app.byxbot.com/php/profile.php', {
@@ -33,20 +34,21 @@ export default function Balances() {
       .then((data) => {
         if (data.status === 'success') {
           setBalance(parseFloat(data.data.balance) || 0);
-          showNotification({ type: 'success', message: 'Balance načteno.' });
+          showNotification({ type: 'success', message: 'Balance loaded.' });
         } else {
-          showNotification({ type: 'error', message: data.message || 'Chyba při načítání balancu' });
+          showNotification({ type: 'error', message: data.message || 'Error loading balance' });
         }
       })
       .catch((err) => {
-        console.error('Chyba načtení balancu:', err);
-        showNotification({ type: 'error', message: 'Nepodařilo se načíst balance' });
+        console.error('Error fetching balance:', err);
+        showNotification({ type: 'error', message: 'Failed to load balance' });
       })
       .finally(() => {
         setLoadingBalance(false);
       });
   }, [showNotification]);
 
+  // Load deposit/withdrawal history whenever tab changes
   useEffect(() => {
     setLoadingHistory(true);
     const url =
@@ -66,45 +68,37 @@ export default function Balances() {
       .then((data) => {
         if (data.status === 'success') {
           setHistoryData(data.data);
-          showNotification({ type: 'success', message: 'Aktualizována historie.' });
+          showNotification({ type: 'success', message: 'History updated.' });
         } else {
           setHistoryData([]);
-          showNotification({ type: 'error', message: data.message || 'Chyba při načítání historie' });
+          showNotification({ type: 'error', message: data.message || 'Error loading history' });
         }
       })
       .catch((err) => {
-        console.error('Chyba načítání historie:', err);
+        console.error('Error loading history:', err);
         setHistoryData([]);
-        showNotification({ type: 'error', message: 'Nepodařilo se načíst historii' });
+        showNotification({ type: 'error', message: 'Failed to load history' });
       })
       .finally(() => {
         setLoadingHistory(false);
       });
   }, [activeTab, showNotification]);
 
-  const openDeposit = () => {
-    setIsDepositOpen(true);
-  };
-  const closeDeposit = () => {
-    setIsDepositOpen(false);
-  };
-  const openWithdraw = () => {
-    setIsWithdrawOpen(true);
-  };
-  const closeWithdraw = () => {
-    setIsWithdrawOpen(false);
-  };
-
-  const onSuccessWithdraw = () => {
-    // po úspěchu výběru znovu načteme historii a balance
-    setActiveTab('withdrawals');
-  };
+  const openDeposit = () => setIsDepositOpen(true);
+  const closeDeposit = () => setIsDepositOpen(false);
+  const openWithdraw = () => setIsWithdrawOpen(true);
+  const closeWithdraw = () => setIsWithdrawOpen(false);
 
   const onSuccessDeposit = () => {
-    // po úspěchu depositu přepneme na deposit kartu
+    // After a successful deposit, show deposit history
     setActiveTab('deposits');
   };
 
+  const onSuccessWithdraw = () => {
+    // After a successful withdrawal, show withdrawal history
+    setActiveTab('withdrawals');
+  };
+  
   return (
     <div className="balances-container">
       <h2>My Balance</h2>
@@ -114,7 +108,7 @@ export default function Balances() {
           <div className="bal-loading">Loading balance…</div>
         ) : (
           <div className="bal-amount">
-            <span>Balance:</span> ${balance.toFixed(2)}
+            <span>Current Balance:</span> ${balance.toFixed(2)}
           </div>
         )}
 
@@ -156,17 +150,17 @@ export default function Balances() {
                   <>
                     <th>Date</th>
                     <th>SOL Amount</th>
-                    <th>USD Amount</th>
-                    <th>Tx Signature</th>
+                    <th>USD Equivalent</th>
+                    <th>Transaction Hash</th>
                   </>
                 ) : (
                   <>
                     <th>Date</th>
                     <th>USD Amount</th>
-                    <th>SOL Amount</th>
-                    <th>Sol Address</th>
+                    <th>SOL Equivalent</th>
+                    <th>Destination Address</th>
                     <th>Status</th>
-                    <th>Tx Signature</th>
+                    <th>Transaction Hash</th>
                   </>
                 )}
               </tr>
@@ -205,8 +199,16 @@ export default function Balances() {
         )}
       </div>
 
-      <DepositModal isOpen={isDepositOpen} onClose={closeDeposit} onSuccess={onSuccessDeposit} />
-      <WithdrawModal isOpen={isWithdrawOpen} onClose={closeWithdraw} onSuccess={onSuccessWithdraw} />
+      <DepositModal
+        isOpen={isDepositOpen}
+        onClose={closeDeposit}
+        onSuccess={onSuccessDeposit}
+      />
+      <WithdrawModal
+        isOpen={isWithdrawOpen}
+        onClose={closeWithdraw}
+        onSuccess={onSuccessWithdraw}
+      />
     </div>
   );
 }

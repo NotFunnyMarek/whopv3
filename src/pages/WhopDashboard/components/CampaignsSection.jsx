@@ -9,29 +9,29 @@ export default function CampaignsSection({
   campaigns,
   campaignsLoading,
   campaignsError,
-  handleExpire,       // funkce „Refund & Expire“
+  handleExpire,       // function to refund and expire a campaign
 }) {
   const navigate = useNavigate();
-  // Ref pro sledování již zpracovaných automatických expirací
+  // Track which campaigns have already been automatically expired
   const expiredProcessed = useRef(new Set());
 
   useEffect(() => {
     if (!campaigns || !campaigns.length) return;
 
     campaigns.forEach((camp) => {
-      // Parsování expiration_datetime → JS Date
+      // Parse expiration_datetime into a JS Date
       const now = new Date();
       const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
 
-      // Kampaň expired časem
-      const byTime = expDate <= now;
-      // Kampaň expired vyčerpáním budgetu
-      const byBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
-      // Kampaň stále aktivní v DB?
+      // Determine if the campaign has expired by time
+      const expiredByTime = expDate <= now;
+      // Determine if the campaign has expired by budget exhaustion
+      const expiredByBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
+      // Check if the campaign is still marked active in the database
       const stillActive = camp.is_active === 1;
 
-      if (stillActive && (byTime || byBudget)) {
-        // Pokud jsme ji už neoznačili, zavoláme handleExpire
+      if (stillActive && (expiredByTime || expiredByBudget)) {
+        // If not yet processed, call handleExpire
         if (!expiredProcessed.current.has(camp.id)) {
           expiredProcessed.current.add(camp.id);
           handleExpire(camp.id);
@@ -42,23 +42,24 @@ export default function CampaignsSection({
 
   return (
     <div className="whop-campaigns-section">
-      <h2 className="campaigns-section-title">Kampaně</h2>
+      <h2 className="campaigns-section-title">Campaigns</h2>
 
       {campaignsLoading ? (
-        <p className="campaigns-loading">Načítám kampaně…</p>
+        <p className="campaigns-loading">Loading campaigns…</p>
       ) : campaignsError ? (
         <p className="campaigns-error">{campaignsError}</p>
       ) : campaigns.length === 0 ? (
-        <p className="campaigns-empty">Žádné kampaně k zobrazení.</p>
+        <p className="campaigns-empty">No campaigns to display.</p>
       ) : (
         <div className="whop-campaigns-list">
           {campaigns.map((camp) => {
             const now = new Date();
             const expDate = new Date(camp.expiration_datetime.replace(" ", "T"));
-            const byTime = expDate <= now;
-            const byBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
-            const isExpired = camp.is_active === 0 || byTime || byBudget;
+            const expiredByTime = expDate <= now;
+            const expiredByBudget = parseFloat(camp.paid_out) >= parseFloat(camp.total_paid_out);
+            const isExpired = camp.is_active === 0 || expiredByTime || expiredByBudget;
 
+            // Compute time remaining or show "EXPIRED"
             let timeInfo;
             if (isExpired) {
               timeInfo = "EXPIRED";
@@ -83,7 +84,7 @@ export default function CampaignsSection({
                 </h3>
 
                 <p className="campaign-item-detail">
-                  <strong>Kategorie:</strong> {camp.category}
+                  <strong>Category:</strong> {camp.category}
                 </p>
                 <p className="campaign-item-detail">
                   <strong>Budget:</strong> {camp.currency}
@@ -93,7 +94,7 @@ export default function CampaignsSection({
                   })}
                 </p>
                 <p className="campaign-item-detail">
-                  <strong>Typ:</strong> {camp.type}
+                  <strong>Type:</strong> {camp.type}
                 </p>
                 <p className="campaign-item-detail">
                   <strong>Status:</strong>{" "}

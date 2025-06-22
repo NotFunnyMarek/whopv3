@@ -8,9 +8,13 @@ export default async function handleExpireCampaign(
   fetchCampaigns
 ) {
   try {
-    await showConfirm("Opravdu označit kampaň jako EXPIRED a refundovat zbývající budget?");
+    // Ask for confirmation before marking as expired and refunding remaining budget
+    await showConfirm(
+      "Are you sure you want to mark this campaign as EXPIRED and refund the remaining budget?"
+    );
   } catch {
-    return; // uživatel zrušil
+    // User cancelled the confirmation dialog
+    return;
   }
 
   try {
@@ -25,22 +29,22 @@ export default async function handleExpireCampaign(
       throw new Error(data.error || `HTTP ${res.status}`);
     }
 
-    // Po úspěšném označení refreshneme seznam kampaní
+    // On success, refresh the campaigns list if possible
     if (whopData && typeof fetchCampaigns === "function") {
       await fetchCampaigns(
         whopData.id,
-        () => {},
-        () => {},
-        () => {}
+        () => {}, // setCampaigns
+        () => {}, // setCampaignsLoading
+        () => {}  // setCampaignsError
       );
     }
 
-    showNotification({ type: "success", message: "Kampaň označena jako EXPIRED." });
+    showNotification({ type: "success", message: "Campaign marked as EXPIRED." });
   } catch (err) {
-    console.error(err);
+    console.error("Error expiring campaign:", err);
     showNotification({
       type: "error",
-      message: "Chyba při expirování kampaně: " + err.message,
+      message: "Error expiring campaign: " + err.message,
     });
   }
 }

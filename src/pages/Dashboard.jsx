@@ -34,18 +34,18 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
 
-  // 1) Načtení whop_id z URL
+  // 1) Load whop_id from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const wid = params.get("whop_id");
     if (!wid) {
-      showNotification({ type: "error", message: "Chybí whop_id v URL." });
+      showNotification({ type: "error", message: "Missing whop_id in URL." });
       return;
     }
     setWhopId(wid);
   }, [showNotification]);
 
-  // 2) Stáhnout data
+  // 2) Fetch dashboard data
   useEffect(() => {
     if (!whopId) return;
     setDataLoaded(false);
@@ -58,7 +58,7 @@ export default function Dashboard() {
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();
-          throw new Error(text || `HTTP chyba ${res.status}`);
+          throw new Error(text || `HTTP error ${res.status}`);
         }
         return res.json();
       })
@@ -75,19 +75,19 @@ export default function Dashboard() {
           prepareChartData(json.payments || []);
           setDataLoaded(true);
         } else {
-          throw new Error(json.message || "Chyba při načítání dat.");
+          throw new Error(json.message || "Error loading data.");
         }
       })
       .catch((err) => {
-        console.error("Chyba get_dashboard_data:", err);
+        console.error("Error get_dashboard_data:", err);
         showNotification({
           type: "error",
-          message: err.message || "Nepodařilo se načíst data.",
+          message: err.message || "Failed to load data.",
         });
       });
   }, [whopId, showNotification]);
 
-  // 3) Připravit data pro graf
+  // 3) Prepare data for chart
   const prepareChartData = (paymentsList) => {
     const sums = {};
     paymentsList.forEach((p) => {
@@ -103,7 +103,7 @@ export default function Dashboard() {
     setChartData(arr);
   };
 
-  // 4) Reload všech dat
+  // 4) Reload all data
   const reloadDashboardData = () => {
     if (!whopId) return;
     fetch(
@@ -133,23 +133,23 @@ export default function Dashboard() {
         } else {
           showNotification({
             type: "error",
-            message: json.message || "Chyba při obnově dat.",
+            message: json.message || "Error refreshing data.",
           });
         }
       })
       .catch((err) => {
-        console.error("Chyba reloadDashboardData:", err);
+        console.error("Error reloadDashboardData:", err);
         showNotification({
           type: "error",
-          message: err.message || "Nepodařilo se obnovit data.",
+          message: err.message || "Failed to refresh data.",
         });
       });
   };
 
-  // 5) Accept waitlist
+  // 5) Accept a waitlist request
   const handleAcceptRequest = async (requestId) => {
     try {
-      await showConfirm("Opravdu chcete přijmout tuto žádost?");
+      await showConfirm("Are you sure you want to accept this request?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/accept_waitlist.php", {
         method: "POST",
@@ -159,17 +159,17 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
-      // pokud uživatel zrušil confirm, err bude obsahovat text "cancel"
+      // if user canceled confirm, err.message will be "cancel"
       if (err.message !== "cancel") {
-        console.error("Chyba accept_waitlist:", err);
+        console.error("Error accept_waitlist:", err);
         showNotification({
           type: "error",
-          message: err.message || "Nepodařilo se přijmout žádost.",
+          message: err.message || "Failed to accept request.",
         });
       }
     } finally {
@@ -177,10 +177,10 @@ export default function Dashboard() {
     }
   };
 
-  // 6) Reject waitlist
+  // 6) Reject a waitlist request
   const handleRejectRequest = async (requestId) => {
     try {
-      await showConfirm("Opravdu chcete odmítnout tuto žádost?");
+      await showConfirm("Are you sure you want to reject this request?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/reject_waitlist.php", {
         method: "POST",
@@ -190,16 +190,16 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba reject_waitlist:", err);
+        console.error("Error reject_waitlist:", err);
         showNotification({
           type: "error",
-          message: err.message || "Nepodařilo se odmítnout žádost.",
+          message: err.message || "Failed to reject request.",
         });
       }
     } finally {
@@ -207,10 +207,10 @@ export default function Dashboard() {
     }
   };
 
-  // 7) Kick uživatele
+  // 7) Remove a member
   const handleRemoveMember = async (memberUserId) => {
     try {
-      await showConfirm("Opravdu chcete odstranit tohoto uživatele z Whopu?");
+      await showConfirm("Are you sure you want to remove this member?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/remove_member.php", {
         method: "POST",
@@ -220,17 +220,17 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       setMembers((prev) => prev.filter((m) => m.user_id !== memberUserId));
       setMembersCount((prev) => prev - 1);
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba remove_member:", err);
+        console.error("Error remove_member:", err);
         showNotification({
           type: "error",
-          message: err.message || "Nepodařilo se odstranit člena.",
+          message: err.message || "Failed to remove member.",
         });
       }
     } finally {
@@ -238,10 +238,10 @@ export default function Dashboard() {
     }
   };
 
-  // 8) Ban uživatele
+  // 8) Ban a user
   const handleBanUser = async (banUserId) => {
     try {
-      await showConfirm("Opravdu chcete zabanovat tohoto uživatele?");
+      await showConfirm("Are you sure you want to ban this user?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/ban_user.php", {
         method: "POST",
@@ -251,16 +251,16 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba ban_user:", err);
+        console.error("Error ban_user:", err);
         showNotification({
           type: "error",
-          message: err.message || "Chyba při banování.",
+          message: err.message || "Error banning user.",
         });
       }
     } finally {
@@ -268,10 +268,10 @@ export default function Dashboard() {
     }
   };
 
-  // 9) Unban uživatele
+  // 9) Unban a user
   const handleUnbanUser = async (banUserId) => {
     try {
-      await showConfirm("Opravdu chcete odbanovat tohoto uživatele?");
+      await showConfirm("Are you sure you want to unban this user?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/unban_user.php", {
         method: "POST",
@@ -281,16 +281,16 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba unban_user:", err);
+        console.error("Error unban_user:", err);
         showNotification({
           type: "error",
-          message: err.message || "Chyba při odbanování.",
+          message: err.message || "Error unbanning user.",
         });
       }
     } finally {
@@ -298,10 +298,10 @@ export default function Dashboard() {
     }
   };
 
-  // 10) Refund platby
+  // 10) Refund a payment
   const handleRefund = async (paymentId) => {
     try {
-      await showConfirm("Opravdu chcete vrátit tuto platbu?");
+      await showConfirm("Are you sure you want to refund this payment?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/refund_payment.php", {
         method: "POST",
@@ -311,16 +311,16 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba refund:", err);
+        console.error("Error refund:", err);
         showNotification({
           type: "error",
-          message: err.message || "Chyba při refundu platby.",
+          message: err.message || "Error refunding payment.",
         });
       }
     } finally {
@@ -328,16 +328,14 @@ export default function Dashboard() {
     }
   };
 
-  // 11) Pozvat moderátora
+  // 11) Invite a moderator
   const handleInvite = async () => {
     if (!inviteEmail.trim()) {
-      showNotification({ type: "error", message: "Zadejte email uživatele." });
+      showNotification({ type: "error", message: "Please enter a user email." });
       return;
     }
     try {
-      await showConfirm(
-        `Opravdu chcete pozvat ${inviteEmail.trim()} jako moderátora?`
-      );
+      await showConfirm(`Are you sure you want to invite ${inviteEmail.trim()} as a moderator?`);
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/invite_moderator.php", {
         method: "POST",
@@ -347,17 +345,17 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       setInviteEmail("");
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba invite_moderator:", err);
+        console.error("Error invite_moderator:", err);
         showNotification({
           type: "error",
-          message: err.message || "Chyba při pozvání moderátora.",
+          message: err.message || "Error inviting moderator.",
         });
       }
     } finally {
@@ -365,10 +363,10 @@ export default function Dashboard() {
     }
   };
 
-  // 12) Odebrat moderátora
+  // 12) Remove a moderator
   const handleRemoveModerator = async (modUserId) => {
     try {
-      await showConfirm("Opravdu chcete odebrat tohoto moderátora?");
+      await showConfirm("Are you sure you want to remove this moderator?");
       setLoadingAction(true);
       const res = await fetch("https://app.byxbot.com/php/remove_moderator.php", {
         method: "POST",
@@ -378,21 +376,24 @@ export default function Dashboard() {
       });
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
-        throw new Error(json.message || `Chyba HTTP ${res.status}`);
+        throw new Error(json.message || `HTTP error ${res.status}`);
       }
       showNotification({ type: "success", message: json.message });
       reloadDashboardData();
     } catch (err) {
       if (err.message !== "cancel") {
-        console.error("Chyba remove_moderator:", err);
-        showNotification({ type: "error", message: err.message || "Chyba při odebírání moderátora." });
+        console.error("Error remove_moderator:", err);
+        showNotification({
+          type: "error",
+          message: err.message || "Error removing moderator.",
+        });
       }
     } finally {
       setLoadingAction(false);
     }
   };
 
-  // platební filtrování a stránkování
+  // payment filtering and pagination
   const filteredPayments = useMemo(() => {
     if (!filterText.trim()) return payments;
     const q = filterText.trim().toLowerCase();
@@ -410,7 +411,7 @@ export default function Dashboard() {
   }, [filteredPayments, currentPage]);
 
   if (!dataLoaded) {
-    return <p className="dashboard-loading">Načítám dashboard…</p>;
+    return <p className="dashboard-loading">Loading dashboard…</p>;
   }
 
   return (
@@ -427,7 +428,7 @@ export default function Dashboard() {
                 <th>Email</th>
                 <th>Submitted At</th>
                 <th>Answers</th>
-                <th>Akce</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -474,7 +475,7 @@ export default function Dashboard() {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <h3>Aktivní členové</h3>
+          <h3>Active Members</h3>
           <p className="stat-number">{membersCount}</p>
         </div>
         <div className="stat-card">
@@ -482,11 +483,11 @@ export default function Dashboard() {
           <p className="stat-number">{grossRevenue.toFixed(2)} USD</p>
         </div>
         <div className="stat-card">
-          <h3>Počet banů</h3>
+          <h3>Number of Bans</h3>
           <p className="stat-number">{bans.length}</p>
         </div>
         <div className="stat-card">
-          <h3>Moderátoři</h3>
+          <h3>Moderators</h3>
           <p className="stat-number">{moderators.length}</p>
         </div>
       </div>
@@ -511,17 +512,17 @@ export default function Dashboard() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="no-data-text">Žádné údaje pro graf.</p>
+          <p className="no-data-text">No data available for chart.</p>
         )}
       </div>
 
       <div className="table-section">
-        <h2>Aktivní členové</h2>
+        <h2>Members</h2>
         <div className="filter-input-wrapper">
           <input
             type="text"
             className="filter-input"
-            placeholder="Hledej člena podle uživatele nebo e-mailu…"
+            placeholder="Search member by username or email…"
             value={filterText}
             onChange={(e) => {
               setFilterText(e.target.value);
@@ -530,7 +531,7 @@ export default function Dashboard() {
           />
         </div>
         {members.length === 0 ? (
-          <p className="no-data-text">Žádní aktivní členové.</p>
+          <p className="no-data-text">No active members.</p>
         ) : (
           <table className="dashboard-table">
             <thead>
@@ -538,8 +539,8 @@ export default function Dashboard() {
                 <th>Username</th>
                 <th>Email</th>
                 <th>Joined At</th>
-                <th>Typ</th>
-                <th>Akce</th>
+                <th>Type</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -558,7 +559,7 @@ export default function Dashboard() {
                     <td>{m.email}</td>
                     <td>{new Date(m.start_at).toLocaleString()}</td>
                     <td className={m.type === "paid" ? "label-paid" : "label-free"}>
-                      {m.type === "paid" ? "Placený" : "Free"}
+                      {m.type === "paid" ? "Paid" : "Free"}
                     </td>
                     <td>
                       {(role === "owner" || role === "moderator") ? (
@@ -590,12 +591,12 @@ export default function Dashboard() {
       </div>
 
       <div className="table-section">
-        <h2>Seznam plateb</h2>
+        <h2>Payments</h2>
         <div className="filter-input-wrapper">
           <input
             type="text"
             className="filter-input"
-            placeholder="Hledej platební záznam podle uživatele nebo e-mailu…"
+            placeholder="Search payments by username or email…"
             value={filterText}
             onChange={(e) => {
               setFilterText(e.target.value);
@@ -604,7 +605,7 @@ export default function Dashboard() {
           />
         </div>
         {filteredPayments.length === 0 ? (
-          <p className="no-data-text">Žádné platby odpovídající filtru.</p>
+          <p className="no-data-text">No payments match the filter.</p>
         ) : (
           <>
             <table className="dashboard-table">
@@ -615,8 +616,8 @@ export default function Dashboard() {
                   <th>Email</th>
                   <th>Amount</th>
                   <th>Date</th>
-                  <th>Typ</th>
-                  <th>Akce</th>
+                  <th>Type</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -639,18 +640,16 @@ export default function Dashboard() {
                       }
                     >
                       {p.type === "one_time"
-                        ? "Jednorázově"
+                        ? "One-Time"
                         : p.type === "recurring"
-                        ? "Opakovaně"
+                        ? "Recurring"
                         : p.type === "refunded"
-                        ? "Refundováno"
-                        : "Neúspěšná platba"}
+                        ? "Refunded"
+                        : "Failed"}
                     </td>
                     <td>
                       {role === "owner" ? (
-                        !["refunded", "failed_refunded", "failed"].includes(
-                          p.type
-                        ) ? (
+                        !["refunded", "failed_refunded", "failed"].includes(p.type) ? (
                           <button
                             className="btn-refund"
                             disabled={loadingAction}
@@ -673,31 +672,23 @@ export default function Dashboard() {
               <button
                 className="page-btn"
                 disabled={currentPage === 1}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.max(prev - 1, 1))
-                }
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               >
                 ←
               </button>
-              {Array.from({ length: totalPaymentPages }, (_, i) => i + 1).map(
-                (num) => (
-                  <button
-                    key={`page-${num}`}
-                    className={`page-btn ${num === currentPage ? "active" : ""}`}
-                    onClick={() => setCurrentPage(num)}
-                  >
-                    {num}
-                  </button>
-                )
-              )}
+              {Array.from({ length: totalPaymentPages }, (_, i) => i + 1).map((num) => (
+                <button
+                  key={`page-${num}`}
+                  className={`page-btn ${num === currentPage ? "active" : ""}`}
+                  onClick={() => setCurrentPage(num)}
+                >
+                  {num}
+                </button>
+              ))}
               <button
                 className="page-btn"
                 disabled={currentPage === totalPaymentPages}
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, totalPaymentPages)
-                  )
-                }
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPaymentPages))}
               >
                 →
               </button>
@@ -707,12 +698,12 @@ export default function Dashboard() {
       </div>
 
       <div className="table-section">
-        <h2>Seznam zabanovaných</h2>
+        <h2>Banned Users</h2>
         <div className="filter-input-wrapper">
           <input
             type="text"
             className="filter-input"
-            placeholder="Hledej banované podle uživatele nebo e-mailu…"
+            placeholder="Search banned by username or email…"
             value={filterText}
             onChange={(e) => {
               setFilterText(e.target.value);
@@ -721,7 +712,7 @@ export default function Dashboard() {
           />
         </div>
         {bans.length === 0 ? (
-          <p className="no-data-text">Žádní zabanovaní uživatelé.</p>
+          <p className="no-data-text">No banned users.</p>
         ) : (
           <table className="dashboard-table">
             <thead>
@@ -729,7 +720,7 @@ export default function Dashboard() {
                 <th>Username</th>
                 <th>Email</th>
                 <th>Banned At</th>
-                <th>Akce</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -768,13 +759,13 @@ export default function Dashboard() {
       </div>
 
       <div className="table-section">
-        <h2>Team (Moderátoři)</h2>
+        <h2>Team (Moderators)</h2>
         {role === "owner" ? (
           <>
             <div className="invite-form">
               <input
                 type="email"
-                placeholder="Email uživatele"
+                placeholder="User email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="filter-input"
@@ -784,11 +775,11 @@ export default function Dashboard() {
                 disabled={loadingAction}
                 onClick={handleInvite}
               >
-                Pozvat
+                Invite
               </button>
             </div>
             {moderators.length === 0 ? (
-              <p className="no-data-text">Žádní moderátoři.</p>
+              <p className="no-data-text">No moderators.</p>
             ) : (
               <table className="dashboard-table">
                 <thead>
@@ -796,7 +787,7 @@ export default function Dashboard() {
                     <th>Username</th>
                     <th>Email</th>
                     <th>Added At</th>
-                    <th>Akce</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -811,7 +802,7 @@ export default function Dashboard() {
                           disabled={loadingAction}
                           onClick={() => handleRemoveModerator(m.user_id)}
                         >
-                          Odebrat
+                          Remove
                         </button>
                       </td>
                     </tr>
@@ -822,7 +813,7 @@ export default function Dashboard() {
           </>
         ) : (
           <p className="no-data-text">
-            Zobrazují se pouze moderátoři (owner). Vám není umožněno upravovat.
+            Showing moderators only for the owner. You do not have permission to edit.
           </p>
         )}
       </div>

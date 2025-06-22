@@ -3,25 +3,29 @@ import "../../styles/chat.scss";
 import ChatWindow from "./ChatWindow";
 
 export default function ChatModal({ onClose }) {
-  const [whops, setWhops] = useState([]);
-  const [sel, setSel]     = useState(null);
+  const [whopList, setWhopList] = useState([]);
+  const [selectedWhop, setSelectedWhop] = useState(null);
 
   useEffect(() => {
     fetch("https://app.byxbot.com/php/chat/list_whops.php", {
       credentials: "include",
     })
-      .then(r => r.json())
-      .then(d => {
-        if (d.status === "success") setWhops(d.data);
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          setWhopList(data.data);
+        }
       });
   }, []);
 
-  const onBackdropClick = e => {
-    if (e.target === e.currentTarget) onClose();
+  const handleBackdropClick = event => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
   };
 
   return (
-    <div className="chat-modal-backdrop" onClick={onBackdropClick}>
+    <div className="chat-modal-backdrop" onClick={handleBackdropClick}>
       <div className="chat-modal">
         <button
           className="chat-modal-close"
@@ -33,30 +37,30 @@ export default function ChatModal({ onClose }) {
 
         <div className="chat-modal-sidebar">
           <ul>
-            {whops.map(w => (
+            {whopList.map(whop => (
               <li
-                key={w.id}
-                className={sel?.id === w.id ? "active" : ""}
-                onClick={() => setSel(w)}
+                key={whop.id}
+                className={selectedWhop?.id === whop.id ? "active" : ""}
+                onClick={() => setSelectedWhop(whop)}
               >
-                {w.logo_url && (
-                  <img src={w.logo_url} className="whop-logo-sm" alt="" />
+                {whop.logo_url && (
+                  <img src={whop.logo_url} className="whop-logo-sm" alt="" />
                 )}
-                <span>{w.name}</span>
+                <span>{whop.name}</span>
               </li>
             ))}
           </ul>
         </div>
 
         <div className="chat-modal-content">
-          {sel ? (
+          {selectedWhop ? (
             <ChatWindow
-              whopId={sel.id}
-              whopName={sel.name}
-              whopLogo={sel.logo_url}
+              whopId={selectedWhop.id}
+              whopName={selectedWhop.name}
+              whopLogo={selectedWhop.logo_url}
             />
           ) : (
-            <div className="chat-placeholder">Vyber Whop</div>
+            <div className="chat-placeholder">Select Whop</div>
           )}
         </div>
       </div>

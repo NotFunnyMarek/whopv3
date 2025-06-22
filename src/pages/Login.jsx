@@ -7,19 +7,19 @@ import '../styles/login.scss';
 
 const Login = () => {
   const { showNotification } = useNotifications();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [username, setUsername]   = useState('');
+  const [password, setPassword]   = useState('');
+  const navigate                  = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    showNotification({ type: 'info', message: 'Přihlašuji...' });
+    showNotification({ type: 'info', message: 'Logging in...' });
     try {
       const res = await fetch('https://app.byxbot.com/php/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       if (res.ok) {
@@ -29,37 +29,38 @@ const Login = () => {
         } catch {
           data = {};
         }
+        // Mark as logged in
         localStorage.setItem('authToken', 'loggedIn');
         const userObj = {
-          id: data.user?.id || null,
+          id:    data.user?.id      || null,
           username: data.user?.username || username,
-          email: data.user?.email || '',
-          name: data.user?.username || username,
-          bio: '',
-          phone: ''
+          email: data.user?.email   || '',
+          name:  data.user?.username || username,
+          bio:   '',
+          phone: '',
         };
         localStorage.setItem('user', JSON.stringify(userObj));
-        showNotification({ type: 'success', message: 'Přihlášení proběhlo úspěšně.' });
+        showNotification({ type: 'success', message: 'Login successful.' });
         setUsername('');
         setPassword('');
         setTimeout(() => navigate('/'), 1000);
       } else if (res.status === 401) {
-        showNotification({ type: 'error', message: 'Špatné jméno nebo heslo.' });
+        showNotification({ type: 'error', message: 'Incorrect username or password.' });
       } else {
-        showNotification({ type: 'error', message: `Chyba při přihlášení (HTTP ${res.status}).` });
+        showNotification({ type: 'error', message: `Login error (HTTP ${res.status}).` });
       }
     } catch (err) {
-      showNotification({ type: 'error', message: 'Síťová chyba: ' + err.message });
+      showNotification({ type: 'error', message: 'Network error: ' + err.message });
     }
   };
 
   return (
     <div className="login-page">
       <div className="login-card">
-        <h2>Přihlášení</h2>
+        <h2>Login</h2>
         <form onSubmit={handleSubmit} className="login-form">
           <label>
-            Uživatelské jméno nebo e-mail
+            Username or Email
             <input
               type="text"
               value={username}
@@ -68,7 +69,7 @@ const Login = () => {
             />
           </label>
           <label>
-            Heslo
+            Password
             <input
               type="password"
               value={password}
@@ -77,11 +78,11 @@ const Login = () => {
             />
           </label>
           <button type="submit" className="btn-primary">
-            Přihlásit
+            Sign In
           </button>
         </form>
         <p className="switch-link">
-          Nemáte účet? <Link to="/register">Přejít na registraci</Link>
+          Don’t have an account? <Link to="/register">Go to Register</Link>
         </p>
       </div>
     </div>

@@ -1,18 +1,18 @@
 // src/pages/WhopDashboard/handleSubscribe.js
 
 /**
- * Pokud je whopData.price ≤ 0, zavolá handleJoinFree, jinak spustí placený flow.
+ * If whopData.price ≤ 0, delegates to the free join flow; otherwise runs the paid subscription flow.
  *
- * @param {object} whopData              - data o Whopu (obsahují id, price, currency, is_recurring, billing_period, slug)
- * @param {function} showConfirm         - funkce pro zobrazení confirm modalu (vrací promise)
- * @param {function} setOverlayVisible   - setter pro zobrazení fullscreen overlayu
- * @param {function} setOverlayFading    - setter pro fade‐out efekt overlayu
- * @param {function} setMemberLoading    - setter pro stav načítání „člena“
- * @param {{width:number, height:number}} windowSize - objekt s rozměry obrazovky
- * @param {function} navigate            - react‐router funkce pro navigaci
- * @param {function} showNotification    - funkce pro zobrazení toast notifikace
- * @param {function} fetchCampaigns      - bound verze funkce, která načte kampaně (bere whopId)
- * @param {function} setWhopData         - setter pro nové whopData
+ * @param {object} whopData              - Whop details (contains id, price, currency, is_recurring, billing_period, slug)
+ * @param {function} showConfirm         - function to display a confirm modal (returns a Promise)
+ * @param {function} setOverlayVisible   - setter to show the full-screen overlay
+ * @param {function} setOverlayFading    - setter to trigger the fade-out effect of the overlay
+ * @param {function} setMemberLoading    - setter for the "member loading" state
+ * @param {{width:number, height:number}} windowSize - object with the window dimensions
+ * @param {function} navigate            - react-router navigation function
+ * @param {function} showNotification    - function to display a toast notification
+ * @param {function} fetchCampaigns      - bound function that fetches campaigns (accepts whopId)
+ * @param {function} setWhopData         - setter for updated whopData
  */
 export default async function handleSubscribe(
   whopData,
@@ -28,7 +28,7 @@ export default async function handleSubscribe(
 ) {
   if (!whopData) return;
 
-  // Pokud je zdarma (price ≤ 0), přesměrujeme do free‐flow
+  // If free (price ≤ 0), redirect to the free join flow
   if (!whopData.price || parseFloat(whopData.price) <= 0) {
     const { default: joinFree } = await import("./handleJoinFree");
     await joinFree(
@@ -45,21 +45,21 @@ export default async function handleSubscribe(
     return;
   }
 
-  // Placený flow: nejprve potvrzení od uživatele
+  // Paid flow: first, get user confirmation
   const price = parseFloat(whopData.price).toFixed(2);
   const period = whopData.is_recurring
-    ? `opakuje se každých ${whopData.billing_period}`
-    : "jednorázově";
-  const confirmMessage = `Tento Whop stojí ${whopData.currency}${price} ${period}.\nChcete pokračovat?`;
+    ? `recurs every ${whopData.billing_period}`
+    : "one-time";
+  const confirmMessage = `This Whop costs ${whopData.currency}${price} ${period}.\nDo you want to continue?`;
 
   try {
     await showConfirm(confirmMessage);
   } catch {
-    // Uživatel zrušil → ukončíme
+    // User cancelled
     return;
   }
 
-  // Zobrazíme fullscreen overlay
+  // Show full-screen overlay
   setOverlayVisible(true);
   setOverlayFading(false);
   setMemberLoading(true);
@@ -67,7 +67,7 @@ export default async function handleSubscribe(
   window.addEventListener("resize", resizeListener);
 
   try {
-    // Pošleme POST požadavek na PHP
+    // Send subscription request to PHP
     const payload = { whop_id: whopData.id };
     const res = await fetch("https://app.byxbot.com/php/subscribe_whop.php", {
       method: "POST",
@@ -76,7 +76,7 @@ export default async function handleSubscribe(
       body: JSON.stringify(payload),
     });
 
-    // Nejprve si vyzvedneme čisté textové tělo (pro případ, že to nebude validní JSON)
+    // First fetch the raw text in case it's not valid JSON
     const rawText = await res.text();
     console.log("🔸 [handleSubscribe] HTTP status:", res.status);
     console.log("🔸 [handleSubscribe] Raw response text:", rawText);
@@ -86,16 +86,16 @@ export default async function handleSubscribe(
       data = JSON.parse(rawText);
     } catch (parseErr) {
       throw new Error(
-        `Server nevrátil platné JSON (HTTP ${res.status}):\n${rawText}`
+        `Server did not return valid JSON (HTTP ${res.status}):\n${rawText}`
       );
     }
 
     if (!res.ok || data.status !== "success") {
-      // API vrátilo chybu (např. 400 nebo 401, nebo {status:"error"})
-      const msg = data.message || `Chyba HTTP ${res.status}`;
+      // API returned an error (e.g. 400 or 401, or {status:"error"})
+      const msg = data.message || `HTTP error ${res.status}`;
       showNotification({ type: "error", message: msg });
     } else {
-      // Úspěšné přihlášení → refresh whopData + kampaně
+      // Successful subscription → refresh whopData & campaigns
       const refresh = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
           whopData.slug
@@ -106,14 +106,14 @@ export default async function handleSubscribe(
       if (refresh.ok && refreshed.status === "success") {
         setWhopData(refreshed.data);
         await fetchCampaigns(refreshed.data.id);
-        showNotification({ type: "success", message: data.message || "Úspěšně přihlášeno." });
+        showNotification({ type: "success", message: data.message || "Subscribed successfully." });
       }
     }
   } catch (err) {
-    console.error("⚠️ [handleSubscribe] Chyba při subscribe:", err);
-    showNotification({ type: "error", message: err.message || "Síťová chyba při přihlašování." });
+    console.error("⚠️ [handleSubscribe] Error during subscribe:", err);
+    showNotification({ type: "error", message: err.message || "Network error during subscription." });
   } finally {
-    // Fade‐out overlay po 2 sekundách
+    // Fade-out the overlay after 2 seconds
     setTimeout(() => setOverlayFading(true), 2000);
     setMemberLoading(false);
     window.removeEventListener("resize", resizeListener);

@@ -62,7 +62,7 @@ export default function MemberMain({
           ) : campaignsError ? (
             <p className="member-error">{campaignsError}</p>
           ) : campaigns.length === 0 ? (
-            <div className="no-campaign-msg">Žádné kampaně</div>
+            <div className="no-campaign-msg">No campaigns</div>
           ) : (
             <ul className="member-campaign-list">
               {campaigns.map((camp) => {
@@ -72,8 +72,7 @@ export default function MemberMain({
                 );
                 const timeDiff = expDate - now;
                 const expiredByTime = timeDiff <= 0;
-                const expiredByBudget =
-                  camp.paid_out >= camp.total_paid_out;
+                const expiredByBudget = camp.paid_out >= camp.total_paid_out;
                 const isExpired =
                   camp.is_active === 0 || expiredByTime || expiredByBudget;
 
@@ -122,7 +121,7 @@ export default function MemberMain({
                       )}
                     </div>
                     <p className="author">
-                      Autor: <span className="author-name">{camp.username}</span>
+                      Author: <span className="author-name">{camp.username}</span>
                     </p>
                     <p
                       className={`countdown ${
@@ -134,9 +133,9 @@ export default function MemberMain({
                     <div className="paid-bar">
                       <div className="paid-info">
                         {camp.currency}
-                        {paidOut.toFixed(2)} z{" "}
+                        {paidOut.toFixed(2)} of{" "}
                         {camp.currency}
-                        {camp.total_paid_out.toFixed(2)} vyplaceno
+                        {camp.total_paid_out.toFixed(2)} paid out
                       </div>
                       <div className="progress-container">
                         <div
@@ -148,13 +147,13 @@ export default function MemberMain({
                     </div>
                     <ul className="camp-details">
                       <li>
-                        <strong>Typ:</strong> {camp.type}
+                        <strong>Type:</strong> {camp.type}
                       </li>
                       <li>
-                        <strong>Kategorie:</strong> {camp.category}
+                        <strong>Category:</strong> {camp.category}
                       </li>
                       <li>
-                        <strong>Platformy:</strong>{" "}
+                        <strong>Platforms:</strong>{" "}
                         {camp.platforms.map((p, i) => (
                           <span key={i} className="platform-pill">
                             {p}
@@ -162,7 +161,7 @@ export default function MemberMain({
                         ))}
                       </li>
                       <li>
-                        <strong>Zhlédnutí:</strong>{" "}
+                        <strong>Views:</strong>{" "}
                         {camp.reward_per_thousand > 0
                           ? Math.round(
                               (paidOut / camp.reward_per_thousand) * 1000
@@ -183,7 +182,7 @@ export default function MemberMain({
         <div className="member-tab-content">
           <h3 className="member-subtitle">Tools</h3>
           <p className="member-text">
-            Tools sekce se připravuje nebo tam mohou být doplňkové nástroje.
+            Tools section is under construction or may include additional tools.
           </p>
         </div>
       )}

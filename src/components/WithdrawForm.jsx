@@ -15,11 +15,11 @@ export default function WithdrawForm({ onSuccess }) {
 
     const usd = parseFloat(usdAmount);
     if (isNaN(usd) || usd <= 0) {
-      showNotification({ type: 'error', message: 'Částka musí být kladné číslo.' });
+      showNotification({ type: 'error', message: 'Amount must be a positive number.' });
       return;
     }
     if (!solAddress.trim()) {
-      showNotification({ type: 'error', message: 'Zadejte cílovou Solana adresu.' });
+      showNotification({ type: 'error', message: 'Please enter a Solana address.' });
       return;
     }
 
@@ -39,19 +39,19 @@ export default function WithdrawForm({ onSuccess }) {
       try {
         data = JSON.parse(text);
       } catch {
-        throw new Error('Neplatná odpověď serveru');
+        throw new Error('Invalid server response');
       }
 
       if (!res.ok || data.status !== 'success') {
-        showNotification({ type: 'error', message: data.message || 'Nastala neznámá chyba.' });
+        showNotification({ type: 'error', message: data.message || 'An unknown error occurred.' });
       } else {
-        showNotification({ type: 'success', message: `Úspěšně odesláno. Tx: ${data.tx}` });
+        showNotification({ type: 'success', message: `Withdrawal successful. Tx: ${data.tx}` });
         setUsdAmount('');
         setSolAddress('');
         if (onSuccess) onSuccess();
       }
     } catch (e) {
-      showNotification({ type: 'error', message: 'Chyba sítě: ' + e.message });
+      showNotification({ type: 'error', message: 'Network error: ' + e.message });
     }
     setLoading(false);
   };
@@ -60,7 +60,7 @@ export default function WithdrawForm({ onSuccess }) {
     <div className="dm-container">
       <form onSubmit={handleSubmit} className="withdraw-form">
         <div className="dm-section">
-          <strong>Částka (USD):</strong>
+          <strong>Amount (USD):</strong>
           <input
             type="number"
             value={usdAmount}
@@ -71,18 +71,18 @@ export default function WithdrawForm({ onSuccess }) {
           />
         </div>
         <div className="dm-section">
-          <strong>Vaše Solana adresa (Testnet):</strong>
+          <strong>Your Solana Address (Testnet):</strong>
           <input
             type="text"
             value={solAddress}
             onChange={(e) => setSolAddress(e.target.value)}
-            placeholder="např. 7toRbiXgeCNVjSFuMbTiLadD1M4wMnoRLD4P4wmcVDLL"
+            placeholder="e.g. 7toRbiXgeCNVjSFuMbTiLadD1M4wMnoRLD4P4wmcVDLL"
             required
           />
         </div>
         <div className="dm-close-row">
           <button type="submit" className="dm-close-btn" disabled={loading}>
-            {loading ? 'Vyřizuji…' : 'Vybrat'}
+            {loading ? 'Processing…' : 'Withdraw'}
           </button>
         </div>
       </form>

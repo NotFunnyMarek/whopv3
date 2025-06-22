@@ -8,13 +8,13 @@ import '../styles/home.scss';
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
 export default function Home() {
-  const [cardsData, setCardsData]       = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [errorMsg, setErrorMsg]         = useState('');
+  const [cardsData, setCardsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const [filterType, setFilterType]         = useState('All');
+  const [filterType, setFilterType] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
-  const [sortOption, setSortOption]         = useState('Nejvyšší rozpočet');
+  const [sortOption, setSortOption] = useState('Highest Budget');
 
   useEffect(() => {
     fetchCampaigns();
@@ -29,47 +29,47 @@ export default function Home() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error(`Chyba ${res.status}`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
       setCardsData(data);
     } catch (error) {
-      setErrorMsg('Nelze načíst kampaně: ' + error.message);
+      setErrorMsg('Unable to load campaigns: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Zobrazíme pouze kampaně, které jsou aktivní a ještě nemají vyčerpán rozpočet
+  // Only show campaigns that are active and still within budget
   const liveCampaigns = useMemo(
-    () => cardsData.filter(c =>
-      c.is_active === 1 &&
-      c.paid_out < c.total_paid_out
-    ),
+    () =>
+      cardsData.filter(
+        (c) => c.is_active === 1 && c.paid_out < c.total_paid_out
+      ),
     [cardsData]
   );
 
-  // Aplikace filtrů a řazení
+  // Apply filters and sorting
   const filteredData = useMemo(() => {
     let arr = [...liveCampaigns];
 
     if (filterType !== 'All') {
-      arr = arr.filter(c => c.type === filterType);
+      arr = arr.filter((c) => c.type === filterType);
     }
     if (filterCategory !== 'All') {
-      arr = arr.filter(c => c.category === filterCategory);
+      arr = arr.filter((c) => c.category === filterCategory);
     }
 
     switch (sortOption) {
-      case 'Nejvyšší rozpočet':
+      case 'Highest Budget':
         arr.sort((a, b) => b.budget - a.budget);
         break;
-      case 'Nejnižší rozpočet':
+      case 'Lowest Budget':
         arr.sort((a, b) => a.budget - b.budget);
         break;
-      case 'Nejnovější':
+      case 'Newest':
         arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
-      case 'Nejstarší':
+      case 'Oldest':
         arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         break;
       default:
@@ -83,23 +83,23 @@ export default function Home() {
       <div className="home-header">
         <h1 className="home-title">Content Rewards</h1>
         <p className="home-subtitle">
-          Post content on social media and get paid for the views you generate. Pokud chcete spustit kampaň{' '}
-          <Link className="home-link" to="/intro">klikněte sem</Link>.
+          Post content on social media and get paid for the views you generate. If you want to start a campaign{' '}
+          <Link className="home-link" to="/intro">click here</Link>.
         </p>
       </div>
 
       <div className="home-controls">
         <div className="home-count">
-          {loading ? 'Načítám kampaně…' : `${filteredData.length} live kampaní`}
+          {loading ? 'Loading campaigns…' : `${filteredData.length} live campaigns`}
         </div>
 
         <div className="home-filters">
           <label className="home-filter-item">
-            Typ:
+            Type:
             <select
               className="home-select"
               value={filterType}
-              onChange={e => setFilterType(e.target.value)}
+              onChange={(e) => setFilterType(e.target.value)}
             >
               <option>All</option>
               <option>Clipping</option>
@@ -108,11 +108,11 @@ export default function Home() {
           </label>
 
           <label className="home-filter-item">
-            Kategorie:
+            Category:
             <select
               className="home-select"
               value={filterCategory}
-              onChange={e => setFilterCategory(e.target.value)}
+              onChange={(e) => setFilterCategory(e.target.value)}
             >
               <option>All</option>
               <option>Personal brand</option>
@@ -123,16 +123,16 @@ export default function Home() {
         </div>
 
         <label className="home-sort">
-          Řadit podle:
+          Sort by:
           <select
             className="home-select"
             value={sortOption}
-            onChange={e => setSortOption(e.target.value)}
+            onChange={(e) => setSortOption(e.target.value)}
           >
-            <option>Nejvyšší rozpočet</option>
-            <option>Nejnižší rozpočet</option>
-            <option>Nejnovější</option>
-            <option>Nejstarší</option>
+            <option>Highest Budget</option>
+            <option>Lowest Budget</option>
+            <option>Newest</option>
+            <option>Oldest</option>
           </select>
         </label>
       </div>

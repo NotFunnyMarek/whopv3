@@ -15,7 +15,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const [errorSubs, setErrorSubs] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
 
-  // Načtení submissions pro tento campaign + user
+  // Load submissions for this campaign and user
   const fetchMySubmissions = async () => {
     setLoadingSubs(true);
     setErrorSubs("");
@@ -31,11 +31,11 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
       const json = JSON.parse(text);
       if (!res.ok) throw new Error(json.message || `HTTP ${res.status}`);
       if (json.status !== "success" || !Array.isArray(json.data)) {
-        throw new Error(json.message || "Neplatná struktura dat");
+        throw new Error(json.message || "Invalid data structure");
       }
       setMySubmissions(json.data);
     } catch (err) {
-      setErrorSubs("Nelze načíst vaše submissiony: " + err.message);
+      setErrorSubs("Unable to load your submissions: " + err.message);
     } finally {
       setLoadingSubs(false);
     }
@@ -47,7 +47,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Refresh při přepnutí do My Submissions
+  // Refresh when switching to My Submissions tab
   useEffect(() => {
     if (activeTab === "My Submissions") {
       fetchMySubmissions();
@@ -55,7 +55,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // Po odeslání nové submission
+  // After submitting a new submission
   const handleAfterSubmit = async () => {
     await fetchMySubmissions();
     setActiveTab("My Submissions");
@@ -65,23 +65,20 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
   const handleRowClick = (submission) => setSelectedSubmission(submission);
   const closeDetailModal = () => setSelectedSubmission(null);
 
-  // Expirace času
+  // Determine if the campaign is expired by time
   const now = new Date();
   const expDate = new Date(campaign.expiration_datetime.replace(" ", "T"));
   const expiredByTime = expDate.getTime() - now.getTime() <= 0;
 
-  // Oříznutí vyplacené částky podle budgetu
+  // Cap paid out amount by total budget
   const paidOut = Math.min(campaign.paid_out, campaign.total_paid_out);
   const percent =
     campaign.total_paid_out > 0
-      ? Math.min(
-          Math.round((paidOut / campaign.total_paid_out) * 100),
-          100
-        )
+      ? Math.min(Math.round((paidOut / campaign.total_paid_out) * 100), 100)
       : 0;
   const expiredByBudget = paidOut >= campaign.total_paid_out;
 
-  // Konečný flag expired
+  // Final expired flag
   const isExpired =
     campaign.is_active === 0 || expiredByTime || expiredByBudget;
 
@@ -121,7 +118,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
               />
             ) : (
               <div className="submission-banner-placeholder">
-                Žádný banner
+                No banner available
               </div>
             )}
           </div>
@@ -134,8 +131,8 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
               disabled={isExpired}
               title={
                 isExpired
-                  ? "Kampaň je ukončena – nelze přidat nové video"
-                  : "Přidat nové video"
+                  ? "Campaign has ended — cannot add new video"
+                  : "Add new video"
               }
             >
               Submit
@@ -170,7 +167,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
             </p>
             {campaign.min_payout !== null && (
               <p>
-                <strong>Min Payout:</strong> {campaign.currency}
+                <strong>Minimum Payout:</strong> {campaign.currency}
                 {parseFloat(campaign.min_payout).toFixed(2)}
               </p>
             )}
@@ -197,7 +194,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
                 ))}
               </ul>
             ) : (
-              <p>Žádné specifické požadavky.</p>
+              <p>No specific requirements.</p>
             )}
           </div>
 
@@ -219,7 +216,7 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
                 ))}
               </ul>
             ) : (
-              <p>Žádné assety.</p>
+              <p>No assets provided.</p>
             )}
           </div>
 
@@ -229,10 +226,9 @@ export default function SubmissionPanel({ whopData, campaign, onBack }) {
               <strong>Disclaimer:</strong>
             </p>
             <p>
-              Creators may reject submissions that don't meet
-              requirements. By submitting, you grant full usage rights
-              and agree to follow the FTC guidelines and the Content
-              Rewards Terms.
+              Creators may reject submissions that don't meet the requirements.
+              By submitting, you grant full usage rights and agree to follow
+              FTC guidelines and the Content Rewards Terms.
             </p>
           </div>
 

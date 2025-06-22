@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import LinkAccountModal from '../components/LinkAccountModal';
 import '../styles/profile.scss';
-import '../styles/_link-account-modal.scss';  // import stylů pro modal
+import '../styles/_link-account-modal.scss';  // import styles for modal
 
 const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
 const CLOUDINARY_UPLOAD_PRESET = 'unsigned_profile_avatars';
@@ -16,7 +16,7 @@ export default function Profile() {
   const fileInputRef = useRef(null);
   const { showNotification } = useNotifications();
 
-  // form pro základní údaje
+  // form for basic profile fields
   const [form, setForm] = useState({
     name:         '',
     bio:          '',
@@ -32,11 +32,11 @@ export default function Profile() {
   const [isDirty, setIsDirty] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // pro propojené účty
+  // for linked accounts
   const [linkedAccounts, setLinkedAccounts] = useState([]);
   const [showLinkModal, setShowLinkModal] = useState(null);  // null | {action:'create'} | account record
 
-  // načtení základního profilu
+  // load basic profile data
   useEffect(() => {
     fetch('https://app.byxbot.com/php/profile.php', {
       method: 'GET',
@@ -69,16 +69,16 @@ export default function Profile() {
           setInitialForm(loaded);
           setIsDirty(false);
         } else {
-          showNotification({ type: 'error', message: 'Chyba při načítání: ' + (data.message || '') });
+          showNotification({ type: 'error', message: 'Error loading profile: ' + (data.message || '') });
         }
       })
       .catch((err) => {
-        console.error('Chyba při načítání profilu:', err);
-        showNotification({ type: 'error', message: 'Nepodařilo se načíst profil.' });
+        console.error('Error loading profile:', err);
+        showNotification({ type: 'error', message: 'Failed to load profile.' });
       });
   }, [navigate, showNotification]);
 
-  // načtení propojených účtů
+  // load linked accounts
   const loadLinked = () => {
     fetch('https://app.byxbot.com/php/link_account.php', {
       credentials: 'include'
@@ -91,7 +91,7 @@ export default function Profile() {
   };
   useEffect(loadLinked, []);
 
-  // handler pro změnu polí
+  // handle form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => {
@@ -117,7 +117,7 @@ export default function Profile() {
 
   const handleAvatarClick = () => fileInputRef.current?.click();
 
-  // uložení avatara
+  // save avatar URL to database
   const saveAvatarToDb = async (avatarUrl) => {
     try {
       const payload = { avatar_url: avatarUrl };
@@ -140,25 +140,26 @@ export default function Profile() {
         } catch {}
         throw new Error(errMsg);
       }
-      showNotification({ type: 'success', message: 'Avatar byl uložen v profilu.' });
+      showNotification({ type: 'success', message: 'Avatar saved to profile.' });
       setInitialForm(prev => ({ ...prev, avatar_url: avatarUrl }));
       setIsDirty(false);
     } catch (err) {
-      console.error('Chyba při ukládání avatar_url do DB:', err);
-      showNotification({ type: 'error', message: 'Nepodařilo se uložit avatar do profilu.' });
+      console.error('Error saving avatar_url to DB:', err);
+      showNotification({ type: 'error', message: 'Failed to save avatar.' });
     }
   };
 
+  // handle avatar file selection and upload
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      showNotification({ type: 'error', message: 'Avatar je příliš velký (max. 5 MB).' });
+      showNotification({ type: 'error', message: 'Avatar is too large (max 5 MB).' });
       return;
     }
     if (!['image/jpeg','image/png','image/gif'].includes(file.type)) {
-      showNotification({ type: 'error', message: 'Nepodporovaný formát (JPG, PNG, GIF).' });
+      showNotification({ type: 'error', message: 'Unsupported format (JPG, PNG, GIF).' });
       return;
     }
     setIsUploadingAvatar(true);
@@ -175,19 +176,20 @@ export default function Profile() {
           setForm(prev => ({ ...prev, avatar_url: data.secure_url }));
           saveAvatarToDb(data.secure_url);
         } else {
-          showNotification({ type: 'error', message: 'Nepodařilo se získat URL z Cloudinary.' });
+          showNotification({ type: 'error', message: 'Failed to obtain URL from Cloudinary.' });
         }
       })
       .catch(err => {
         console.error(err);
-        showNotification({ type: 'error', message: 'Nepodařilo se nahrát avatar.' });
+        showNotification({ type: 'error', message: 'Failed to upload avatar.' });
       })
       .finally(() => setIsUploadingAvatar(false));
   };
 
+  // handle profile form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    showNotification({ type: 'info', message: 'Ukládám…' });
+    showNotification({ type: 'info', message: 'Saving…' });
     const payload = {
       name:       form.name,
       bio:        form.bio,
@@ -217,16 +219,17 @@ export default function Profile() {
             showNotification({ type:'error', message: p.message }); return;
           }
         } catch {}
-        showNotification({ type:'success', message:'Vše bylo úspěšně uloženo.' });
+        showNotification({ type:'success', message:'Profile saved successfully.' });
         setInitialForm({ ...form });
         setIsDirty(false);
       })
       .catch(err => {
         console.error(err);
-        showNotification({ type:'error', message: err.message||'Chyba při ukládání profilu.' });
+        showNotification({ type:'error', message: err.message||'Error saving profile.' });
       });
   };
 
+  // handle logout action
   const handleLogout = () => {
     fetch('https://app.byxbot.com/php/logout.php', {
       method:'POST',
@@ -238,17 +241,17 @@ export default function Profile() {
         if (res.ok) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
-          showNotification({ type:'info', message:'Byli jste odhlášeni.' });
+          showNotification({ type:'info', message:'You have been logged out.' });
           navigate('/login');
         }
       })
       .catch(err => {
         console.error(err);
-        showNotification({ type:'error', message:'Chyba při odhlašování.' });
+        showNotification({ type:'error', message:'Error during logout.' });
       });
   };
 
-  // zavření modalu pro linked accounts
+  // close linked account modal
   const onLinkModalClose = (reload=false) => {
     setShowLinkModal(null);
     if (reload) loadLinked();
@@ -256,25 +259,25 @@ export default function Profile() {
 
   return (
     <div className="profile-container">
-      <h2>Account settings</h2>
+      <h2>Account Settings</h2>
 
       <form onSubmit={handleSubmit} className="profile-form">
-        {/* levá část: avatar, logout */}
+        {/* left side: avatar, logout */}
         <div className="profile-left">
           <input type="file" accept="image/*" ref={fileInputRef} style={{display:'none'}} onChange={handleAvatarChange} />
-          <div className="profile-avatar-container" onClick={handleAvatarClick} title="Klikni pro změnu avatara">
-            {isUploadingAvatar && <div className="avatar-uploading-overlay">Nahrávám…</div>}
+          <div className="profile-avatar-container" onClick={handleAvatarClick} title="Click to change avatar">
+            {isUploadingAvatar && <div className="avatar-uploading-overlay">Uploading…</div>}
             {form.avatar_url
               ? <img src={form.avatar_url} alt="avatar" className="profile-avatar" />
               : <div className="profile-avatar placeholder"><span>Upload</span></div>
             }
           </div>
-          <h3>{form.name || 'Uživatel'}</h3>
+          <h3>{form.name || 'User'}</h3>
           <p className="profile-sub">@{form.username || ''}</p>
           <button type="button" className="btn-logout" onClick={handleLogout}>Logout</button>
         </div>
 
-        {/* pravá část: pole a linked accounts */}
+        {/* right side: fields and linked accounts */}
         <div className="profile-right">
           <label>
             Name
@@ -293,7 +296,7 @@ export default function Profile() {
             <input type="email" name="email" value={form.email} disabled />
           </label>
           <label>
-            Phone number
+            Phone Number
             <div className="phone-input">
               <span>🇨🇿</span>
               <input type="text" name="phone" value={form.phone} onChange={handleChange} placeholder="+420____" />
@@ -302,20 +305,20 @@ export default function Profile() {
 
           <p className="section-title">What can people see in your profile?</p>
           <label className="checkbox-label">
-            Joined whops
+            Joined Whops
             <input type="checkbox" name="showJoined" checked={form.showJoined} onChange={handleChange} />
           </label>
           <label className="checkbox-label">
-            Owned whops
+            Owned Whops
             <input type="checkbox" name="showOwned" checked={form.showOwned} onChange={handleChange} />
           </label>
           <label className="checkbox-label">
-            Approximate location
+            Approximate Location
             <input type="checkbox" name="showLocation" checked={form.showLocation} onChange={handleChange} />
           </label>
 
-          {/* propojené účty */}
-          <p className="section-title">Propojené účty</p>
+          {/* linked accounts */}
+          <p className="section-title">Linked Accounts</p>
           <ul className="linked-list">
             {linkedAccounts.map(acc => (
               <li key={acc.id}>
@@ -333,16 +336,16 @@ export default function Profile() {
                           body: `id=${acc.id}`
                         }).then(() => onLinkModalClose(true));
                       }}
-                    >Odpojit</button>
+                    >Disconnect</button>
                   : <button type="button" className="btn verify" onClick={() => setShowLinkModal(acc)}>
-                      Ověřit
+                      Verify
                     </button>
                 }
               </li>
             ))}
           </ul>
           <button type="button" className="btn create" onClick={() => setShowLinkModal({ action: 'create' })}>
-            Připojit nový účet
+            Link New Account
           </button>
 
           <button type="submit" className="btn-save" disabled={!isDirty}>

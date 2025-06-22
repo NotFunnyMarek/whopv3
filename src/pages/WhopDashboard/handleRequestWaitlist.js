@@ -9,13 +9,13 @@
  * @throws {Error}              If the server responds with an error or non‐JSON.
  */
 export default async function handleRequestWaitlist(whopId, answers) {
-  // 1) Build request payload – posíláme pole "answers", ne "answers_json"
+  // Build the request payload – send "answers" array directly
   const payload = {
     whop_id: whopId,
     answers: answers,
   };
 
-  // 2) Send to the PHP endpoint
+  // Send to the PHP endpoint
   const res = await fetch(
     "https://app.byxbot.com/php/request_waitlist.php",
     {
@@ -26,25 +26,25 @@ export default async function handleRequestWaitlist(whopId, answers) {
     }
   );
 
-  // 3) Read the response text
+  // Read the response text
   const text = await res.text();
   let json;
   try {
     json = JSON.parse(text);
   } catch {
-    throw new Error("Server nevrátil platný JSON.");
+    throw new Error("Server did not return valid JSON.");
   }
 
-  // 4) Handle conflict (already requested) or explicit error
+  // Handle conflict (already requested) or explicit error
   if (res.status === 409 || json.status === "error") {
-    throw new Error(json.message || "Konflikt při žádosti.");
+    throw new Error(json.message || "Conflict during waitlist request.");
   }
 
-  // 5) Handle any other non‑OK status
+  // Handle any other non-OK status
   if (!res.ok) {
-    throw new Error(json.message || `HTTP ${res.status}`);
+    throw new Error(json.message || `HTTP error ${res.status}`);
   }
 
-  // 6) Return the parsed JSON on success
+  // Return the parsed JSON on success
   return json;
 }

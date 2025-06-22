@@ -15,15 +15,15 @@ export default function MemberMode({
   memberLoading,
   handleLeave,
 }) {
-  // Stav pro vybranou kampaň (pokud uživatel klikne v záložce "Earn")
+  // State for the selected campaign (when the user clicks in the "Earn" tab)
   const [selectedCampaign, setSelectedCampaign] = useState(null);
 
-  // Callback pro návrat zpět z submission panelu
+  // Callback to return from the submission panel
   const handleBackFromSubmission = () => {
     setSelectedCampaign(null);
   };
 
-  // Pokud je vybraná kampaň, vykreslíme SubmissionPanel
+  // If a campaign is selected, render the SubmissionPanel
   if (selectedCampaign) {
     return (
       <div className="member-container">
@@ -45,7 +45,7 @@ export default function MemberMode({
     );
   }
 
-  // Jinak standardní režim: Sidebar + Main
+  // Otherwise, render the standard mode: Sidebar + Main content
   return (
     <div className="member-container">
       <MemberSidebar
@@ -62,8 +62,7 @@ export default function MemberMode({
         campaigns={campaigns}
         campaignsLoading={campaignsLoading}
         campaignsError={campaignsError}
-        onSelectCampaign={setSelectedCampaign} 
-        // funkce, která se zavolá, když uživatel klikne na kartu kampaně
+        onSelectCampaign={setSelectedCampaign}
       />
     </div>
   );

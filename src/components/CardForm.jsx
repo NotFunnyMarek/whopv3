@@ -37,7 +37,7 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
     if (parseFloat(rewardPerThousand) > b) {
       setRewardPerThousand(b.toString());
     }
-  }, [budget]);
+  }, [budget, rewardPerThousand]);
 
   const handlePlatformChange = (e) => {
     const { name, checked } = e.target;
@@ -68,7 +68,14 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!type || !campaignName.trim() || !category || !budget || !rewardPerThousand || !expirationDateTime) {
+    if (
+      !type ||
+      !campaignName.trim() ||
+      !category ||
+      !budget ||
+      !rewardPerThousand ||
+      !expirationDateTime
+    ) {
       setErrorMsg('Please fill out all required fields * and expiration date/time.');
       return;
     }
@@ -106,7 +113,8 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         return;
       }
       if (res.status === 201) {
-        onRefresh(); onClose();
+        onRefresh();
+        onClose();
       } else {
         const data = await res.json();
         setErrorMsg(data.error || `Error ${res.status}`);
@@ -118,7 +126,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
 
   const renderTypeSelect = () => (
     <div className="cf-input-group">
-      <label>Campaign Type <span className="cf-required">*</span></label>
+      <label>
+        Campaign Type <span className="cf-required">*</span>
+      </label>
       <select value={type} onChange={(e) => setType(e.target.value)} required>
         <option value="">— Select type —</option>
         <option value="Clipping">Clipping</option>
@@ -140,7 +150,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
       {errorMsg && <div className="cf-error">{errorMsg}</div>}
       <form onSubmit={handleSubmit} className="cf-form">
         <div className="cf-input-group">
-          <label>Campaign Name <span className="cf-required">*</span></label>
+          <label>
+            Campaign Name <span className="cf-required">*</span>
+          </label>
           <input
             type="text"
             value={campaignName}
@@ -153,7 +165,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         {renderTypeSelect()}
 
         <div className="cf-input-group">
-          <label>Category <span className="cf-required">*</span></label>
+          <label>
+            Category <span className="cf-required">*</span>
+          </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -167,7 +181,10 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         </div>
 
         <div className="cf-input-group">
-          <label>Total Budget (USD) <span className="cf-required">*</span> <FaQuestionCircle title="Total budget for the campaign" /></label>
+          <label>
+            Total Budget (USD) <span className="cf-required">*</span>{' '}
+            <FaQuestionCircle title="Total budget for the campaign" />
+          </label>
           <div className="cf-currency-row">
             <span className="cf-currency-symbol">$</span>
             <input
@@ -183,7 +200,10 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         </div>
 
         <div className="cf-input-group">
-          <label>Reward per 1000 Views <span className="cf-required">*</span> <FaQuestionCircle title="USD per 1000 views" /></label>
+          <label>
+            Reward per 1000 Views <span className="cf-required">*</span>{' '}
+            <FaQuestionCircle title="USD per 1000 views" />
+          </label>
           <div className="cf-reward-row">
             <span className="cf-currency-symbol">$</span>
             <input
@@ -206,7 +226,10 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
 
         <div className="cf-grid-two-cols">
           <div className="cf-input-group">
-            <label>Minimum Payout (USD) <FaQuestionCircle title="Minimum amount the influencer will receive" /></label>
+            <label>
+              Minimum Payout (USD){' '}
+              <FaQuestionCircle title="Minimum amount the influencer will receive" />
+            </label>
             <div className="cf-currency-row">
               <span className="cf-currency-symbol">$</span>
               <input
@@ -220,7 +243,10 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
             </div>
           </div>
           <div className="cf-input-group">
-            <label>Maximum Payout (USD) <FaQuestionCircle title="Maximum amount the influencer can earn" /></label>
+            <label>
+              Maximum Payout (USD){' '}
+              <FaQuestionCircle title="Maximum amount the influencer can earn" />
+            </label>
             <div className="cf-currency-row">
               <span className="cf-currency-symbol">$</span>
               <input
@@ -236,16 +262,20 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
         </div>
 
         <fieldset className="cf-fieldset">
-          <legend>Platforms <span className="cf-required">*</span> <FaQuestionCircle title="Select social platforms for the campaign" /></legend>
+          <legend>
+            Platforms <span className="cf-required">*</span>{' '}
+            <FaQuestionCircle title="Select social platforms for the campaign" />
+          </legend>
           <div className="cf-platforms-row">
-            {['instagram','tiktok'].map((name) => (
+            {['instagram', 'tiktok'].map((name) => (
               <label key={name} className="cf-platform-label">
                 <input
                   type="checkbox"
                   name={name}
                   checked={platforms[name]}
                   onChange={handlePlatformChange}
-                />{renderPlatformIcon(name)} {name.charAt(0).toUpperCase()+name.slice(1)}
+                />
+                {renderPlatformIcon(name)} {name.charAt(0).toUpperCase() + name.slice(1)}
               </label>
             ))}
           </div>
@@ -271,14 +301,30 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               onChange={(e) => setNewContentLink(e.target.value)}
               placeholder="https://drive.google.com/..."
             />
-            <button type="button" onClick={addContentLink} className="cf-list-add-button"><FaPlus /></button>
+            <button type="button" onClick={addContentLink} className="cf-list-add-button">
+              <FaPlus />
+            </button>
           </div>
           <ul className="cf-list-container">
             {contentLinks.map((link, idx) => (
               <li key={idx} className="cf-list-item">
                 <FaGoogleDrive className="cf-list-icon" />
-                <a href={/^https?:\/\//.test(link)?link:`https://${link}`} target="_blank" rel="noopener noreferrer" className="cf-list-text">{link}</a>
-                <button type="button" onClick={() => removeContentLink(idx)} className="cf-list-delete-button" aria-label="Remove link"><FaTrash /></button>
+                <a
+                  href={/^https?:\/\//.test(link) ? link : `https://${link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="cf-list-text"
+                >
+                  {link}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => removeContentLink(idx)}
+                  className="cf-list-delete-button"
+                  aria-label="Remove link"
+                >
+                  <FaTrash />
+                </button>
               </li>
             ))}
           </ul>
@@ -294,20 +340,32 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
               onChange={(e) => setNewRequirement(e.target.value)}
               placeholder="e.g. Must tag @whop in caption"
             />
-            <button type="button" onClick={addRequirement} className="cf-list-add-button"><FaPlus /></button>
+            <button type="button" onClick={addRequirement} className="cf-list-add-button">
+              <FaPlus />
+            </button>
           </div>
           <ul className="cf-list-container">
             {requirements.map((item, idx) => (
               <li key={idx} className="cf-list-item">
                 <span className="cf-list-text">{item}</span>
-                <button type="button" onClick={() => removeRequirement(idx)} className="cf-list-delete-button" aria-label="Remove requirement"><FaTrash /></button>
+                <button
+                  type="button"
+                  onClick={() => removeRequirement(idx)}
+                  className="cf-list-delete-button"
+                  aria-label="Remove requirement"
+                >
+                  <FaTrash />
+                </button>
               </li>
             ))}
           </ul>
         </div>
 
         <div className="cf-input-group">
-          <label>Expiration Date/Time <span className="cf-required">*</span> <FaQuestionCircle title="Date and time when campaign expires" /></label>
+          <label>
+            Expiration Date/Time <span className="cf-required">*</span>{' '}
+            <FaQuestionCircle title="Date and time when campaign expires" />
+          </label>
           <input
             type="datetime-local"
             value={expirationDateTime}
@@ -316,7 +374,9 @@ export default function CardForm({ whopId, onClose, onRefresh }) {
           />
         </div>
 
-        <button type="submit" className="cf-submit-button">Save Campaign</button>
+        <button type="submit" className="cf-submit-button">
+          Save Campaign
+        </button>
       </form>
     </div>
   );

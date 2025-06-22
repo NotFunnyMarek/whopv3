@@ -8,19 +8,19 @@ export default function FeaturesSetup() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Načteme data z cookie (pokud existují) ještě před jakýmkoli hookem
+  // Load data from cookie (if any) before any hooks
   const cookieData = getWhopSetupCookie();
-  // Můžeme dostat whopData buď z location.state, nebo z cookie
+  // We may get whopData either from location.state or from cookie
   const prevWhopData = location.state?.whopData || cookieData || null;
 
-  // Funkce, která vrátí počáteční stav pole features:
+  // Function returning initial features array state
   const getInitialFeatures = () => {
     if (
       prevWhopData &&
       Array.isArray(prevWhopData.features) &&
       prevWhopData.features.length > 0
     ) {
-      // Pokud máme v prevWhopData již uložené features, použijeme je:
+      // If features already saved in prevWhopData, use them:
       return prevWhopData.features.map((f, idx) => ({
         id: idx + 1,
         title: f.title || "",
@@ -30,7 +30,7 @@ export default function FeaturesSetup() {
         error: "",
       }));
     }
-    // Jinak od začátku dvě prázdné karty
+    // Otherwise start with two empty feature cards
     return [
       { id: 1, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
       { id: 2, title: "", subtitle: "", imageUrl: "", isUploading: false, error: "" },
@@ -39,7 +39,7 @@ export default function FeaturesSetup() {
 
   const [features, setFeatures] = useState(getInitialFeatures());
 
-  // useEffect ukládá do cookie pokaždé, když se features změní
+  // Save to cookie whenever features change
   useEffect(() => {
     if (!prevWhopData) return;
     const newData = {
@@ -53,7 +53,7 @@ export default function FeaturesSetup() {
     setWhopSetupCookie(newData);
   }, [features, prevWhopData]);
 
-  // Pokud chybí předchozí whopData, hned vracíme chybovou obrazovku
+  // If no previous whopData, show error screen
   if (!prevWhopData) {
     return (
       <div className="features-setup-error">
@@ -63,7 +63,7 @@ export default function FeaturesSetup() {
     );
   }
 
-  // Funkce pro přidání nové feature
+  // Add a new feature (up to 6 total)
   const addFeature = () => {
     if (features.length >= 6) return;
     const newId = features.length > 0 ? Math.max(...features.map((f) => f.id)) + 1 : 1;
@@ -73,13 +73,13 @@ export default function FeaturesSetup() {
     ]);
   };
 
-  // Funkce pro odstranění feature (minimálně 2 musí zůstat)
+  // Remove a feature ( keep at least 2 )
   const removeFeature = (id) => {
     if (features.length <= 2) return;
     setFeatures((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // Změna názvu / podnadpisu
+  // Handle title / subtitle changes
   const handleChange = (id, field, value) => {
     setFeatures((prev) =>
       prev.map((f) =>
@@ -93,36 +93,36 @@ export default function FeaturesSetup() {
     );
   };
 
-  // Nahrávání obrázku na Cloudinary a generování náhledu
+  // Upload image to Cloudinary and generate preview
   const handleImageChange = async (id, file) => {
     if (!file) return;
 
-    // Validace velikosti souboru
+    // File size validation
     const maxSize = 5 * 1024 * 1024; // 5 MB
     if (file.size > maxSize) {
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, error: "Obrázek je příliš velký (max 5 MB).", isUploading: false }
+            ? { ...f, error: "Image is too large (max 5 MB).", isUploading: false }
             : f
         )
       );
       return;
     }
 
-    // Validace typu souboru
+    // File type validation
     if (!file.type.startsWith("image/")) {
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, error: "Vyberte prosím platný obrázek.", isUploading: false }
+            ? { ...f, error: "Please select a valid image file.", isUploading: false }
             : f
         )
       );
       return;
     }
 
-    // Označíme, že právě nahráváme
+    // Mark as uploading
     setFeatures((prev) =>
       prev.map((f) => (f.id === id ? { ...f, isUploading: true, error: "" } : f))
     );
@@ -141,13 +141,13 @@ export default function FeaturesSetup() {
         body: formData,
       });
       if (!res.ok) {
-        throw new Error(`Chyba při nahrávání na Cloudinary: ${res.status}`);
+        throw new Error(`Cloudinary upload error: ${res.status}`);
       }
       const data = await res.json();
       if (!data.secure_url) {
-        throw new Error("Nepodařilo se získat secure_url z Cloudinary.");
+        throw new Error("Failed to retrieve secure_url from Cloudinary.");
       }
-      // Uložíme do stavu imageUrl a vypneme isUploading
+      // Save imageUrl and stop uploading state
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
@@ -160,21 +160,21 @@ export default function FeaturesSetup() {
       setFeatures((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, imageUrl: "", isUploading: false, error: "Chyba při nahrávání obrázku." }
+            ? { ...f, imageUrl: "", isUploading: false, error: "Error uploading image." }
             : f
         )
       );
     }
   };
 
-  // Počet validních features (musí mít neprázdný title i imageUrl)
+  // Count valid features (must have non-empty title and imageUrl)
   const validCount = features.reduce(
     (count, f) => count + (f.title.trim() && f.imageUrl ? 1 : 0),
     0
   );
   const isContinueEnabled = validCount >= 2;
 
-  // Handler pro tlačítko „Back“
+  // Handler for "Back" button
   const handleBack = () => {
     const newData = {
       ...prevWhopData,
@@ -188,7 +188,7 @@ export default function FeaturesSetup() {
     navigate("/setup/link", { state: { whopData: newData } });
   };
 
-  // Handler pro tlačítko „Continue“
+  // Handler for "Continue" button
   const handleContinue = () => {
     if (!isContinueEnabled) return;
 
@@ -268,7 +268,7 @@ export default function FeaturesSetup() {
               <label>Image (1:1) *</label>
               <div className="feature-image-wrapper">
                 {feature.isUploading ? (
-                  <div className="feature-image-uploading">Nahrávám…</div>
+                  <div className="feature-image-uploading">Uploading…</div>
                 ) : feature.imageUrl ? (
                   <img
                     src={feature.imageUrl}

@@ -1,3 +1,5 @@
+// src/pages/ChooseLink.jsx
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/choose-link.scss";
@@ -10,16 +12,18 @@ export default function ChooseLink() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Pokud existuje state z location, použijeme ho; jinak z cookie
+  // Retrieve previous Whop data from location state or from cookie
   const cookieData = getWhopSetupCookie();
   const prevWhopData = location.state?.whopData || cookieData || null;
 
+  // Initialize the slug input with existing data if available
   useEffect(() => {
     if (prevWhopData?.slug) {
       setSlug(prevWhopData.slug);
     }
   }, [prevWhopData]);
 
+  // If no previous data is found, show an error and a link back to start
   if (!prevWhopData) {
     return (
       <div className="choose-link-error">
@@ -29,24 +33,25 @@ export default function ChooseLink() {
     );
   }
 
+  // Handle changes to the slug input, allowing only alphanumeric, hyphens, and underscores
   const handleChange = (e) => {
-    // Pouze alfanumerické + pomlčka/podtržítko
-    const value = e.target.value.replace(/[^a-zA-Z0-9\-_]/g, "");
-    if (value.length <= maxSlugLength) {
-      setSlug(value);
+    const sanitized = e.target.value.replace(/[^a-zA-Z0-9\-_]/g, "");
+    if (sanitized.length <= maxSlugLength) {
+      setSlug(sanitized);
     }
   };
 
+  // Go back to the initial setup step, saving the slug in the cookie
   const handleBack = () => {
-    // Uložíme state do cookie a vrátíme se na /setup
     const newData = {
       ...prevWhopData,
-      slug: slug,
+      slug,
     };
     setWhopSetupCookie(newData);
     navigate("/setup", { state: { whopData: newData } });
   };
 
+  // Continue to the features setup step, saving the slug in the cookie
   const handleContinue = () => {
     if (!slug.trim()) return;
 
@@ -68,15 +73,17 @@ export default function ChooseLink() {
 
   return (
     <div className="choose-link-container">
+      {/* Header */}
       <div className="choose-link-header">
-        <h1 className="choose-link-title">Choose your Whop link</h1>
+        <h1 className="choose-link-title">Choose Your Whop URL</h1>
       </div>
 
       <div className="choose-link-content">
         <p className="choose-link-subtitle">
-          This is the link you send to your customers.
+          This will be the URL you share with your followers.
         </p>
 
+        {/* URL input with prefix */}
         <div className="choose-link-input-wrapper">
           <span className="choose-link-prefix">wrax.com/c/</span>
           <input
@@ -88,10 +95,12 @@ export default function ChooseLink() {
           />
         </div>
 
+        {/* Character counter */}
         <div className="choose-link-charcount">
           {slug.length}/{maxSlugLength}
         </div>
 
+        {/* Navigation buttons */}
         <div className="choose-link-buttons">
           <button className="back-button" onClick={handleBack}>
             ← Back

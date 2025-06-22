@@ -10,9 +10,9 @@ export default async function fetchWhopData(
   setEditBannerUrl,
   setNewSlugValue,
   setEditFeatures,
-  fetchCampaigns,        // bound verze
-  setWaitlistEnabled,    // nově
-  setWaitlistQuestions   // nově
+  fetchCampaigns,        // bound version
+  setWaitlistEnabled,    // newly added
+  setWaitlistQuestions   // newly added
 ) {
   setLoading(true);
   setError("");
@@ -27,12 +27,12 @@ export default async function fetchWhopData(
     try {
       json = JSON.parse(text);
     } catch {
-      setError("Chyba: neplatný JSON.");
+      setError("Error: invalid JSON.");
       setLoading(false);
       return;
     }
     if (!res.ok || json.status !== "success") {
-      setError(json.message || "Nepodařilo se načíst Whop.");
+      setError(json.message || "Failed to load Whop.");
       setLoading(false);
       return;
     }
@@ -40,7 +40,7 @@ export default async function fetchWhopData(
     const data = json.data;
     setWhopData(data);
 
-    // Pokud je owner, připravíme editovací stavy:
+    // If owner, prepare editing state:
     if (data.is_owner) {
       setEditName(data.name);
       setEditDescription(data.description);
@@ -58,7 +58,7 @@ export default async function fetchWhopData(
         }))
       );
 
-      // ** Waitlist stavy **
+      // ** Waitlist state **
       setWaitlistEnabled(Boolean(data.waitlist_enabled));
       setWaitlistQuestions(
         Array.isArray(data.waitlist_questions) && data.waitlist_questions.length
@@ -69,12 +69,12 @@ export default async function fetchWhopData(
       await fetchCampaigns(data.id);
     }
 
-    // Pokud je member (ale ne owner), načteme kampaně:
+    // If member (but not owner), load campaigns:
     if (data.is_member && !data.is_owner) {
       await fetchCampaigns(data.id);
     }
   } catch (err) {
-    setError("Síťová chyba: " + err.message);
+    setError("Network error: " + err.message);
   } finally {
     setLoading(false);
   }

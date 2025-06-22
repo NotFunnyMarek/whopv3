@@ -28,13 +28,13 @@ export default function MemberSidebar({
             className="member-banner-img"
           />
         ) : (
-          <div className="member-banner-placeholder">Žádný banner</div>
+          <div className="member-banner-placeholder">No banner</div>
         )}
       </div>
       <div className="member-info">
         <h2 className="member-title">{whopData.name}</h2>
         <div className="member-members-count">
-          <FaUsers /> {whopData.members_count} členů
+          <FaUsers /> {whopData.members_count} members
         </div>
       </div>
       <nav className="member-nav">
@@ -65,10 +65,10 @@ export default function MemberSidebar({
       </nav>
       <div className="member-actions">
         {memberLoading ? (
-          <div className="spinner spinner-small"></div>
+          <div className="spinner spinner-small" />
         ) : (
           <button className="leave-button" onClick={handleLeave}>
-            <FaSignOutAlt /> Opustit
+            <FaSignOutAlt /> Leave
           </button>
         )}
       </div>

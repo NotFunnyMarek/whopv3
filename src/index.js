@@ -10,7 +10,7 @@ import './styles/bottombar.scss';
 import './styles/login.scss';
 import './styles/register.scss';
 import './styles/profile.scss';
-import './styles/notifications.scss'; // Přidáme scss pro notifikace
+import './styles/notifications.scss';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

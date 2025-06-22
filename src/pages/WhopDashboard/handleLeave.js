@@ -11,16 +11,16 @@ export default async function handleLeave(
 ) {
   if (!whopData) return;
 
-  // potvrzení
+  // confirmation
   try {
-    await showConfirm("Chcete okamžitě opustit tento Whop a ztratit přístup?");
+    await showConfirm("Do you want to immediately leave this Whop and lose access?");
   } catch {
     return;
   }
 
   setMemberLoading(true);
 
-  // pokud price > 0 → placené
+  // if price > 0 → paid Whop
   if (whopData.price && parseFloat(whopData.price) > 0) {
     try {
       const res = await fetch(
@@ -34,14 +34,14 @@ export default async function handleLeave(
       );
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json.message || "Nepodařilo se zrušit předplatné.");
+        throw new Error(json.message || "Failed to cancel membership.");
       }
       showNotification({ type: "success", message: json.message });
     } catch (err) {
-      console.error("Chyba při cancel_membership:", err);
+      console.error("Error in cancel_membership:", err);
       showNotification({ type: "error", message: err.message });
     } finally {
-      // refresh dat
+      // refresh data
       const slug = whopData.slug;
       const ref = await fetch(
         `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slug)}`,
@@ -54,7 +54,7 @@ export default async function handleLeave(
     return;
   }
 
-  // free → leave_whop
+  // free Whop → leave_whop
   try {
     const res = await fetch(
       "https://app.byxbot.com/php/leave_whop.php",
@@ -67,14 +67,14 @@ export default async function handleLeave(
     );
     const json = await res.json();
     if (!res.ok) {
-      throw new Error(json.message || "Nepodařilo se opustit.");
+      throw new Error(json.message || "Failed to leave.");
     }
     showNotification({ type: "success", message: json.message });
   } catch (err) {
-    console.error("Chyba při leave_whop:", err);
+    console.error("Error in leave_whop:", err);
     showNotification({ type: "error", message: err.message });
   } finally {
-    // refresh dat
+    // refresh data
     const slug = whopData.slug;
     const ref = await fetch(
       `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(slug)}`,

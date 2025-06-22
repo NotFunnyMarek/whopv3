@@ -15,22 +15,22 @@ export default async function handleSaveWhop(
   setSlugError,
   fetchCampaigns,
   setWhopData,
-  waitlistEnabled,         // nový parametr
-  waitlistQuestions        // nový parametr
+  waitlistEnabled,         // new parameter
+  waitlistQuestions        // new parameter
 ) {
-  // 1) Validace názvu a popisu
+  // 1) Validate name and description
   if (!editName.trim() || !editDescription.trim()) {
-    setError("Název i popis nesmí být prázdné.");
+    setError("Name and description cannot be empty.");
     return;
   }
-  // 2) Validace počtu features
-  const validFeats = editFeatures.filter((f) => f.title.trim() && f.imageUrl);
-  if (validFeats.length < 2) {
-    setError("Minimálně 2 platné features.");
+  // 2) Validate number of features
+  const validFeatures = editFeatures.filter(f => f.title.trim() && f.imageUrl);
+  if (validFeatures.length < 2) {
+    setError("At least 2 valid features are required.");
     return;
   }
 
-  // 3) Sestavení payloadu
+  // 3) Build payload
   const payload = {
     slug:               whopData.slug,
     name:               editName.trim(),
@@ -40,20 +40,20 @@ export default async function handleSaveWhop(
     currency:           whopData.currency || "USD",
     is_recurring:       whopData.is_recurring || 0,
     billing_period:     whopData.billing_period || "",
-    features:           validFeats.map((f) => ({
+    features:           validFeatures.map(f => ({
                           title:     f.title.trim(),
                           subtitle:  f.subtitle.trim(),
                           image_url: f.imageUrl,
                         })),
-    // přidáno pro waitlist
+    // added for waitlist
     waitlist_enabled:   waitlistEnabled ? 1 : 0,
     waitlist_questions: waitlistEnabled
-                           ? waitlistQuestions.filter((q) => q.trim() !== "")
+                           ? waitlistQuestions.filter(q => q.trim() !== "")
                            : [],
   };
 
   try {
-    // 4) Odeslání data na server
+    // 4) Send to server
     const res = await fetch("https://app.byxbot.com/php/update_whop.php", {
       method:      "POST",
       headers:     { "Content-Type": "application/json" },
@@ -66,18 +66,18 @@ export default async function handleSaveWhop(
     try {
       json = JSON.parse(text);
     } catch {
-      setError("Chyba serveru.");
+      setError("Server error.");
       return;
     }
 
     if (!res.ok || json.status !== "success") {
-      setError(json.message || "Nepovedlo se uložit.");
+      setError(json.message || "Failed to save changes.");
       return;
     }
 
-    showNotification({ type: "success", message: "Whop úspěšně uložen." });
+    showNotification({ type: "success", message: "Whop saved successfully." });
 
-    // 5) Znovunačtení aktuálních dat
+    // 5) Reload current data
     const refreshRes = await fetch(
       `https://app.byxbot.com/php/get_whop.php?slug=${encodeURIComponent(
         whopData.slug
@@ -98,8 +98,8 @@ export default async function handleSaveWhop(
       setEditDescription(data.description);
       setEditBannerUrl(data.banner_url || "");
 
-      // znovu připravíme features
-      const newFeatArr = data.features.map((f, idx) => ({
+      // Rebuild features state
+      const newFeatures = data.features.map((f, idx) => ({
         id:          idx + 1,
         title:       f.title,
         subtitle:    f.subtitle,
@@ -107,17 +107,18 @@ export default async function handleSaveWhop(
         isUploading: false,
         error:       "",
       }));
-      setEditFeatures(newFeatArr);
+      setEditFeatures(newFeatures);
+
       setError("");
       setSlugError("");
-      // waitlist_enabled a waitlist_questions se do stavu načtou přes parent
+      // waitlist_enabled and waitlist_questions will be handled by the parent hook
     }
   } catch (err) {
-    console.error(err);
-    setError("Síťová chyba.");
+    console.error("Network error while saving Whop:", err);
+    setError("Network error.");
     showNotification({
       type: "error",
-      message: "Síťová chyba při ukládání Whopu.",
+      message: "Network error while saving Whop.",
     });
   }
 }

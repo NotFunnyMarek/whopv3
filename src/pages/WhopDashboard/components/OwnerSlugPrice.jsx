@@ -23,6 +23,7 @@ export default function OwnerSlugPrice({
     const qs = Array.isArray(whopData.waitlist_questions)
       ? [...whopData.waitlist_questions]
       : [];
+    // Ensure array has at least 5 entries
     while (qs.length < 5) qs.push("");
     qs[idx] = text;
     updateField("waitlist_questions", qs);
@@ -32,7 +33,7 @@ export default function OwnerSlugPrice({
     <div className="whop-slug-section">
       {(isEditing || isSlugEditing) && (
         <div className="whop-slug-edit-wrapper">
-          <label className="whop-slug-label">Změň link:</label>
+          <label className="whop-slug-label">Change link:</label>
           <div className="whop-slug-input-wrapper">
             <span className="whop-slug-prefix">wrax.com/c/</span>
             <input
@@ -45,9 +46,16 @@ export default function OwnerSlugPrice({
           </div>
           {slugError && <div className="whop-slug-error">{slugError}</div>}
           {isSlugEditing ? (
-            <button className="whop-slug-save-btn" onClick={handleSlugSave}>Uložit link</button>
+            <button className="whop-slug-save-btn" onClick={handleSlugSave}>
+              Save link
+            </button>
           ) : (
-            <button className="whop-slug-edit-btn" onClick={() => setIsSlugEditing(true)}>Změnit link</button>
+            <button
+              className="whop-slug-edit-btn"
+              onClick={() => setIsSlugEditing(true)}
+            >
+              Edit link
+            </button>
           )}
         </div>
       )}
@@ -56,7 +64,7 @@ export default function OwnerSlugPrice({
         {isEditing ? (
           <div className="price-edit-wrapper">
             <div className="price-field">
-              <label>Cena (např. 10.00)</label>
+              <label>Price (e.g. 10.00)</label>
               <input
                 type="number"
                 step="0.01"
@@ -69,29 +77,35 @@ export default function OwnerSlugPrice({
               />
             </div>
             <div className="price-field">
-              <label>Měna</label>
+              <label>Currency</label>
               <input
                 type="text"
                 value={whopData.currency || "USD"}
-                onChange={e => updateField("currency", e.target.value.toUpperCase())}
+                onChange={e =>
+                  updateField("currency", e.target.value.toUpperCase())
+                }
               />
             </div>
             <div className="price-field">
-              <label>Předplatné</label>
+              <label>Subscription</label>
               <select
                 value={whopData.is_recurring ? "1" : "0"}
-                onChange={e => updateField("is_recurring", parseInt(e.target.value,10))}
+                onChange={e =>
+                  updateField("is_recurring", parseInt(e.target.value, 10))
+                }
               >
-                <option value="0">Jednorázově</option>
-                <option value="1">Opakované</option>
+                <option value="0">One-time</option>
+                <option value="1">Recurring</option>
               </select>
             </div>
             {whopData.is_recurring && (
               <div className="price-field">
-                <label>Perioda</label>
+                <label>Billing period</label>
                 <select
                   value={whopData.billing_period || ""}
-                  onChange={e => updateField("billing_period", e.target.value)}
+                  onChange={e =>
+                    updateField("billing_period", e.target.value)
+                  }
                 >
                   <option value="1 minute">1 minute</option>
                   <option value="7 days">7 days</option>
@@ -108,20 +122,23 @@ export default function OwnerSlugPrice({
                 <input
                   type="checkbox"
                   checked={!!whopData.waitlist_enabled}
-                  onChange={e => updateField("waitlist_enabled", e.target.checked ? 1 : 0)}
-                /> Enable waitlist
+                  onChange={e =>
+                    updateField("waitlist_enabled", e.target.checked ? 1 : 0)
+                  }
+                />{" "}
+                Enable waitlist
               </label>
             </div>
 
             {whopData.waitlist_enabled && (
               <div className="waitlist-questions-wrapper">
-                <p>Přidejte až 5 otázek pro žádost o waitlist:</p>
-                {[0,1,2,3,4].map(idx => (
+                <p>Add up to 5 waitlist request questions:</p>
+                {[0, 1, 2, 3, 4].map(idx => (
                   <div key={idx} className="price-field">
                     <input
                       type="text"
-                      placeholder={`Otázka ${idx+1} (volitelně)`}
-                      value={(whopData.waitlist_questions?.[idx] || "")}
+                      placeholder={`Question ${idx + 1} (optional)`}
+                      value={whopData.waitlist_questions?.[idx] || ""}
                       onChange={e => updateQuestion(idx, e.target.value)}
                     />
                   </div>
@@ -135,14 +152,17 @@ export default function OwnerSlugPrice({
               <span className="price-free">Cost: Free</span>
             ) : (
               <span className="price-info">
-                {whopData.currency}{parseFloat(whopData.price).toFixed(2)}{" "}
+                {whopData.currency}
+                {parseFloat(whopData.price).toFixed(2)}{" "}
                 {whopData.is_recurring
-                  ? `(Opakuje se každých ${whopData.billing_period})`
-                  : `(Jednorázově)`}
+                  ? `(Recurring every ${whopData.billing_period})`
+                  : `(One-time)`}
               </span>
             )}
             <div className="waitlist-status">
-              <em>Waitlist {whopData.waitlist_enabled ? "enabled" : "disabled"}</em>
+              <em>
+                Waitlist {whopData.waitlist_enabled ? "enabled" : "disabled"}
+              </em>
             </div>
           </div>
         )}

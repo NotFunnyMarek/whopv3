@@ -25,10 +25,12 @@ export default function LandingPage({
   const [requested, setRequested] = useState(false);
   const [faqOpen, setFaqOpen] = useState({});
 
+  // Delay entrance animation briefly
   useEffect(() => {
     setTimeout(() => setLoaded(true), 300);
   }, []);
 
+  // Initialize waitlist answers and requested state when data loads
   useEffect(() => {
     if (!whopData) return;
     setRequested(
@@ -58,45 +60,45 @@ export default function LandingPage({
   const priceLabel =
     price > 0
       ? `${currency}${price.toFixed(2)}${is_recurring ? `/${billing_period}` : ""}`
-      : "zdarma";
+      : "Free";
 
-  // Recenze
+  // Sample reviews
   const reviews = [
-    { name: "Tadeáš Beránek", text: "100% doporučuji, používám 14 dní a zisk 12%.", date: "Nov 9, 2024", rating: 5 },
-    { name: "Hell",         text: "Výborná aplikace, beta verze bez bugů.",         date: "Oct 18, 2024", rating: 4 },
-    { name: "kubadockal4",  text: "Jednoduché, přátelský tým.",                    date: "Jun 11, 2024", rating: 5 },
-    { name: "Marwik",       text: "nice",                                          date: "Jul 23, 2023", rating: 3 },
+    { name: "Tadeáš Beránek", text: "100% recommend, I've used it 14 days and made 12% profit.", date: "Nov 9, 2024", rating: 5 },
+    { name: "Hell",         text: "Great app, beta without bugs.",                     date: "Oct 18, 2024", rating: 4 },
+    { name: "kubadockal4",  text: "Simple, friendly team.",                            date: "Jun 11, 2024", rating: 5 },
+    { name: "Marwik",       text: "nice",                                              date: "Jul 23, 2023", rating: 3 },
   ];
 
-  // FAQ data
+  // FAQ entries
   const faqList = [
     { q: "How to join?", a: "Click the Join button and follow the prompts." },
     { q: "What happens after joining?", a: "You’ll get immediate access to all features." },
     { q: "Can I cancel anytime?", a: "Yes – subscription can be canceled with one click." },
   ];
 
-  // Odeslání žádosti o waitlist
+  // Submit waitlist request
   async function handleWaitlist() {
     if (price > 0 && user_balance < price) {
-      showNotification({ type: "error", message: "Nedostatek prostředků." });
+      showNotification({ type: "error", message: "Insufficient balance." });
       return;
     }
     try {
       await handleRequestWaitlist(id, answers);
-      showNotification({ type: "success", message: "Žádost odeslána." });
+      showNotification({ type: "success", message: "Request submitted." });
       setRequested(true);
     } catch (e) {
-      showNotification({ type: "error", message: e.message || "Chyba." });
+      showNotification({ type: "error", message: e.message || "Error." });
     }
   }
 
-  function toggleFaq(i) {
-    setFaqOpen(prev => ({ ...prev, [i]: !prev[i] }));
+  function toggleFaq(index) {
+    setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
   }
 
   return (
     <div className={`landing-page ${loaded ? "loaded" : ""}`}>
-      {/* HERO */}
+      {/* HERO SECTION */}
       <div className="hero glass" style={{ backgroundImage: `url(${banner_url})` }}>
         <div className="hero-overlay" />
         <div className="hero-content">
@@ -106,7 +108,7 @@ export default function LandingPage({
             <button
               className="btn primary"
               onClick={waitlist_enabled ? handleWaitlist : handleSubscribe}
-              disabled={memberLoading}
+              disabled={memberLoading || requested}
             >
               {memberLoading
                 ? "Loading..."
@@ -131,7 +133,7 @@ export default function LandingPage({
         </div>
       </div>
 
-      {/* REVIEWS */}
+      {/* REVIEWS SECTION */}
       <section className="section reviews-section">
         <h2 className="section-title">See what other people are saying</h2>
         <div className="reviews-grid">
@@ -150,7 +152,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* FEATURES SECTION */}
       <section className="section features-section alt">
         <h2 className="section-title">Here's what you'll get</h2>
         <div className="features-grid">
@@ -169,30 +171,25 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* ABOUT ME */}
+      {/* ABOUT SECTION */}
       <section className="section about-section">
         <h2 className="section-title">Learn about me</h2>
         <div className="about-container">
           <div className="card about glass">
-            <h3 className="about-title">ByX</h3>
-            <p className="about-subtitle">@byx • Joined Mar 2023</p>
+            <h3 className="about-title">{name}</h3>
+            <p className="about-subtitle">@{whopData.slug} • Joined {new Date(whopData.created_at).toLocaleDateString()}</p>
             <button className="btn outline about-btn">Send creator a message…</button>
             <div className="about-socials">
               {website_url && <a href={website_url}><FaGlobe /></a>}
               {socials.instagram && <a href={socials.instagram}><FaInstagram /></a>}
               {socials.discord && <a href={socials.discord}><FaDiscord /></a>}
             </div>
-            <p className="about-bio">
-              We are trading enthusiasts and believe that ByX will revolutionize trading automation.
-              Our community is full of successful traders, and we are confident that you will be
-              proud to be a part of it. With ByX 2.1, we aim to provide the best tools and support
-              for everyone.
-            </p>
+            <p className="about-bio">{whopData.bio}</p>
           </div>
         </div>
       </section>
 
-      {/* WHO FOR */}
+      {/* WHO THIS IS FOR */}
       <section className="section who-section alt">
         <h2 className="section-title">Who this is for</h2>
         <div className="who-grid">
@@ -201,15 +198,13 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* PRICING */}
+      {/* PRICING SECTION */}
       <section className="section pricing-section">
         <h2 className="section-title">Pricing</h2>
         <div className="pricing-container">
           <div className="card pricing glass">
-            <h3 className="pricing-title">Join ByX</h3>
-            <p className="pricing-price">
-              {currency}{price.toFixed(2)}{is_recurring ? `/${billing_period}` : ""}
-            </p>
+            <h3 className="pricing-title">Join {name}</h3>
+            <p className="pricing-price">{priceLabel}</p>
             <ul className="pricing-list">
               <li>Automated trading</li>
               <li>Video courses</li>
@@ -219,6 +214,7 @@ export default function LandingPage({
             <button
               className="btn primary pricing-btn"
               onClick={waitlist_enabled ? handleWaitlist : handleSubscribe}
+              disabled={memberLoading || requested}
             >
               {waitlist_enabled ? <><FaClock /> Request Access</> : <><FaUserPlus /> Join</>}
             </button>
@@ -226,7 +222,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* FAQ ACCORDION */}
+      {/* FAQ SECTION */}
       <section className="section faq-section alt">
         <h2 className="section-title">Frequently asked questions</h2>
         <div className="faq-container">
@@ -248,7 +244,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* AFFILIATE & REPORT */}
+      {/* AFFILIATE & REPORT SECTION */}
       <section className="section affiliate-section">
         <h2 className="section-title">Become an affiliate</h2>
         <div className="affiliate-grid">

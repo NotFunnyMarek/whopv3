@@ -11,25 +11,29 @@ export default function SearchModal({ onClose }) {
   const wrapperRef = useRef(null);
   const navigate = useNavigate();
 
-  // zavření ESC
+  // Close on ESC key
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // klik mimo modal
+  // Close when clicking outside the modal
   useEffect(() => {
-    const handleClick = (e) => {
+    const handleClickOutside = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // debounce vyhledávání
+  // Debounced search
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);

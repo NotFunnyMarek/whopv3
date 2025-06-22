@@ -8,10 +8,13 @@ export default async function handleCancelMember(
   fetchMembers
 ) {
   try {
-    await showConfirm("Opravdu zrušit toto předplatné?");
+    // Ask for confirmation before cancelling
+    await showConfirm("Are you sure you want to cancel this subscription?");
   } catch {
+    // User declined confirmation
     return;
   }
+
   try {
     const payload = { whop_id: whopData.id, user_id: memberUserId };
     const res = await fetch("https://app.byxbot.com/php/cancel_membership.php", {
@@ -21,22 +24,26 @@ export default async function handleCancelMember(
       body: JSON.stringify(payload),
     });
     const json = await res.json();
+
     if (!res.ok) {
+      // Show error notification if cancellation failed
       showNotification({
         type: "error",
-        message: json.message || "Nepodařilo se zrušit předplatné.",
+        message: json.message || "Failed to cancel the subscription.",
       });
     } else {
-      showNotification({ type: "success", message: "Předplatné zrušeno." });
+      // Success!
+      showNotification({ type: "success", message: "Subscription cancelled." });
+      // Refresh the members list
       await fetchMembers(
         whopData.id,
-        () => {},
-        () => {},
-        () => {}
+        () => {}, // setMembersLoading
+        () => {}, // setMembersError
+        () => {}  // setMembershipsList
       );
     }
   } catch (err) {
-    console.error("Chyba při rušení členství:", err);
-    showNotification({ type: "error", message: "Chyba při rušení členství." });
+    console.error("Error cancelling membership:", err);
+    showNotification({ type: "error", message: "Error cancelling membership." });
   }
 }

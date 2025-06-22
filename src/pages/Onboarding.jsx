@@ -12,7 +12,7 @@ export default function Onboarding() {
 
   const [selectedOption, setSelectedOption] = useState("");
   const [userWhops, setUserWhops] = useState([]);
-  const [loading, setLoading]    = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserWhops = async () => {
@@ -27,17 +27,17 @@ export default function Onboarding() {
         try {
           json = JSON.parse(text);
         } catch {
-          showNotification({ type: "error", message: "Chyba při zpracování odpovědi serveru." });
+          showNotification({ type: "error", message: "Error processing server response." });
           setLoading(false);
           return;
         }
         if (!res.ok || json.status !== "success") {
-          showNotification({ type: "error", message: json.message || "Nepodařilo se načíst tvoje whopy." });
+          showNotification({ type: "error", message: json.message || "Failed to load your Whops." });
           setLoading(false);
           return;
         }
         setUserWhops(json.data);
-        showNotification({ type: "success", message: "Seznam whopů načten." });
+        showNotification({ type: "success", message: "Whop list loaded." });
       } catch (err) {
         console.error("Network error get_user_whops:", err);
         showNotification({ type: "error", message: "Network error: " + err.message });
@@ -55,7 +55,7 @@ export default function Onboarding() {
 
   const handleContinue = async () => {
     if (!selectedOption) {
-      showNotification({ type: "error", message: "Prosím vyberte možnost." });
+      showNotification({ type: "error", message: "Please select an option." });
       return;
     }
     if (selectedOption === "new") {
@@ -67,7 +67,7 @@ export default function Onboarding() {
 
   const handleBack = async () => {
     try {
-      await showConfirm("Opravdu se chcete vrátit na domovskou stránku?");
+      await showConfirm("Are you sure you want to return to the home page?");
       navigate("/");
     } catch {
       return;
@@ -77,7 +77,7 @@ export default function Onboarding() {
   if (loading) {
     return (
       <div className="onboarding-loading">
-        <span>Načítám seznam tvých whopů…</span>
+        <span>Loading your Whops…</span>
       </div>
     );
   }
@@ -90,14 +90,14 @@ export default function Onboarding() {
 
       <div className="onboarding-content">
         <h2 className="onboarding-question">
-          Který dashboard chcete použít?
+          Which dashboard would you like to use?
         </h2>
         <p className="onboarding-subtitle">
-          Pokud chcete vytvořit nový Whop, vyberte „+ Create new whop“. Pokud máte existující Whop, vyberte jej a budete přesměrováni na jeho Dashboard.
+          To create a new Whop, select “+ Create new Whop”. To use an existing Whop, select it and you will be directed to its dashboard.
         </p>
 
         <div className="onboarding-options">
-          {/* 1) + Create new whop */}
+          {/* 1) + Create new Whop */}
           <div
             className={selectedOption === "new" ? "option-card selected" : "option-card"}
             onClick={handleSelectNew}
@@ -112,10 +112,10 @@ export default function Onboarding() {
             <div className="option-icon">
               <FaPlus className="icon-plus" />
             </div>
-            <div className="option-text">+ Create new whop</div>
+            <div className="option-text">+ Create new Whop</div>
           </div>
 
-          {/* 2) Seznam existujících whopů */}
+          {/* 2) List of existing Whops */}
           {userWhops.map((whop) => (
             <div
               key={whop.slug}

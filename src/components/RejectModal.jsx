@@ -1,3 +1,5 @@
+// src/components/RejectModal.jsx
+
 import React, { useState } from "react";
 import "../styles/reject-modal.scss";
 
@@ -21,7 +23,7 @@ export default function RejectModal({ submission, onClose, onDone }) {
             submission_id: submission.id,
             action: "reject",
             reason: reason.trim(),
-            ban,                // nyní ve stejném requestu
+            ban, // include ban flag in the same request
           }),
         }
       );
@@ -30,7 +32,7 @@ export default function RejectModal({ submission, onClose, onDone }) {
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Chyba: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -39,16 +41,21 @@ export default function RejectModal({ submission, onClose, onDone }) {
   return (
     <div className="modal-backdrop">
       <div className="modal reject-modal">
-        <button className="modal-close" onClick={onClose} disabled={loading}>
+        <button
+          className="modal-close"
+          onClick={onClose}
+          disabled={loading}
+          aria-label="Close"
+        >
           &times;
         </button>
         <h3>Reject submission by {submission.username}?</h3>
         <p className="modal-desc">
-          Zadejte důvod odmítnutí a případně zaškrtněte ban.
+          Enter the reason for rejection and optionally ban the user.
         </p>
         <textarea
           className="reason-input"
-          placeholder="Důvod..."
+          placeholder="Reason..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={4}

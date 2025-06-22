@@ -43,7 +43,7 @@ export default function OwnerMode({
   campaigns,
   campaignsLoading,
   campaignsError,
-  handleExpire,          // Tato funkce nyní provádí „Refund & Expire“
+  handleExpire,          // This function now performs "Refund & Expire"
   membershipsList,
   membersLoading,
   membersError,
@@ -56,18 +56,18 @@ export default function OwnerMode({
 
   return (
     <div className="whop-container">
-      {/* Zobrazení tlačítka “Zpět” pouze v režimu editace */}
+      {/* Show "Back" button only in edit mode */}
       {isEditing && (
         <button
           className="whop-back-button"
           onClick={handleBack}
-          aria-label="Zpět"
+          aria-label="Back"
         >
-          <FaArrowLeft /> Zpět
+          <FaArrowLeft /> Back
         </button>
       )}
 
-      {/* Hlavička (názvu, popisu a banneru) */}
+      {/* Header section (name, description, banner) */}
       <OwnerHeader
         whopData={whopData}
         isEditing={isEditing}
@@ -82,7 +82,7 @@ export default function OwnerMode({
       />
 
       <div className="whop-content">
-        {/* Sekce pro úpravu slug a ceny */}
+        {/* Slug and price editing section */}
         <OwnerSlugPrice
           whopData={whopData}
           setWhopData={setWhopData}
@@ -95,7 +95,7 @@ export default function OwnerMode({
           handleSlugSave={handleSlugSave}
         />
 
-        {/* Akční tlačítka majitele */}
+        {/* Owner action buttons */}
         <OwnerActionButtons
           whopData={whopData}
           isEditing={isEditing}
@@ -106,7 +106,7 @@ export default function OwnerMode({
           setIsCampaignModalOpen={setIsCampaignModalOpen}
         />
 
-        {/* Sekce vlastních funkcí (Features) */}
+        {/* Features section */}
         <FeaturesSection
           whopData={whopData}
           isEditing={isEditing}
@@ -117,7 +117,7 @@ export default function OwnerMode({
           addFeature={addFeature}
         />
 
-        {/* Sekce kampaní (pouze pokud je uživatel vlastníkem) */}
+        {/* Campaigns section (only for owners) */}
         {whopData.is_owner && (
           <CampaignsSection
             whopData={whopData}
@@ -128,7 +128,7 @@ export default function OwnerMode({
           />
         )}
 
-        {/* Sekce členů (pouze pokud je uživatel vlastníkem) */}
+        {/* Members section (only for owners) */}
         {whopData.is_owner && (
           <MembersSection
             membersLoading={membersLoading}
@@ -139,7 +139,7 @@ export default function OwnerMode({
         )}
       </div>
 
-      {/* Modal pro vytvoření nové kampaně */}
+      {/* Modal for creating a new campaign */}
       {isCampaignModalOpen && (
         <CampaignModal
           isOpen={isCampaignModalOpen}

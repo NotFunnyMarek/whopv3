@@ -9,7 +9,7 @@ export default function ErrorView({ error, onBack }) {
     <div className="whop-error">
       <p className="whop-error-text">{error}</p>
       <button className="whop-back-button" onClick={onBack}>
-        <FaArrowLeft /> ← Zpět
+        <FaArrowLeft /> ← Back
       </button>
     </div>
   );

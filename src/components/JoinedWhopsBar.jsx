@@ -9,21 +9,21 @@ export default function JoinedWhopsBar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchJoined();
+    fetchJoinedWhops();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchJoined = async () => {
+  const fetchJoinedWhops = async () => {
     try {
       const res = await fetch('https://app.byxbot.com/php/get_joined_whops.php', {
         method: 'GET',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(`Chyba ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const data = await res.json();
       setJoinedWhops(data);
     } catch (err) {
-      console.error('Chyba při načítání joined whops:', err);
+      console.error('Error loading joined Whops:', err);
       setJoinedWhops([]);
     }
   };
@@ -42,7 +42,7 @@ export default function JoinedWhopsBar() {
         >
           <img
             src={whop.banner_url}
-            alt={`Banner ${whop.slug}`}
+            alt={`Banner for ${whop.slug}`}
             className="joined-whop-img"
           />
         </div>

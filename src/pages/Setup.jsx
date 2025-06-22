@@ -10,7 +10,7 @@ export default function Setup() {
   const navigate = useNavigate();
   const { showNotification } = useNotifications();
 
-  // Načteme z cookie, pokud existuje
+  // Load existing data from cookie if available
   const cookieData = getWhopSetupCookie();
   const initialName       = cookieData?.name        || "";
   const initialDesc       = cookieData?.description || "";
@@ -31,24 +31,24 @@ export default function Setup() {
   const maxNameLength = 30;
   const maxDescLength = 200;
 
-  // isRecurring = 1 pokud billingPeriod není "none" a není "single"
+  // Determine if this is a recurring payment
   const isRecurring = billingPeriod !== "none" && billingPeriod !== "single" ? 1 : 0;
 
-  // Uložíme do cookie vždy, když se změní některá z položek
+  // Save to cookie whenever any setup field changes
   useEffect(() => {
     const newData = {
       ...(cookieData || {}),
-      name:                  whopName,
-      description:           description,
-      logoUrl:               logoUrl,
-      price:                 parseFloat(price),
-      billing_period:        billingPeriod,
-      is_recurring:          isRecurring,
-      currency:              "USD",
-      waitlist_enabled:      waitlistEnabled,
-      waitlist_questions:    waitlistEnabled
-                              ? waitlistQuestions.filter(q => q.trim() !== "")
-                              : [],
+      name:               whopName,
+      description:        description,
+      logoUrl:            logoUrl,
+      price:              parseFloat(price),
+      billing_period:     billingPeriod,
+      is_recurring:       isRecurring,
+      currency:           "USD",
+      waitlist_enabled:   waitlistEnabled,
+      waitlist_questions: waitlistEnabled
+                             ? waitlistQuestions.filter((q) => q.trim() !== "")
+                             : [],
     };
     setWhopSetupCookie(newData);
   }, [
@@ -63,6 +63,7 @@ export default function Setup() {
     cookieData,
   ]);
 
+  // Handlers for inputs
   const handleNameChange = (e) => {
     const value = e.target.value;
     if (value.length <= maxNameLength) {
@@ -89,9 +90,9 @@ export default function Setup() {
   };
 
   const handleWaitlistToggle = (e) => {
-    setWaitlistEnabled(e.target.checked);
-    // Pokud vypínáme waitlist, vymažeme otázky
-    if (!e.target.checked) {
+    const enabled = e.target.checked;
+    setWaitlistEnabled(enabled);
+    if (!enabled) {
       setWaitlistQuestions(["", "", "", "", ""]);
     }
   };
@@ -102,23 +103,21 @@ export default function Setup() {
     setWaitlistQuestions(qs);
   };
 
+  // Validation helpers
   const pricingInvalid = () => {
     if (billingPeriod === "none") {
       return false;
     }
     const numeric = parseFloat(price);
-    if (isNaN(numeric) || numeric <= 0) {
-      return true;
-    }
-    return false;
+    return isNaN(numeric) || numeric <= 0;
   };
 
   const waitlistInvalid = () => {
     if (!waitlistEnabled) return false;
-    // Pokud je zapnutý waitlist, alespoň jedna otázka musí být vyplněná
-    return waitlistQuestions.every(q => q.trim() === "");
+    return waitlistQuestions.every((q) => q.trim() === "");
   };
 
+  // Continue to next step
   const handleContinue = () => {
     if (
       !whopName.trim() ||
@@ -128,29 +127,29 @@ export default function Setup() {
     ) {
       showNotification({
         type: "error",
-        message: "Prosím vyplňte všechny požadované položky správně."
+        message: "Please fill out all required fields correctly.",
       });
       return;
     }
 
     const whopData = {
-      name:                whopName.trim(),
-      description:         description.trim(),
-      slug:                cookieData?.slug || "",
-      features:            cookieData?.features || [],
-      logoUrl:             logoUrl.trim(),
-      price:               parseFloat(price),
-      billing_period:      billingPeriod,
-      is_recurring:        isRecurring,
-      currency:            "USD",
-      waitlist_enabled:    waitlistEnabled,
-      waitlist_questions:  waitlistEnabled
-                             ? waitlistQuestions.filter(q => q.trim() !== "")
+      name:               whopName.trim(),
+      description:        description.trim(),
+      slug:               cookieData?.slug || "",
+      features:           cookieData?.features || [],
+      logoUrl:            logoUrl.trim(),
+      price:              parseFloat(price),
+      billing_period:     billingPeriod,
+      is_recurring:       isRecurring,
+      currency:           "USD",
+      waitlist_enabled:   waitlistEnabled,
+      waitlist_questions: waitlistEnabled
+                             ? waitlistQuestions.filter((q) => q.trim() !== "")
                              : [],
     };
 
     setWhopSetupCookie(whopData);
-    showNotification({ type: "success", message: "Údaje uloženy. Pokračujeme..." });
+    showNotification({ type: "success", message: "Settings saved. Continuing..." });
     navigate("/setup/link", { state: { whopData } });
   };
 
@@ -161,20 +160,20 @@ export default function Setup() {
   return (
     <div className="setup-container">
       <div className="setup-header">
-        <h1 className="setup-title">Name your whop</h1>
+        <h1 className="setup-title">Name Your Whop</h1>
       </div>
 
       <div className="setup-content">
         <p className="setup-subtitle">
-          Zadej název a základní popis svého Whopu. Popis se zobrazí návštěvníkům.
+          Enter a name and description for your Whop. This description will be visible to visitors.
         </p>
 
-        {/* Input pro jméno */}
+        {/* Whop name input */}
         <div className="setup-input-wrapper">
           <input
             type="text"
             className="setup-input"
-            placeholder="Enter your whop name"
+            placeholder="Enter your Whop name"
             value={whopName}
             onChange={handleNameChange}
           />
@@ -183,11 +182,11 @@ export default function Setup() {
           </div>
         </div>
 
-        {/* Textarea pro popis */}
+        {/* Description textarea */}
         <div className="setup-input-wrapper">
           <textarea
             className="setup-textarea"
-            placeholder="Enter your whop description"
+            placeholder="Enter your Whop description"
             value={description}
             onChange={handleDescChange}
             rows="3"
@@ -197,18 +196,18 @@ export default function Setup() {
           </div>
         </div>
 
-        {/* Input pro logo URL */}
+        {/* Logo URL input */}
         <div className="setup-input-wrapper">
           <input
             type="text"
             className="setup-input"
-            placeholder="Logo URL (volitelně)"
+            placeholder="Logo URL (optional)"
             value={logoUrl}
             onChange={(e) => setLogoUrl(e.target.value)}
           />
         </div>
 
-        {/* Část pro pricing */}
+        {/* Price input */}
         <div className="setup-input-wrapper">
           <label htmlFor="price-input">Price (USD) *</label>
           <input
@@ -221,7 +220,7 @@ export default function Setup() {
           />
         </div>
 
-        {/* Výběr typu platby */}
+        {/* Billing period selector */}
         <div className="setup-input-wrapper">
           <label htmlFor="billing-select">Payment Type *</label>
           <select
@@ -230,22 +229,22 @@ export default function Setup() {
             value={billingPeriod}
             onChange={handleBillingChange}
           >
-            <option value="none">Free (ZDARMA)</option>
+            <option value="none">Free</option>
             <option value="single">Single Payment</option>
-            <option value="1min">Recurring: 1 minute</option>
-            <option value="7days">Recurring: 7 days</option>
-            <option value="14days">Recurring: 14 days</option>
-            <option value="30days">Recurring: 30 days</option>
-            <option value="1year">Recurring: 1 year</option>
+            <option value="1min">Recurring: every 1 minute</option>
+            <option value="7days">Recurring: every 7 days</option>
+            <option value="14days">Recurring: every 14 days</option>
+            <option value="30days">Recurring: every 30 days</option>
+            <option value="1year">Recurring: every 1 year</option>
           </select>
           {billingPeriod !== "none" && billingPeriod !== "single" && (
             <p className="setup-note">
-              Toto nastavení znamená opakovanou platbu. Systém automaticky strhne uvedenou částku v zvoleném intervalu.
+              This setting will charge the specified amount automatically at the selected interval.
             </p>
           )}
         </div>
 
-        {/* Volba Waitlist */}
+        {/* Waitlist toggle */}
         <div className="setup-input-wrapper">
           <label htmlFor="waitlist-checkbox">
             <input
@@ -254,25 +253,25 @@ export default function Setup() {
               checked={waitlistEnabled}
               onChange={handleWaitlistToggle}
             />
-            Enable waitlist
+            Enable Waitlist
           </label>
           <p className="setup-note">
-            Pokud zapnete, uživatelé se nejprve přihlásí do waitlistu a majitel je schválí nebo odmítne.
+            If enabled, users will join a waitlist and you can approve or reject their requests.
           </p>
         </div>
 
-        {/* Otázky pro waitlist */}
+        {/* Waitlist questions */}
         {waitlistEnabled && (
           <div className="setup-input-wrapper">
             <p className="setup-subtitle">
-              Přidejte až 5 kontrolních otázek pro žádost o waitlist:
+              Add up to 5 screening questions for the waitlist:
             </p>
             {waitlistQuestions.map((q, idx) => (
               <div key={idx} className="setup-input-wrapper">
                 <input
                   type="text"
                   className="setup-input"
-                  placeholder={`Question ${idx + 1} (volitelně)`}
+                  placeholder={`Question ${idx + 1} (optional)`}
                   value={q}
                   onChange={(e) => handleQuestionChange(idx, e.target.value)}
                 />
@@ -281,7 +280,7 @@ export default function Setup() {
           </div>
         )}
 
-        {/* Tlačítka Back a Continue */}
+        {/* Navigation buttons */}
         <div className="setup-buttons">
           <button className="back-button" onClick={handleBack}>
             ← Back
@@ -290,8 +289,8 @@ export default function Setup() {
             className="setup-button"
             onClick={handleContinue}
             disabled={
-              whopName.trim().length === 0 ||
-              description.trim().length === 0 ||
+              !whopName.trim() ||
+              !description.trim() ||
               pricingInvalid() ||
               waitlistInvalid()
             }

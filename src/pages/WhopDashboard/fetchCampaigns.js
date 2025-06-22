@@ -20,7 +20,7 @@ export default async function fetchCampaigns(
     const data = await res.json();
     setCampaigns(data);
   } catch (err) {
-    setCampaignsError("Nelze načíst kampaně: " + err.message);
+    setCampaignsError("Unable to load campaigns: " + err.message);
   } finally {
     setCampaignsLoading(false);
   }

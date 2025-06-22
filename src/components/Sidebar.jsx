@@ -22,7 +22,7 @@ export default function Sidebar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Načtení profilových dat uživatele (avatar)
+  // Load user profile data (avatar)
   useEffect(() => {
     fetch("https://app.byxbot.com/php/profile.php", {
       method: "GET",
@@ -40,7 +40,7 @@ export default function Sidebar() {
         }
       })
       .catch((err) => {
-        console.error("Chyba při načítání profilu (Sidebar):", err);
+        console.error("Error loading profile (Sidebar):", err);
       });
   }, []);
 
@@ -49,20 +49,20 @@ export default function Sidebar() {
       <aside className="sidebar">
         {/* Logo */}
         <div className="sidebar__logo">
-          <img src={Logo} alt="Logo platformy" />
+          <img src={Logo} alt="Platform Logo" />
         </div>
 
-        {/* Navigace */}
+        {/* Navigation */}
         <nav className="sidebar__nav">
           <ul>
-            {/* Domů */}
+            {/* Home */}
             <li className="sidebar__nav-item">
               <NavLink to="/" className="sidebar__link" end>
                 <FiHome className="sidebar__icon" />
               </NavLink>
             </li>
 
-            {/* Vyhledávání */}
+            {/* Search */}
             <li className="sidebar__nav-item">
               <a
                 href="#"
@@ -76,7 +76,7 @@ export default function Sidebar() {
               </a>
             </li>
 
-            {/* Chat (otevře modal) */}
+            {/* Chat (opens modal) */}
             <li className="sidebar__nav-item">
               <a
                 href="#"
@@ -90,41 +90,41 @@ export default function Sidebar() {
               </a>
             </li>
 
-            {/* Notifikace */}
+            {/* Notifications */}
             <li className="sidebar__nav-item">
               <NavLink to="/notifications" className="sidebar__link">
                 <FiBell className="sidebar__icon" />
               </NavLink>
             </li>
 
-            {/* Bilance */}
+            {/* Balances */}
             <li className="sidebar__nav-item">
               <NavLink to="/balances" className="sidebar__link">
                 <FiBarChart2 className="sidebar__icon" />
               </NavLink>
             </li>
 
-            {/* Předplatná */}
+            {/* Memberships */}
             <li className="sidebar__nav-item">
               <NavLink to="/memberships" className="sidebar__link">
                 <FaUserShield className="sidebar__icon" />
               </NavLink>
             </li>
 
-            {/* Platby */}
+            {/* Payments */}
             <li className="sidebar__nav-item">
               <NavLink to="/payments" className="sidebar__link">
                 <FaDollarSign className="sidebar__icon" />
               </NavLink>
             </li>
 
-            {/* Profil */}
+            {/* Profile */}
             <li className="sidebar__nav-item">
               <NavLink to="/profile" className="sidebar__link">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
-                    alt="Profilová fotka"
+                    alt="Profile"
                     className="sidebar__profile-img"
                   />
                 ) : (

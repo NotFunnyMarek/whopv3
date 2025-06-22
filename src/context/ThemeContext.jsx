@@ -3,11 +3,11 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 const ThemeContext = createContext();
 
 /**
- * Obalovací komponenta, která zajišťuje:
- *  - Stav `theme` ('light' | 'dark'),
- *  - Funkce `setLight` a `setDark`,
- *  - Při změně témy se na <body> přidá odpovídající třída `theme-light` nebo `theme-dark`.
- *  - Ukládá téma do localStorage.
+ * Wrapper component that provides:
+ *  - `theme` state ('light' | 'dark'),
+ *  - `setLight` and `setDark` functions,
+ *  - Adds the corresponding class `theme-light` or `theme-dark` to the <body> on theme change,
+ *  - Persists the selected theme to localStorage.
  */
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {

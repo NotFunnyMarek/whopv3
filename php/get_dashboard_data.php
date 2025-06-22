@@ -1,9 +1,9 @@
 <?php
 // php/get_dashboard_data.php
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 1) CORS & hlavičky
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 1) CORS & headers
+// ════════════════════════════════════════════════
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -14,31 +14,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 2) Session, ověření uživatele
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 2) Session & user authentication
+// ════════════════════════════════════════════════
 session_start();
 $user_id_raw = $_SESSION['user_id'] ?? null;
 if (!$user_id_raw) {
     http_response_code(401);
-    echo json_encode(["status" => "error", "message" => "Unauthorized – nejsi přihlášen"]);
+    echo json_encode(["status" => "error", "message" => "Unauthorized – not logged in"]);
     exit;
 }
 $user_id = intval($user_id_raw);
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 3) Načtení whop_id
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 3) Read whop_id parameter
+// ════════════════════════════════════════════════
 if (!isset($_GET['whop_id'])) {
     http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Chybí whop_id v URL"]);
+    echo json_encode(["status" => "error", "message" => "Missing whop_id parameter"]);
     exit;
 }
 $whopId = intval($_GET['whop_id']);
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 4) Připojení k DB
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 4) Database connection
+// ════════════════════════════════════════════════
 require_once __DIR__ . '/config_login.php';
 try {
     $pdo = new PDO(
@@ -56,29 +56,29 @@ try {
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 5) Zkontrolujeme, zda Whop existuje a získáme owner_id + slug
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 5) Verify that the Whop exists and get owner_id + slug
+// ════════════════════════════════════════════════
 try {
     $stmtOwner = $pdo->prepare("SELECT owner_id, slug FROM whops WHERE id = :whop_id LIMIT 1");
     $stmtOwner->execute(['whop_id' => $whopId]);
     $rowOwner = $stmtOwner->fetch(PDO::FETCH_ASSOC);
     if (!$rowOwner) {
         http_response_code(404);
-        echo json_encode(["status" => "error", "message" => "Whop nenalezen"]);
+        echo json_encode(["status" => "error", "message" => "Whop not found"]);
         exit;
     }
     $ownerId  = intval($rowOwner['owner_id']);
     $whopSlug = $rowOwner['slug'];
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení whopu: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading whop: " . $e->getMessage()]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 6) Zjistíme roli (owner / moderator / jiný)
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 6) Determine role (owner / moderator / other)
+// ════════════════════════════════════════════════
 $role = "";
 if ($user_id === $ownerId) {
     $role = "owner";
@@ -99,19 +99,19 @@ if ($user_id === $ownerId) {
             $role = "moderator";
         }
     } catch (PDOException $e) {
-        // ponecháme prázdnou roli
+        // leave role empty
     }
 }
 if ($role === "") {
     http_response_code(403);
-    echo json_encode(["status" => "error", "message" => "Nemáte oprávnění pro přístup k tomuto dashboardu"]);
+    echo json_encode(["status" => "error", "message" => "You do not have permission to access this dashboard"]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 7) Sestavíme data pro členy (paid i free)
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 7.1) Aktivní placené členství
+// ════════════════════════════════════════════════
+// 7) Assemble members data (paid and free)
+// ════════════════════════════════════════════════
+// 7.1) Active paid memberships
 try {
     $stmtPaid = $pdo->prepare("
         SELECT m.user_id, u.username, u.email, m.start_at
@@ -125,11 +125,11 @@ try {
     $paidMembers = $stmtPaid->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení placených členů: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading paid members: " . $e->getMessage()]);
     exit;
 }
 
-// 7.2) Free členové
+// 7.2) Free members
 try {
     $stmtFree = $pdo->prepare("
         SELECT wm.user_id, u.username, u.email, wm.created_at AS joined_at
@@ -142,7 +142,7 @@ try {
     $freeMembers = $stmtFree->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení free členů: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading free members: " . $e->getMessage()]);
     exit;
 }
 
@@ -166,9 +166,9 @@ foreach ($freeMembers as $m) {
     ];
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 8) Seznam plateb
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 8) List of payments
+// ════════════════════════════════════════════════
 try {
     $stmtPay = $pdo->prepare("
         SELECT 
@@ -189,13 +189,13 @@ try {
     $payments = $stmtPay->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení plateb: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading payments: " . $e->getMessage()]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 9) Hrubý příjem
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 9) Gross revenue
+// ════════════════════════════════════════════════
 try {
     $stmtSum = $pdo->prepare("
         SELECT COALESCE(SUM(amount),0) AS total 
@@ -207,18 +207,18 @@ try {
     $grossRevenue = floatval($rowSum['total']);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při výpočtu příjmu: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error calculating revenue: " . $e->getMessage()]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 10) Počet aktivních členů
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 10) Count of members
+// ════════════════════════════════════════════════
 $membersCount = count($members);
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 11) Seznam banů
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 11) Ban list
+// ════════════════════════════════════════════════
 try {
     $stmtBans = $pdo->prepare("
         SELECT b.user_id, u.username, u.email, b.banned_at
@@ -231,13 +231,13 @@ try {
     $bans = $stmtBans->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení banů: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading bans: " . $e->getMessage()]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 12) Seznam moderátorů
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 12) Moderators list
+// ════════════════════════════════════════════════
 try {
     $stmtMods = $pdo->prepare("
         SELECT wm.user_id, u.username, u.email, wm.added_at
@@ -250,18 +250,18 @@ try {
     $moderators = $stmtMods->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Chyba při načtení moderátorů: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => "Error loading moderators: " . $e->getMessage()]);
     exit;
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 13) Seznam waitlist requests (s přidaným sloupcem id)
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 13) Waitlist requests (with id = user_id alias)
+// ════════════════════════════════════════════════
 try {
     $stmtReq = $pdo->prepare("
         SELECT
-          wr.id,              /* přidáno: id */
-          wr.user_id,
+          wr.user_id      AS id,
+          wr.user_id      AS user_id,
           u.username,
           u.email,
           wr.requested_at,
@@ -277,7 +277,7 @@ try {
 
     $waitlist_requests = array_map(function($r) {
         return [
-            'id'           => (int)$r['id'],        /* přidáno: id */
+            'id'           => (int)$r['id'],
             'user_id'      => (int)$r['user_id'],
             'username'     => $r['username'],
             'email'        => $r['email'],
@@ -289,9 +289,9 @@ try {
     $waitlist_requests = [];
 }
 
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
-// 14) Vracíme JSON včetně waitlist_requests
-// ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦
+// ════════════════════════════════════════════════
+// 14) Return JSON including waitlist_requests
+// ════════════════════════════════════════════════
 echo json_encode([
     "status"             => "success",
     "role"               => $role,

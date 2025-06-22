@@ -24,16 +24,16 @@ export default function Payments() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.status !== "success") {
-        throw new Error(json.message || "Nepodařilo se načíst platby.");
+        throw new Error(json.message || "Failed to load payments.");
       }
       setPayments(json.data.payments);
       setTotalEarned(json.data.total_spent);
-      showNotification({ type: "success", message: "Platby načteny." });
+      showNotification({ type: "success", message: "Payments loaded." });
     } catch (err) {
-      console.error("Chyba při načítání plateb:", err);
+      console.error("Error loading payments:", err);
       showNotification({
         type: "error",
-        message: "Nepodařilo se načíst historii plateb.",
+        message: "Failed to load payment history.",
       });
     } finally {
       setLoading(false);
@@ -41,49 +41,49 @@ export default function Payments() {
   };
 
   if (loading) {
-    return <div className="payments-loading">Načítám historii plateb…</div>;
+    return <div className="payments-loading">Loading payment history…</div>;
   }
 
   return (
     <div className="payments-container">
-      <h2 className="payments-title">Historie plateb</h2>
+      <h2 className="payments-title">Payment History</h2>
 
       {payments.length === 0 ? (
-        <p className="payments-empty">Žádné platby k zobrazení.</p>
+        <p className="payments-empty">No payments to display.</p>
       ) : (
         <table className="payments-table">
           <thead>
             <tr>
-              <th>Datum</th>
+              <th>Date</th>
               <th>Whop</th>
-              <th>Částka</th>
-              <th>Měna</th>
-              <th>Typ</th>
+              <th>Amount</th>
+              <th>Currency</th>
+              <th>Type</th>
             </tr>
           </thead>
           <tbody>
             {payments.map((p) => {
               const amt = parseFloat(p.amount);
-              const isPayout = p.type === 'payout';
-              const sign = isPayout ? '+' : '-';
-              const cls = isPayout ? 'positive' : 'negative';
+              const isPayout = p.type === "payout";
+              const sign = isPayout ? "+" : "-";
+              const cls = isPayout ? "positive" : "negative";
+              const typeLabel =
+                p.type === "one_time"
+                  ? "One-Time"
+                  : p.type === "recurring"
+                  ? "Recurring"
+                  : p.type === "refunded"
+                  ? "Refunded"
+                  : p.type === "payout"
+                  ? "Payout"
+                  : "Unknown Type";
               return (
                 <tr key={p.id}>
                   <td>{new Date(p.payment_date).toLocaleString()}</td>
                   <td>{p.whop_name}</td>
                   <td className={`amount ${cls}`}>{sign}{Math.abs(amt).toFixed(2)}</td>
                   <td>{p.currency}</td>
-                  <td className={`type ${p.type}`}>{
-                    p.type === 'one_time'
-                      ? 'Jednorázově'
-                      : p.type === 'recurring'
-                      ? 'Opakovaně'
-                      : p.type === 'refunded'
-                      ? 'Refundováno'
-                      : p.type === 'payout'
-                      ? 'Výplata'
-                      : 'Neznámý typ'
-                  }</td>
+                  <td className={`type ${p.type}`}>{typeLabel}</td>
                 </tr>
               );
             })}

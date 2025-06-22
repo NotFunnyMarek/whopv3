@@ -10,9 +10,10 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
   const [usdAmount, setUsdAmount] = useState('');
   const [solAddress, setSolAddress] = useState('');
   const [loading, setLoading] = useState(false);
-  const [solPrice, setSolPrice] = useState(null); // kurz SOL→USD
+  const [solPrice, setSolPrice] = useState(null); // SOL→USD rate
   const [solEquivalent, setSolEquivalent] = useState(null);
 
+  // Reset fields when modal closes
   useEffect(() => {
     if (!isOpen) {
       setUsdAmount('');
@@ -23,6 +24,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
     }
   }, [isOpen]);
 
+  // Fetch SOL price when modal opens
   useEffect(() => {
     if (!isOpen) return;
 
@@ -51,13 +53,13 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
     fetchSolPriceUSD();
   }, [isOpen]);
 
+  // Compute SOL equivalent from USD amount
   useEffect(() => {
     const usd = parseFloat(usdAmount);
     if (
       !isNaN(usd) &&
       usd > 0 &&
       solPrice !== null &&
-      typeof solPrice === 'number' &&
       solPrice > 0
     ) {
       setSolEquivalent(usd / solPrice);
@@ -71,11 +73,11 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
 
     const usd = parseFloat(usdAmount);
     if (isNaN(usd) || usd < 9.99) {
-      showNotification({ type: 'error', message: 'Minimální částka k výběru je 9.99 USD.' });
+      showNotification({ type: 'error', message: 'Minimum withdraw amount is 9.99 USD.' });
       return;
     }
     if (!solAddress.trim()) {
-      showNotification({ type: 'error', message: 'Zadejte platnou Solana adresu.' });
+      showNotification({ type: 'error', message: 'Please enter a valid Solana address.' });
       return;
     }
 
@@ -96,7 +98,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
         try {
           data = JSON.parse(text);
         } catch {
-          throw new Error(`Neplatná odpověď serveru (HTTP ${res.status})`);
+          throw new Error(`Invalid server response (HTTP ${res.status})`);
         }
 
         if (!res.ok) {
@@ -109,19 +111,19 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
         if (data.status === 'success') {
           showNotification({
             type: 'success',
-            message: `Výběr úspěšný: ${data.message} TX: ${data.tx || '-'}`,
+            message: `Withdrawal successful: ${data.message} TX: ${data.tx || '-'}`,
           });
           setUsdAmount('');
           setSolAddress('');
           setSolEquivalent(null);
           if (onSuccess) onSuccess();
         } else {
-          showNotification({ type: 'error', message: data.message || 'Chyba při odesílání žádosti.' });
+          showNotification({ type: 'error', message: data.message || 'Error submitting withdraw request.' });
         }
       })
       .catch((err) => {
-        console.error('Chyba při volání withdraw.php:', err);
-        showNotification({ type: 'error', message: err.message || 'Nepodařilo se provést žádost o výběr.' });
+        console.error('Error calling withdraw.php:', err);
+        showNotification({ type: 'error', message: err.message || 'Failed to process withdraw request.' });
       })
       .finally(() => {
         setLoading(false);
@@ -138,7 +140,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="wm-form">
           <div className="wm-input-group">
             <label>
-              Částka (USD):
+              Amount (USD):
               <input
                 type="number"
                 step="0.01"
@@ -150,20 +152,20 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
             </label>
             <div className="wm-sol-equivalent">
               {solPrice === null ? (
-                <span>Načítám kurz SOL…</span>
+                <span>Loading SOL price…</span>
               ) : solEquivalent !== null ? (
                 <span>
                   ≈ {solEquivalent.toFixed(6)} SOL (1 SOL = ${solPrice.toFixed(2)})
                 </span>
               ) : (
-                <span>Zadejte částku ≥ 9.99 USD pro výpočet SOL</span>
+                <span>Enter at least 9.99 USD to calculate SOL</span>
               )}
             </div>
           </div>
 
           <div className="wm-input-group">
             <label>
-              Solana Adresa (testnet):
+              Solana Address (testnet):
               <input
                 type="text"
                 value={solAddress}
@@ -175,7 +177,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           <button type="submit" className="wm-submit-btn" disabled={loading}>
-            {loading ? 'Odesílám…' : 'Submit Withdraw'}
+            {loading ? 'Submitting…' : 'Submit Withdraw'}
           </button>
         </form>
 

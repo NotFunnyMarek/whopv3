@@ -6,15 +6,15 @@ import MemberMain from "./MemberMain";
 
 /**
  * props:
- *   whopData: objekt s údaji o whopu (banner_url, members_count, ...)
- *   campaigns: pole kampaní
+ *   whopData: object with Whop details (banner_url, members_count, etc.)
+ *   campaigns: array of campaigns
  *   campaignsLoading: boolean
  *   campaignsError: string
- *   activeTab: "Home"| "Chat"| "Earn"| "Tools"
- *   setActiveTab: funkce
+ *   activeTab: "Home" | "Chat" | "Earn" | "Tools"
+ *   setActiveTab: function
  *   memberLoading: boolean
- *   handleLeave: funkce
- *   onBack: funkce pro návrat z režimu ViewAsMember
+ *   handleLeave: function
+ *   onBack: function to return from View As Member mode
  */
 export default function ViewAsMember({
   whopData,

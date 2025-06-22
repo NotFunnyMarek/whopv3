@@ -9,10 +9,10 @@ export default function ConfirmModal({ message, onConfirm, onCancel }) {
         <p className="confirm-modal-message">{message}</p>
         <div className="confirm-modal-buttons">
           <button className="btn-confirm-ok" onClick={onConfirm}>
-            Pokračovat
+            Continue
           </button>
           <button className="btn-confirm-cancel" onClick={onCancel}>
-            Zrušit
+            Cancel
           </button>
         </div>
       </div>

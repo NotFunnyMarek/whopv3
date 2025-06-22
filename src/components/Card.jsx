@@ -3,175 +3,170 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import '../styles/card.scss';
-import '../styles/activeUsers.scss';              // import pro ActiveUsersIndicator
+import '../styles/activeUsers.scss'; // import for ActiveUsersIndicator
 import ActiveUsersIndicator from './ActiveUsersIndicator';
 import { FiPlusCircle, FiTrash2 } from 'react-icons/fi';
 
 const API_URL = 'https://app.byxbot.com/php/campaign.php';
 
 export default function Card() {
-  // ==== Stavové proměnné ====
-  const [cardsData, setCardsData]       = useState([]);
-  const [isModalOpen, setIsModalOpen]   = useState(false);
-  const [loading, setLoading]           = useState(true);
-  const [errorMsg, setErrorMsg]         = useState('');
+  // ==== State variables ====
+  const [campaigns, setCampaigns]           = useState([]);
+  const [isModalOpen, setIsModalOpen]       = useState(false);
+  const [isLoading, setIsLoading]           = useState(true);
+  const [errorMessage, setErrorMessage]     = useState('');
 
-  // Pole pro formulář (vytváříme novou kampaň)
-  const [campaignName, setCampaignName]         = useState('');
-  const [category, setCategory]                 = useState('');
-  const [budget, setBudget]                     = useState('');
-  const [currency, setCurrency]                 = useState('USD');
+  // Form fields for creating a new campaign
+  const [name, setName]                     = useState('');
+  const [category, setCategory]             = useState('');
+  const [budget, setBudget]                 = useState('');
+  const [currency, setCurrency]             = useState('USD');
   const [rewardPerThousand, setRewardPerThousand] = useState('');
-  const [minPayout, setMinPayout]               = useState('');
-  const [maxPayout, setMaxPayout]               = useState('');
-  const [platforms, setPlatforms]               = useState({
+  const [minPayout, setMinPayout]           = useState('');
+  const [maxPayout, setMaxPayout]           = useState('');
+  const [platforms, setPlatforms]           = useState({
     instagram: false,
     tiktok:    false,
   });
-  const [thumbnailUrl, setThumbnailUrl]         = useState('');
-  const [newContentLink, setNewContentLink]     = useState('');
-  const [contentLinks, setContentLinks]         = useState([]);
-  const [newRequirement, setNewRequirement]     = useState('');
-  const [requirements, setRequirements]         = useState([]);
+  const [thumbnailUrl, setThumbnailUrl]     = useState('');
+  const [newContentLink, setNewContentLink] = useState('');
+  const [contentLinks, setContentLinks]     = useState([]);
+  const [newRequirement, setNewRequirement] = useState('');
+  const [requirements, setRequirements]     = useState([]);
 
-  // ==== 1) Načtení všech kampaní po mountu ====
+  // ==== 1) Load all campaigns on mount ====
   useEffect(() => {
-    fetchCampaigns();
+    loadCampaigns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchCampaigns = async () => {
-    setLoading(true);
+  const loadCampaigns = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'GET',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) {
-        throw new Error(`Chyba ${res.status}`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
       }
-      const data = await res.json();
-      // Normalizace: převod stringů na čísla
-      const normalized = data.map((camp) => ({
-        ...camp,
-        id:                  Number(camp.id),
-        user_id:             Number(camp.user_id),
-        username:            camp.username,
-        campaign_name:       camp.campaign_name,
-        category:            camp.category,
-        budget:              Number(camp.budget),
-        currency:            camp.currency,
-        reward_per_thousand: Number(camp.reward_per_thousand),
-        min_payout:          camp.min_payout   !== null ? Number(camp.min_payout)   : null,
-        max_payout:          camp.max_payout   !== null ? Number(camp.max_payout)   : null,
-        platforms:           Array.isArray(camp.platforms)     ? camp.platforms     : [],
-        thumbnail_url:       camp.thumbnail_url,
-        content_links:       Array.isArray(camp.content_links) ? camp.content_links : [],
-        requirements:        Array.isArray(camp.requirements)  ? camp.requirements  : [],
-        paid_out:            Number(camp.paid_out),
-        total_paid_out:      Number(camp.total_paid_out),
-        paid_percent:        Number(camp.paid_percent),
-        created_at:          camp.created_at,
-        is_active:           Number(camp.is_active),
+      const data = await response.json();
+      // Normalize: convert numeric strings to numbers
+      const normalized = data.map(c => ({
+        ...c,
+        id:                   Number(c.id),
+        user_id:              Number(c.user_id),
+        username:             c.username,
+        campaign_name:        c.campaign_name,
+        category:             c.category,
+        budget:               Number(c.budget),
+        currency:             c.currency,
+        reward_per_thousand:  Number(c.reward_per_thousand),
+        min_payout:           c.min_payout   !== null ? Number(c.min_payout)   : null,
+        max_payout:           c.max_payout   !== null ? Number(c.max_payout)   : null,
+        platforms:            Array.isArray(c.platforms)     ? c.platforms     : [],
+        thumbnail_url:        c.thumbnail_url,
+        content_links:        Array.isArray(c.content_links) ? c.content_links : [],
+        requirements:         Array.isArray(c.requirements)  ? c.requirements  : [],
+        paid_out:             Number(c.paid_out),
+        total_paid_out:       Number(c.total_paid_out),
+        paid_percent:         Number(c.paid_percent),
+        created_at:           c.created_at,
+        is_active:            Number(c.is_active),
       }));
-      setCardsData(normalized);
-    } catch (error) {
-      setErrorMsg('Nelze načíst kampaně: ' + error.message);
+      setCampaigns(normalized);
+    } catch (err) {
+      setErrorMessage('Unable to load campaigns: ' + err.message);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  // Pomocná funkce: znovu načte všechny kampaně
+  // Helper to refresh campaigns after creating a new one
   const refreshCampaigns = async () => {
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'GET',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error(`Chyba ${res.status}`);
-      const data = await res.json();
-      const normalized = data.map((camp) => ({
-        ...camp,
-        id:                  Number(camp.id),
-        user_id:             Number(camp.user_id),
-        username:            camp.username,
-        campaign_name:       camp.campaign_name,
-        category:            camp.category,
-        budget:              Number(camp.budget),
-        currency:            camp.currency,
-        reward_per_thousand: Number(camp.reward_per_thousand),
-        min_payout:          camp.min_payout   !== null ? Number(camp.min_payout)   : null,
-        max_payout:          camp.max_payout   !== null ? Number(camp.max_payout)   : null,
-        platforms:           Array.isArray(camp.platforms)     ? camp.platforms     : [],
-        thumbnail_url:       camp.thumbnail_url,
-        content_links:       Array.isArray(camp.content_links) ? camp.content_links : [],
-        requirements:        Array.isArray(camp.requirements)  ? camp.requirements  : [],
-        paid_out:            Number(camp.paid_out),
-        total_paid_out:      Number(camp.total_paid_out),
-        paid_percent:        Number(camp.paid_percent),
-        created_at:          camp.created_at,
-        is_active:           Number(camp.is_active),
+      if (!response.ok) throw new Error(`Error ${response.status}`);
+      const data = await response.json();
+      const normalized = data.map(c => ({
+        ...c,
+        id:                   Number(c.id),
+        user_id:              Number(c.user_id),
+        username:             c.username,
+        campaign_name:        c.campaign_name,
+        category:             c.category,
+        budget:               Number(c.budget),
+        currency:             c.currency,
+        reward_per_thousand:  Number(c.reward_per_thousand),
+        min_payout:           c.min_payout   !== null ? Number(c.min_payout)   : null,
+        max_payout:           c.max_payout   !== null ? Number(c.max_payout)   : null,
+        platforms:            Array.isArray(c.platforms)     ? c.platforms     : [],
+        thumbnail_url:        c.thumbnail_url,
+        content_links:        Array.isArray(c.content_links) ? c.content_links : [],
+        requirements:         Array.isArray(c.requirements)  ? c.requirements  : [],
+        paid_out:             Number(c.paid_out),
+        total_paid_out:       Number(c.total_paid_out),
+        paid_percent:         Number(c.paid_percent),
+        created_at:           c.created_at,
+        is_active:            Number(c.is_active),
       }));
-      setCardsData(normalized);
+      setCampaigns(normalized);
     } catch (e) {
       console.error('refreshCampaigns error:', e);
     }
   };
 
-  // ==== 2) Odeslání formuláře (POST) ====
-  const handleSubmit = async (e) => {
+  // ==== 2) Handle form submission (POST) ====
+  const handleSubmit = async e => {
     e.preventDefault();
-    setErrorMsg('');
+    setErrorMessage('');
 
-    if (
-      !campaignName.trim() ||
-      !category.trim() ||
-      !budget ||
-      !rewardPerThousand
-    ) {
-      setErrorMsg('Vyplňte všechna povinná pole (*)!');
+    if (!name.trim() || !category.trim() || !budget || !rewardPerThousand) {
+      setErrorMessage('Please fill in all required fields (*)!');
       return;
     }
 
     const payload = {
-      campaign_name:       campaignName,
+      campaign_name:       name,
       category:            category,
       budget:              parseFloat(budget),
       currency:            currency,
       reward_per_thousand: parseFloat(rewardPerThousand),
       min_payout:          minPayout ? parseFloat(minPayout) : null,
       max_payout:          maxPayout ? parseFloat(maxPayout) : null,
-      platforms:           Object.keys(platforms).filter((k) => platforms[k]),
+      platforms:           Object.keys(platforms).filter(k => platforms[k]),
       thumbnail_url:       thumbnailUrl.trim(),
       content_links:       contentLinks,
-      requirements:        requirements
+      requirements:        requirements,
     };
 
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
-      if (res.status === 401) {
-        setErrorMsg('Nejste přihlášen. Přihlaste se prosím.');
+      if (response.status === 401) {
+        setErrorMessage('You are not logged in. Please log in.');
         return;
       }
-      if (res.status === 201) {
-        // Úspěšně vytvořeno
-        setCampaignName('');
+      if (response.status === 201) {
+        // Successfully created
+        setName('');
         setCategory('');
         setBudget('');
         setCurrency('USD');
         setRewardPerThousand('');
         setMinPayout('');
         setMaxPayout('');
-        setPlatforms({ instagram: false, tiktok: false});
+        setPlatforms({ instagram: false, tiktok: false });
         setThumbnailUrl('');
         setNewContentLink('');
         setContentLinks([]);
@@ -180,48 +175,48 @@ export default function Card() {
         setIsModalOpen(false);
         refreshCampaigns();
       } else {
-        const data = await res.json();
-        setErrorMsg(data.error || `Chyba ${res.status}`);
+        const data = await response.json();
+        setErrorMessage(data.error || `Error ${response.status}`);
       }
     } catch (e) {
-      setErrorMsg('Síťová chyba: ' + e.message);
+      setErrorMessage('Network error: ' + e.message);
     }
   };
 
-  // ==== 3) Správa seznamu content_links ====
+  // ==== 3) Manage list of content links ====
   const addContentLink = () => {
     const url = newContentLink.trim();
     if (!url) return;
-    setContentLinks((prev) => [...prev, url]);
+    setContentLinks(prev => [...prev, url]);
     setNewContentLink('');
   };
-  const removeContentLink = (i) => {
-    setContentLinks((prev) => prev.filter((_, idx) => idx !== i));
+  const removeContentLink = index => {
+    setContentLinks(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ==== 4) Správa seznamu requirements ====
+  // ==== 4) Manage list of requirements ====
   const addRequirement = () => {
-    const txt = newRequirement.trim();
-    if (!txt) return;
-    setRequirements((prev) => [...prev, txt]);
+    const text = newRequirement.trim();
+    if (!text) return;
+    setRequirements(prev => [...prev, text]);
     setNewRequirement('');
   };
-  const removeRequirement = (i) => {
-    setRequirements((prev) => prev.filter((_, idx) => idx !== i));
+  const removeRequirement = index => {
+    setRequirements(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ==== 5) Checkbox platform ====
-  const handlePlatformChange = (e) => {
+  // ==== 5) Platform checkbox handler ====
+  const handlePlatformChange = e => {
     const { name, checked } = e.target;
-    setPlatforms((prev) => ({ ...prev, [name]: checked }));
+    setPlatforms(prev => ({ ...prev, [name]: checked }));
   };
 
   // ==== RENDER ====
   return (
     <div className="card-container">
-      {errorMsg && <div className="card-error">{errorMsg}</div>}
+      {errorMessage && <div className="card-error">{errorMessage}</div>}
 
-      {/* Tlačítko „Create“ */}
+      {/* "Create" button */}
       <button
         className="card-create-btn"
         onClick={() => setIsModalOpen(true)}
@@ -230,19 +225,19 @@ export default function Card() {
         <FiPlusCircle /> Create
       </button>
 
-      {/* ====== MODAL S FORMULÁŘEM ===== */}
+      {/* ======= MODAL WITH FORM ======= */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2>Create Campaign</h2>
         <form onSubmit={handleSubmit} className="card-form">
-          {/* Campaign name */}
+          {/* Campaign Name */}
           <div className="form-group">
             <label>
-              Campaign name <span className="required">*</span>
+              Campaign Name <span className="required">*</span>
             </label>
             <input
               type="text"
-              value={campaignName}
-              onChange={(e) => setCampaignName(e.target.value)}
+              value={name}
+              onChange={e => setName(e.target.value)}
               required
             />
           </div>
@@ -254,7 +249,7 @@ export default function Card() {
             </label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={e => setCategory(e.target.value)}
               required
             >
               <option value="">— Select Category —</option>
@@ -267,14 +262,14 @@ export default function Card() {
           {/* Budget */}
           <div className="form-group">
             <label>
-              Campaign budget ($) <span className="required">*</span>
+              Campaign Budget ($) <span className="required">*</span>
             </label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={budget}
-              onChange={(e) => setBudget(e.target.value)}
+              onChange={e => setBudget(e.target.value)}
               required
             />
           </div>
@@ -284,7 +279,7 @@ export default function Card() {
             <label>Currency</label>
             <select
               value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              onChange={e => setCurrency(e.target.value)}
             >
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -292,41 +287,41 @@ export default function Card() {
             </select>
           </div>
 
-          {/* Reward rate */}
+          {/* Reward Rate */}
           <div className="form-group">
             <label>
-              Reward rate ($ / 1000 views) <span className="required">*</span>
+              Reward Rate ($ / 1000 views) <span className="required">*</span>
             </label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={rewardPerThousand}
-              onChange={(e) => setRewardPerThousand(e.target.value)}
+              onChange={e => setRewardPerThousand(e.target.value)}
               required
             />
           </div>
 
-          {/* Min & Max payout */}
+          {/* Min & Max Payout */}
           <div className="form-group-grouped">
             <div>
-              <label>Minimum payout ($)</label>
+              <label>Minimum Payout ($)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={minPayout}
-                onChange={(e) => setMinPayout(e.target.value)}
+                onChange={e => setMinPayout(e.target.value)}
               />
             </div>
             <div>
-              <label>Maximum payout ($)</label>
+              <label>Maximum Payout ($)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={maxPayout}
-                onChange={(e) => setMaxPayout(e.target.value)}
+                onChange={e => setMaxPayout(e.target.value)}
               />
             </div>
           </div>
@@ -335,7 +330,7 @@ export default function Card() {
           <fieldset className="form-group cf-fieldset">
             <legend>Platforms</legend>
             <div className="cf-platforms-row">
-              {['instagram', 'tiktok'].map((name) => (
+              {['instagram', 'tiktok'].map(name => (
                 <label key={name} className="cf-platform-label">
                   <input
                     type="checkbox"
@@ -356,7 +351,7 @@ export default function Card() {
               type="text"
               placeholder="https://example.com/thumb.jpg"
               value={thumbnailUrl}
-              onChange={(e) => setThumbnailUrl(e.target.value)}
+              onChange={e => setThumbnailUrl(e.target.value)}
             />
           </div>
 
@@ -368,7 +363,7 @@ export default function Card() {
                 type="text"
                 placeholder="https://drive.google.com/..."
                 value={newContentLink}
-                onChange={(e) => setNewContentLink(e.target.value)}
+                onChange={e => setNewContentLink(e.target.value)}
               />
               <button
                 type="button"
@@ -408,7 +403,7 @@ export default function Card() {
                 type="text"
                 placeholder="e.g. Must tag @whop"
                 value={newRequirement}
-                onChange={(e) => setNewRequirement(e.target.value)}
+                onChange={e => setNewRequirement(e.target.value)}
               />
               <button
                 type="button"
@@ -419,9 +414,9 @@ export default function Card() {
               </button>
             </div>
             <ul className="list-container cf-list-container">
-              {requirements.map((item, idx) => (
+              {requirements.map((req, idx) => (
                 <li key={idx} className="list-item cf-list-item">
-                  <span>{item}</span>
+                  <span>{req}</span>
                   <button
                     type="button"
                     className="list-delete-btn cf-list-delete-btn"
@@ -441,75 +436,70 @@ export default function Card() {
         </form>
       </Modal>
 
-      {/* ===== Grid s kampaněmi ===== */}
+      {/* ===== Campaign Cards Grid ===== */}
       <div className="cards-grid">
-        {loading && (
+        {isLoading && (
           <>
-            {/* 4 skeleton karty */}
+            {/* 4 skeleton cards */}
             {Array.from({ length: 4 }).map((_, idx) => (
               <div key={idx} className="card-item card-skeleton" />
             ))}
           </>
         )}
-        {!loading && cardsData.length === 0 && (
-          <div className="card-empty">Žádné kampaně k zobrazení.</div>
+        {!isLoading && campaigns.length === 0 && (
+          <div className="card-empty">No campaigns to display.</div>
         )}
-        {!loading &&
-          cardsData.length > 0 &&
-          cardsData.map((camp) => (
-            <div key={camp.id} className="card-item">
-              <div className="card-header">
-                <div className="card-icon">
-                  {camp.thumbnail_url ? (
-                    <img src={camp.thumbnail_url} alt="Thumb" />
-                  ) : (
-                    camp.username.charAt(0).toUpperCase()
-                  )}
-                </div>
-                <h3>{camp.campaign_name}</h3>
-                <span className="card-tag">
-                  {camp.currency}
-                  {camp.reward_per_thousand.toFixed(2)} / 1K
-                </span>
-                {/* Zde přidáme ActiveUsersIndicator */}
-                <ActiveUsersIndicator campaignId={camp.id} />
+        {!isLoading && campaigns.length > 0 && campaigns.map(camp => (
+          <div key={camp.id} className="card-item">
+            <div className="card-header">
+              <div className="card-icon">
+                {camp.thumbnail_url ? (
+                  <img src={camp.thumbnail_url} alt="Thumbnail" />
+                ) : (
+                  camp.username.charAt(0).toUpperCase()
+                )}
               </div>
-
-              <div className="card-body">
-                <div className="card-author">
-                  <strong>Author:</strong> {camp.username}
-                </div>
-                <div className="card-line">
-                  {camp.currency}
-                  {camp.paid_out.toFixed(2)} of {camp.currency}
-                  {camp.total_paid_out.toFixed(2)} paid out
-                  <span className="card-percent">{camp.paid_percent}%</span>
-                </div>
-                <div className="card-progress-bar">
-                  <div
-                    className="card-progress-fill"
-                    style={{ width: `${camp.paid_percent}%` }}
-                  />
-                </div>
-                <ul className="card-info-list">
-                  <li><strong>Type:</strong> {camp.type}</li>
-                  <li><strong>Category:</strong> {camp.category}</li>
-                  <li>
-                    <strong>Platforms:</strong>{' '}
-                    {camp.platforms.map((p, i) => (
-                      <span key={i} className="platform-pill">{p}</span>
-                    ))}
-                  </li>
-                  <li>
-                    <strong>Views:</strong>{' '}
-                    {camp.reward_per_thousand > 0
-                      ? Math.round((camp.paid_out / camp.reward_per_thousand) * 1000)
-                      : 0}
-                  </li>
-                </ul>
-              </div>
+              <h3>{camp.campaign_name}</h3>
+              <span className="card-tag">
+                {camp.currency}{camp.reward_per_thousand.toFixed(2)} / 1K
+              </span>
+              {/* Add ActiveUsersIndicator here */}
+              <ActiveUsersIndicator campaignId={camp.id} />
             </div>
-          ))}
+
+            <div className="card-body">
+              <div className="card-author">
+                <strong>Author:</strong> {camp.username}
+              </div>
+              <div className="card-line">
+                {camp.currency}{camp.paid_out.toFixed(2)} of {camp.currency}{camp.total_paid_out.toFixed(2)} paid out
+                <span className="card-percent">{camp.paid_percent}%</span>
+              </div>
+              <div className="card-progress-bar">
+                <div
+                  className="card-progress-fill"
+                  style={{ width: `${camp.paid_percent}%` }}
+                />
+              </div>
+              <ul className="card-info-list">
+                <li><strong>Type:</strong> {camp.type}</li>
+                <li><strong>Category:</strong> {camp.category}</li>
+                <li>
+                  <strong>Platforms:</strong>{' '}
+                  {camp.platforms.map((p, i) => (
+                    <span key={i} className="platform-pill">{p}</span>
+                  ))}
+                </li>
+                <li>
+                  <strong>Views:</strong>{' '}
+                  {camp.reward_per_thousand > 0
+                    ? Math.round((camp.paid_out / camp.reward_per_thousand) * 1000)
+                    : 0}
+                </li>
+              </ul>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

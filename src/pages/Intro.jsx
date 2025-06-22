@@ -6,6 +6,7 @@ import '../styles/intro.scss';
 
 export default function Intro() {
   const navigate = useNavigate();
+
   const handleCreateWhop = () => {
     navigate('/onboarding');
   };
@@ -28,7 +29,7 @@ export default function Intro() {
           and promote their products with Content Rewards.
         </p>
         <button className="intro-button" onClick={handleCreateWhop}>
-          Create your whop
+          Create your Whop
         </button>
         <div className="intro-metrics">
           <div className="metric-item">

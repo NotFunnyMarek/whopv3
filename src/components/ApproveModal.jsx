@@ -24,7 +24,7 @@ export default function ApproveModal({ submission, onClose, onDone }) {
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Chyba při schvalování: " + err.message);
+      alert("Error approving submission: " + err.message);
     } finally {
       setLoading(false);
     }

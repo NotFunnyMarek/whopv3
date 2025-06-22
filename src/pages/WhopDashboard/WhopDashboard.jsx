@@ -86,7 +86,7 @@ export default function WhopDashboard() {
   const fetchCampaignsBound = (wid) =>
     fetchCampaigns(wid, setCampaigns, setCampaignsLoading, setCampaignsError);
 
-  // 1️⃣ Load whop data on mount / slug change
+  // 1️⃣ Load Whop data on mount / slug change
   useEffect(() => {
     const slugToFetch = location.pathname.startsWith("/c/")
       ? location.pathname.split("/c/")[1].split("?")[0]
@@ -266,7 +266,7 @@ export default function WhopDashboard() {
         setWaitlistQuestions
       );
     } catch {
-      // showNotification invoked inside handleRequestWaitlist
+      // handleRequestWaitlist throws errors for conflict or server error
     } finally {
       setMemberLoading(false);
     }
@@ -311,7 +311,7 @@ export default function WhopDashboard() {
     );
   }
 
-  // Member mode (real member)
+  // Member mode (actual member)
   if (whopData.is_member && !whopData.is_owner) {
     return (
       <MemberMode

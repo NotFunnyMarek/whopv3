@@ -1,3 +1,5 @@
+// src/pages/BannerSetup.jsx
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/banner-setup.scss";
@@ -15,16 +17,16 @@ export default function BannerSetup() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Získáme předchozí data buď z location.state, nebo z cookie
+  // Retrieve previous data either from location.state or from cookie
   const cookieData = getWhopSetupCookie();
   const prevWhopData = location.state?.whopData || cookieData || null;
 
-  // Stav pro URL banneru, stav uploadu a případné chyby
+  // State for banner URL, upload status, and any error
   const [bannerUrl, setBannerUrl] = useState(prevWhopData?.bannerUrl || "");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
 
-  // Pokaždé, kdy se bannerUrl změní, uložíme nové whopData do cookie
+  // Whenever bannerUrl changes, save the updated whopData in the cookie
   useEffect(() => {
     if (bannerUrl) {
       const newData = {
@@ -33,13 +35,13 @@ export default function BannerSetup() {
       };
       setWhopSetupCookie(newData);
     }
-  }, [bannerUrl]);
+  }, [bannerUrl, prevWhopData]);
 
-  // Pokud nemáme žádná předchozí data, zobrazíme chybovou hlášku
+  // If we have no prior data, show an error and link back to the setup start
   if (!prevWhopData) {
     return (
       <div className="banner-setup-error">
-        <p>Whop data not found. Please complete the previous steps first.</p>
+        <p>No Whop data found. Please complete the previous steps first.</p>
         <button
           className="banner-setup-error-btn"
           onClick={() => navigate("/setup")}
@@ -50,7 +52,7 @@ export default function BannerSetup() {
     );
   }
 
-  // Handler pro nahrání bannerového obrázku na Cloudinary
+  // Handler for uploading the banner image to Cloudinary
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) {
@@ -61,12 +63,12 @@ export default function BannerSetup() {
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError("Soubor je příliš velký (max 5 MB).");
+      setError("File is too large (max 5 MB).");
       setBannerUrl("");
       return;
     }
     if (!file.type.startsWith("image/")) {
-      setError("Vyberte prosím platný obrázek.");
+      setError("Please select a valid image file.");
       setBannerUrl("");
       return;
     }
@@ -84,37 +86,36 @@ export default function BannerSetup() {
         body: formData,
       });
       if (!res.ok) {
-        throw new Error(`Chyba při nahrávání na Cloudinary: ${res.status}`);
+        throw new Error(`Cloudinary upload error: ${res.status}`);
       }
       const data = await res.json();
       if (!data.secure_url) {
-        throw new Error("Nepodařilo se získat secure_url z Cloudinary.");
+        throw new Error("No secure_url returned from Cloudinary.");
       }
       setBannerUrl(data.secure_url);
     } catch (err) {
       console.error("Cloudinary banner upload error:", err);
-      setError("Chyba při nahrávání banneru.");
+      setError("Failed to upload banner.");
       setBannerUrl("");
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Handler pro tlačítko Back: vracíme se do FeaturesSetup a ukládáme do cookie
+  // Handler for the Back button: save to cookie and navigate back to features step
   const handleBack = () => {
     const newData = {
       ...prevWhopData,
-      bannerUrl: bannerUrl,
+      bannerUrl,
     };
     setWhopSetupCookie(newData);
     navigate("/setup/features", { state: { whopData: newData } });
   };
 
-  // Handler pro tlačítko Continue: odeslání finálního Whop payloadu a přesměrování
+  // Handler for the Continue button: submit final Whop payload and redirect to the new Whop
   const handleContinue = async () => {
     if (!bannerUrl) return;
 
-    // Sestavíme objekt, který pošleme na backend (whop.php), včetně pricing
     const whopPayload = {
       name: prevWhopData.name,
       description: prevWhopData.description,
@@ -125,7 +126,7 @@ export default function BannerSetup() {
         imageUrl: f.imageUrl,
       })),
       logoUrl: prevWhopData.logoUrl || "",
-      bannerUrl: bannerUrl,
+      bannerUrl,
       price: prevWhopData.price || 0.0,
       billing_period: prevWhopData.billing_period || "none",
       is_recurring: prevWhopData.is_recurring || 0,
@@ -140,40 +141,38 @@ export default function BannerSetup() {
         body: JSON.stringify(whopPayload),
       });
 
-      // Přímo parsujeme JSON – funguje i v případě chyby (např. 400/409 atp.)
       const json = await res.json();
       if (!res.ok || json.status !== "success") {
         setError(json.message || "Unknown error");
         return;
       }
 
-      // Úspěšné uložení – vymazání cookie a navigace na /c/:slug
+      // On successful save: clear the setup cookie and navigate to the new Whop
       clearWhopSetupCookie();
       const newSlug = json.data.slug;
       navigate(`/c/${newSlug}`);
     } catch (err) {
-      console.error("Network/Fetch error při volání whop.php:", err);
+      console.error("Network/Fetch error when calling whop.php:", err);
       setError("Network error: " + err.message);
     }
   };
 
   return (
     <div className="banner-setup-container">
-      {/* HLAVIČKA */}
+      {/* HEADER */}
       <div className="banner-setup-header">
         <h1 className="banner-setup-title">Upload Your Whop Banner</h1>
       </div>
 
       <div className="banner-setup-content">
         <p className="banner-setup-subtitle">
-          Toto bude banner, který se zobrazí v horní části tvého whopu. Doporučená
-          velikost: 1200 × 300 px.
+          This banner will appear at the top of your Whop page. Recommended size: 1200 × 300 px.
         </p>
 
-        {/* Náhled banneru nebo stav uploadu */}
+        {/* Banner preview or upload state */}
         <div className="banner-input-wrapper">
           {isUploading ? (
-            <div className="banner-uploading">Nahrávám…</div>
+            <div className="banner-uploading">Uploading…</div>
           ) : bannerUrl ? (
             <img
               src={bannerUrl}
@@ -193,7 +192,7 @@ export default function BannerSetup() {
 
         {error && <div className="banner-error">{error}</div>}
 
-        {/* Tlačítka Back a Continue */}
+        {/* Back and Continue buttons */}
         <div className="banner-setup-buttons">
           <button className="back-button" onClick={handleBack}>
             ← Back

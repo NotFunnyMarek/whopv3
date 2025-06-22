@@ -20,11 +20,11 @@ export default function LoadingOverlay({
   }
   return (
     <div
-      className={`join-loading-overlay ${overlayFading ? "fade-out" : ""}`}
+      className={`join-loading-overlay${overlayFading ? " fade-out" : ""}`}
       onTransitionEnd={onTransitionEnd}
     >
       <div className="spinner"></div>
-      <h1>Připojuji se…</h1>
+      <h1>Joining…</h1>
       <Confetti
         width={windowSize.width}
         height={windowSize.height}

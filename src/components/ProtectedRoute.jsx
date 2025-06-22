@@ -1,9 +1,11 @@
+// src/components/ProtectedRoute.jsx
+
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
 /**
- * Zabezpečená routa: pokud `localStorage.getItem('authToken')` existuje, považuje se uživatel za přihlášeného.
- * Pokud ne, přesměruje na /login.
+ * Protected route: if `localStorage.getItem('authToken')` exists, the user is considered authenticated.
+ * Otherwise, redirect to /login.
  */
 const ProtectedRoute = ({ children }) => {
   const [checking, setChecking] = useState(true);
@@ -16,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (checking) {
-    return <div className="text-center">Kontrola relace…</div>;
+    return <div className="text-center">Checking session…</div>;
   }
   if (!loggedIn) {
     return <Navigate to="/login" replace />;

@@ -8,8 +8,10 @@ export default async function handleDeleteWhop(
   setError
 ) {
   try {
-    await showConfirm("Opravdu smazat Whop?");
+    // Ask for confirmation before deleting the Whop
+    await showConfirm("Are you sure you want to delete this Whop?");
   } catch {
+    // User canceled the confirmation dialog
     return;
   }
 
@@ -26,25 +28,27 @@ export default async function handleDeleteWhop(
     try {
       json = JSON.parse(text);
     } catch {
-      setError("Chyba mazání.");
+      setError("Error deleting.");
       return;
     }
     if (!res.ok || json.status !== "success") {
-      setError(json.message || "Nepodařilo se smazat.");
+      const msg = json.message || "Failed to delete.";
+      setError(msg);
       showNotification({
         type: "error",
-        message: json.message || "Nepodařilo se smazat.",
+        message: msg,
       });
       return;
     }
-    showNotification({ type: "success", message: "Whop smazán." });
+    // Success notification and redirect to onboarding
+    showNotification({ type: "success", message: "Whop deleted." });
     navigate("/onboarding");
   } catch (err) {
-    console.error(err);
-    setError("Síťová chyba.");
+    console.error("Network error during Whop deletion:", err);
+    setError("Network error.");
     showNotification({
       type: "error",
-      message: "Síťová chyba při mazání Whopu.",
+      message: "Network error while deleting Whop.",
     });
   }
 }

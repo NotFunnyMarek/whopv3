@@ -11,6 +11,7 @@ export default function Memberships() {
   const [memberships, setMemberships] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch the user's memberships
   useEffect(() => {
     fetchMyMemberships();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -26,23 +27,24 @@ export default function Memberships() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setMemberships(Array.isArray(data) ? data : []);
-      showNotification({ type: "success", message: "Předplatná načtena." });
+      showNotification({ type: "success", message: "Memberships loaded." });
     } catch (err) {
-      console.error("Chyba při načítání předplatných:", err);
-      showNotification({ type: "error", message: "Nepodařilo se načíst předplatná." });
+      console.error("Error fetching memberships:", err);
+      showNotification({ type: "error", message: "Failed to load memberships." });
       setMemberships([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Cancel auto-renewal for a given membership
   const handleCancelAutoRenew = async (membershipId, whopId) => {
     try {
       await showConfirm(
-        "Zrušit automatické obnovování? Přístup Vám vydrží do konce aktuálního období."
+        "Cancel auto-renewal? You will retain access until the end of the current period."
       );
     } catch {
-      return;
+      return; // User cancelled
     }
     try {
       const res = await fetch("https://app.byxbot.com/php/cancel_auto_renew.php", {
@@ -56,37 +58,38 @@ export default function Memberships() {
       });
       const json = await res.json();
       if (!res.ok) {
-        showNotification({ type: "error", message: json.message || "Nepodařilo se zrušit auto‐renew." });
+        showNotification({ type: "error", message: json.message || "Failed to cancel auto-renewal." });
       } else {
         showNotification({ type: "success", message: json.message });
         fetchMyMemberships();
       }
     } catch (err) {
-      console.error("Chyba při rušení auto‐renew:", err);
-      showNotification({ type: "error", message: "Síťová chyba." });
+      console.error("Error cancelling auto-renewal:", err);
+      showNotification({ type: "error", message: "Network error." });
     }
   };
 
+  // Show loading state
   if (loading) {
-    return <div className="memberships-loading">Načítám předplatná…</div>;
+    return <div className="memberships-loading">Loading memberships…</div>;
   }
 
   return (
     <div className="memberships-container">
-      <h2>Moje předplatná</h2>
+      <h2>My Memberships</h2>
       {memberships.length === 0 ? (
-        <p>Nepředplácíte žádné whopy.</p>
+        <p>You are not subscribed to any Whops.</p>
       ) : (
         <table className="memberships-table">
           <thead>
             <tr>
               <th>Whop</th>
-              <th>Cena</th>
-              <th>Perioda</th>
-              <th>Začátek</th>
-              <th>Další platba</th>
-              <th>Stav</th>
-              <th>Akce</th>
+              <th>Price</th>
+              <th>Period</th>
+              <th>Start</th>
+              <th>Next Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +98,7 @@ export default function Memberships() {
               const nextPay = m.next_payment_at
                 ? new Date(m.next_payment_at).toLocaleString()
                 : "-";
-              const periodText = Number(m.is_recurring) === 1 ? m.billing_period : "Jednorázově";
+              const periodText = Number(m.is_recurring) === 1 ? m.billing_period : "One-Time";
 
               return (
                 <tr key={m.membership_id}>
@@ -116,7 +119,7 @@ export default function Memberships() {
                           handleCancelAutoRenew(m.membership_id, m.whop_id)
                         }
                       >
-                        <FaTimesCircle /> Zrušit obnovování
+                        <FaTimesCircle /> Cancel Renewal
                       </button>
                     ) : (
                       "-"

@@ -8,7 +8,7 @@ import {
   FaUsers,
   FaPlus,
   FaTachometerAlt,
-} from "react-icons/fa"; // přidáno FaTachometerAlt
+} from "react-icons/fa";
 import "../../../styles/whop-dashboard/_owner.scss";
 
 export default function OwnerActionButtons({
@@ -18,10 +18,10 @@ export default function OwnerActionButtons({
   handleDelete,
   setViewAsMemberMode,
   setIsCampaignModalOpen,
-  whopData, // potřebujeme pro ID Whopu
+  whopData, // needed for Whop ID
 }) {
   const openDashboard = () => {
-    // přesměrujeme na /dashboard s parametrem whop_id
+    // redirect to /dashboard with whop_id parameter
     window.location.href = `/dashboard?whop_id=${encodeURIComponent(
       whopData.id
     )}`;
@@ -32,22 +32,22 @@ export default function OwnerActionButtons({
       {isEditing ? (
         <>
           <button className="whop-save-btn" onClick={handleSave}>
-            <FaSave /> Uložit
+            <FaSave /> Save
           </button>
           <button
             className="whop-cancel-btn"
             onClick={() => setIsEditing(false)}
           >
-            Zrušit
+            Cancel
           </button>
         </>
       ) : (
         <>
           <button className="whop-edit-btn" onClick={() => setIsEditing(true)}>
-            <FaEdit /> Editovat
+            <FaEdit /> Edit
           </button>
           <button className="whop-delete-btn" onClick={handleDelete}>
-            <FaTrash /> Smazat Whop
+            <FaTrash /> Delete Whop
           </button>
           <button
             className="whop-view-member-btn"
@@ -59,9 +59,9 @@ export default function OwnerActionButtons({
             className="whop-create-camp-btn"
             onClick={() => setIsCampaignModalOpen(true)}
           >
-            <FaPlus /> Vytvořit kampaň
+            <FaPlus /> Create Campaign
           </button>
-          {/* Nové tlačítko Dashboard */}
+          {/* New Dashboard button */}
           <button className="whop-dashboard-btn" onClick={openDashboard}>
             <FaTachometerAlt /> Dashboard
           </button>

@@ -11,24 +11,24 @@ export default function MembersSection({
 }) {
   return (
     <div className="whop-members-section">
-      <h2 className="members-section-title">Členové (placené Whopy)</h2>
+      <h2 className="members-section-title">Members (paid Whops)</h2>
       {membersLoading ? (
-        <p className="members-loading">Načítám členy…</p>
+        <p className="members-loading">Loading members…</p>
       ) : membersError ? (
         <p className="members-error">{membersError}</p>
       ) : membershipsList.length === 0 ? (
-        <p className="members-empty">Žádní členové (placené Whopy)</p>
+        <p className="members-empty">No members (paid Whops)</p>
       ) : (
         <table className="members-table">
           <thead>
             <tr>
-              <th>Uživatel</th>
-              <th>Cena</th>
-              <th>Perioda</th>
-              <th>Začátek</th>
-              <th>Další platba</th>
-              <th>Stav</th>
-              <th>Akce</th>
+              <th>User</th>
+              <th>Price</th>
+              <th>Period</th>
+              <th>Start</th>
+              <th>Next Payment</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -37,7 +37,7 @@ export default function MembersSection({
               const nextPay = m.next_payment_at
                 ? new Date(m.next_payment_at).toLocaleString()
                 : "-";
-              const periodText = m.is_recurring ? m.billing_period : "Jednorázově";
+              const periodText = m.is_recurring ? m.billing_period : "One-time";
               return (
                 <tr key={m.user_id}>
                   <td>{m.username}</td>
@@ -55,7 +55,7 @@ export default function MembersSection({
                         className="member-cancel-btn"
                         onClick={() => handleCancelMember(m.user_id)}
                       >
-                        Zrušit
+                        Cancel
                       </button>
                     ) : (
                       "-"

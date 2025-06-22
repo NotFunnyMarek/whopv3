@@ -20,33 +20,33 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
     setDepositAddress('');
     setPriceUsd(null);
 
-    // 1) Načteme deposit_address z deposit.php
+    // 1) Load deposit_address from deposit.php
     fetch('https://app.byxbot.com/php/deposit.php', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     })
-      .then((res) => {
+      .then(res => {
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
       })
-      .then((data) => {
+      .then(data => {
         if (data.status === 'success') {
           setDepositAddress(data.data.deposit_address);
-          showNotification({ type: 'success', message: 'Adresa pro deposit načtena.' });
-          // 2) Poté načteme cenu SOL z CoinGecko
+          showNotification({ type: 'success', message: 'Deposit address loaded.' });
+          // 2) Then fetch the SOL price from CoinGecko
           return fetch(
             'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'
           );
         } else {
-          throw new Error(data.message || 'Chyba při načítání deposit dat');
+          throw new Error(data.message || 'Error loading deposit data');
         }
       })
-      .then((res) => {
+      .then(res => {
         if (!res.ok) throw new Error(`CoinGecko HTTP error: ${res.status}`);
         return res.json();
       })
-      .then((priceData) => {
+      .then(priceData => {
         if (
           priceData &&
           priceData.solana &&
@@ -57,10 +57,10 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
           setPriceUsd(null);
         }
       })
-      .catch((err) => {
-        console.error('Chyba při načítání deposit nebo ceny SOL:', err);
-        setError('Nepodařilo se načíst data pro deposit');
-        showNotification({ type: 'error', message: 'Chyba při načítání deposit dat.' });
+      .catch(err => {
+        console.error('Error loading deposit or SOL price:', err);
+        setError('Unable to load deposit data');
+        showNotification({ type: 'error', message: 'Error loading deposit data.' });
       })
       .finally(() => {
         setLoading(false);
@@ -71,11 +71,11 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
     if (!depositAddress) return;
     navigator.clipboard.writeText(depositAddress).then(
       () => {
-        showNotification({ type: 'success', message: 'Adresa zkopírována do schránky.' });
+        showNotification({ type: 'success', message: 'Address copied to clipboard.' });
         if (onSuccess) onSuccess();
       },
       () => {
-        showNotification({ type: 'error', message: 'Chyba při kopírování.' });
+        showNotification({ type: 'error', message: 'Copy failed.' });
       }
     );
   };
@@ -84,16 +84,16 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="dm-container" onClick={(e) => e.stopPropagation()}>
+      <div className="dm-container" onClick={e => e.stopPropagation()}>
         <h2>Deposit SOL (Testnet)</h2>
 
-        {loading && <div className="dm-loading">Načítám…</div>}
+        {loading && <div className="dm-loading">Loading…</div>}
         {error && <div className="dm-error">{error}</div>}
 
         {!loading && !error && (
           <>
             <div className="dm-section">
-              <strong>Solana Adresa:</strong>
+              <strong>Solana Address:</strong>
               <div className="dm-address-row">
                 <input
                   type="text"
@@ -108,17 +108,15 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
             </div>
 
             <div className="dm-section">
-              <strong>Postup:</strong>
+              <strong>Instructions:</strong>
               <ul className="dm-instructions">
                 <li>
-                  Přihlašte se do své Solana testnet peněženky (Phantom apod.) a
-                  zašlete SOL na výše uvedenou adresu.
+                  Log into your Solana testnet wallet (e.g., Phantom) and send SOL to the above address.
                 </li>
                 <li>
-                  1 SOL ≈ $
-                  {priceUsd !== null ? priceUsd.toFixed(2) : '–'} USD
+                  1 SOL ≈ ${priceUsd !== null ? priceUsd.toFixed(2) : '–'} USD
                 </li>
-                <li>Čekejte přibližně 30 s na zpracování transakce.</li>
+                <li>Wait approximately 30 s for the transaction to process.</li>
               </ul>
             </div>
 
