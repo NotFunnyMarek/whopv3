@@ -1,143 +1,247 @@
+// src/styles/home.scss
 @import './variables';
 @import './_theme.scss';
 
-/* ======================
-   Stránka Home
-   ====================== */
-
-.home-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.main-content {
+  margin-left: var(--sidebar-width, 60px);
   padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
+  background: var(--bg-color);
 }
 
 .home-header {
   text-align: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 
-  .home-title {
+  h1 {
     font-size: 2rem;
-    font-weight: 600;
-    margin: 0;
     color: var(--text-color);
   }
 
   .home-subtitle {
     font-size: 1rem;
-    color: var(--muted-color);
-    margin-top: var(--spacing-xs);
+    color: var(--text-color);
+    margin-top: var(--spacing-sm);
 
     .home-link {
       color: var(--primary-color);
-      font-weight: 500;
-      transition: color var(--transition);
+      text-decoration: underline;
+      font-weight: 600;
+
       &:hover {
-        color: var(--primary-hover);
+        opacity: 0.8;
       }
     }
   }
 }
 
-.home-controls {
+.home-filters {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background: var(--surface-color);
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-soft);
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
 
-  .home-count {
-    font-size: 0.875rem;
-    color: var(--text-color);
-  }
-
-  .home-filters {
-    display: flex;
-    gap: var(--spacing-md);
-
-    .home-filter-item {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-xs);
-      font-size: 0.875rem;
-      color: var(--text-color);
-
-      .home-select {
-        margin-left: var(--spacing-xs);
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--surface-color);
-        backdrop-filter: blur(12px);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-base);
-        font-size: 0.875rem;
-        color: var(--text-color);
-        cursor: pointer;
-        transition: border-color var(--transition);
-
-        &:focus {
-          border-color: var(--primary-color);
-        }
-      }
-    }
-  }
-
-  .home-sort {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    font-size: 0.875rem;
-    color: var(--text-color);
-
-    .home-select {
-      margin-left: var(--spacing-xs);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      background: var(--surface-color);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-base);
-      font-size: 0.875rem;
-      color: var(--text-color);
-      cursor: pointer;
-      transition: border-color var(--transition);
-
-      &:focus {
-        border-color: var(--primary-color);
-      }
-    }
-  }
-
-  .home-create-btn {
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-    color: #fff;
-    font-size: 0.875rem;
-    font-weight: 600;
+  .home-filter-tag {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    box-shadow:  4px 4px 12px rgba(0,0,0,0.1),
-                 -4px -4px 12px rgba(255,255,255,0.7);
-    transition: transform var(--transition);
+    font-size: 0.75rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
 
     &:hover {
-      transform: translateY(-2px);
+      background: var(--border-color);
+    }
+    &.active {
+      background: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
     }
   }
-}
-
-.home-grid {
-  /* Karty se stylují přes card.scss */
 }
 
 .home-error {
-  color: var(--error-color);
-  font-size: 1rem;
   text-align: center;
-  margin-top: var(--spacing-md);
+  color: var(--error-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.home-whop-grid {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.home-whop-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.whop-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.whop-card {
+  display: flex;
+  align-items: flex-start;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  min-height: 100px;
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .whop-thumb {
+    flex: 0 0 40px;
+
+    img {
+      margin-top: 10px;
+      width: 55px;
+      height: 55px;
+      border-radius: var(--radius-base);
+      object-fit: cover;
+    }
+  }
+
+  .whop-content {
+          margin-top: 10px;
+    flex: 1;
+    padding: 0 var(--spacing-md);
+    text-align: left !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .whop-title {
+      font-size: 1rem;
+      color: var(--text-color);
+      margin-bottom: var(--spacing-xxs);
+      text-align: left !important;
+    }
+
+    .whop-desc {
+      font-size: 0.75rem;
+      color: var(--muted-color);
+      margin-bottom: var(--spacing-xxs);
+      text-align: left !important;
+    }
+
+    .whop-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 0.75rem;
+
+      .whop-revenue {
+        background: var(--primary-light);
+        padding: var(--spacing-xxs) var(--spacing-xs);
+        border-radius: var(--radius-base);
+        font-weight: 600;
+      }
+
+      .whop-members {
+        position: relative;
+        padding-left: 16px;
+        color: var(--text-color);
+
+        &::before {
+          content: "";
+          width: 8px;
+          height: 8px;
+          background: var(--success-color);
+          border-radius: 50%;
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+    }
+
+    .whop-features {
+      margin-top: var(--spacing-xs);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-xxs);
+      font-size: 0.75rem;
+      color: var(--muted-color);
+
+      .whop-feature {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-base);
+        padding: var(--spacing-xxs) var(--spacing-xs);
+        text-align: left !important;
+      }
+    }
+  }
+
+  .whop-tag {
+          margin-top: 10px;
+    flex: 0 0 auto;
+    margin-left: var(--spacing-md);
+
+    .free-access {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: var(--success-color);
+      color: #fff;
+      border-radius: var(--radius-base);
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    span:not(.free-access) {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border: 1px solid var(--primary-color);
+      border-radius: var(--radius-base);
+      font-size: 0.75rem;
+      color: var(--primary-color);
+    }
+  }
+}
+
+/* Zlatá, stříbrná, bronzová medaile pro první 3 karty v prvním sloupci */
+.home-whop-column:first-child {
+  .whop-card-link:nth-child(1) .whop-card {
+    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    border-color: #ffc1076b;
+  }
+  .whop-card-link:nth-child(2) .whop-card {
+    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    border-color: #81898da4;
+  }
+  .whop-card-link:nth-child(3) .whop-card {
+    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    border-color: #a1887f6b;
+  }
+}
+
+.whop-card-skeleton {
+  height: 100px;
+  background: var(--border-color);
+  border-radius: 999px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
 }

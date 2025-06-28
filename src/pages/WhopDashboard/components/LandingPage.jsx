@@ -1,3 +1,5 @@
+// src/pages/WhopDashboard/components/LandingPage.jsx
+
 import React, { useState, useEffect } from "react";
 import {
   FaUsers,
@@ -25,18 +27,18 @@ export default function LandingPage({
   const [requested, setRequested] = useState(false);
   const [faqOpen, setFaqOpen] = useState({});
 
-  // Delay entrance animation briefly
+  // Delay entrance animation
   useEffect(() => {
     setTimeout(() => setLoaded(true), 300);
   }, []);
 
-  // Initialize waitlist answers and requested state when data loads
+  // Initialize waitlist answers + requested
   useEffect(() => {
     if (!whopData) return;
     setRequested(
       Boolean(whopData.is_pending_waitlist || whopData.is_accepted_waitlist)
     );
-    setAnswers(whopData.waitlist_questions.map(() => ""));
+    setAnswers((whopData.waitlist_questions || []).map(() => ""));
   }, [whopData]);
 
   if (!whopData) return null;
@@ -55,6 +57,12 @@ export default function LandingPage({
     website_url,
     socials = {},
     id,
+    features = [],
+    about_bio,
+    who_for = [],
+    faq = [],
+    slug,
+    created_at,
   } = whopData;
 
   const priceLabel =
@@ -62,7 +70,7 @@ export default function LandingPage({
       ? `${currency}${price.toFixed(2)}${is_recurring ? `/${billing_period}` : ""}`
       : "Free";
 
-  // Sample reviews
+  // Static reviews — leave as is
   const reviews = [
     { name: "Tadeáš Beránek", text: "100% recommend, I've used it 14 days and made 12% profit.", date: "Nov 9, 2024", rating: 5 },
     { name: "Hell",         text: "Great app, beta without bugs.",                     date: "Oct 18, 2024", rating: 4 },
@@ -70,15 +78,8 @@ export default function LandingPage({
     { name: "Marwik",       text: "nice",                                              date: "Jul 23, 2023", rating: 3 },
   ];
 
-  // FAQ entries
-  const faqList = [
-    { q: "How to join?", a: "Click the Join button and follow the prompts." },
-    { q: "What happens after joining?", a: "You’ll get immediate access to all features." },
-    { q: "Can I cancel anytime?", a: "Yes – subscription can be canceled with one click." },
-  ];
-
   // Submit waitlist request
-  async function handleWaitlist() {
+  async function handleWaitlistClick() {
     if (price > 0 && user_balance < price) {
       showNotification({ type: "error", message: "Insufficient balance." });
       return;
@@ -98,7 +99,7 @@ export default function LandingPage({
 
   return (
     <div className={`landing-page ${loaded ? "loaded" : ""}`}>
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div className="hero glass" style={{ backgroundImage: `url(${banner_url})` }}>
         <div className="hero-overlay" />
         <div className="hero-content">
@@ -107,7 +108,7 @@ export default function LandingPage({
           <div className="hero-buttons">
             <button
               className="btn primary"
-              onClick={waitlist_enabled ? handleWaitlist : handleSubscribe}
+              onClick={waitlist_enabled ? handleWaitlistClick : handleSubscribe}
               disabled={memberLoading || requested}
             >
               {memberLoading
@@ -133,7 +134,7 @@ export default function LandingPage({
         </div>
       </div>
 
-      {/* REVIEWS SECTION */}
+      {/* REVIEWS SECTION - static */}
       <section className="section reviews-section">
         <h2 className="section-title">See what other people are saying</h2>
         <div className="reviews-grid">
@@ -152,53 +153,57 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* FEATURES SECTION */}
-      <section className="section features-section alt">
-        <h2 className="section-title">Here's what you'll get</h2>
-        <div className="features-grid">
-          {[
-            { title: "ByX 2.0 App access", desc: "Automated crypto trading." },
-            { title: "Video Archive",      desc: "Structured learning courses." },
-            { title: "Bounties",           desc: "Earn cash for tasks." },
-            { title: "Announcements",      desc: "Connect and share." },
-          ].map((f, i) => (
-            <div key={i} className="card feature glass">
-              <FaCheckCircle className="feature-icon" />
-              <h3 className="feature-title">{f.title}</h3>
-              <p className="feature-desc">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* FEATURES SECTION - dynamic */}
+      {features.length > 0 && (
+        <section className="section features-section alt">
+          <h2 className="section-title">Here's what you'll get</h2>
+          <div className="features-grid">
+            {features.map((f, i) => (
+              <div key={i} className="card feature glass">
+                <FaCheckCircle className="feature-icon" />
+                <h3 className="feature-title">{f.title}</h3>
+                <p className="feature-desc">{f.subtitle}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* ABOUT SECTION */}
+      {/* ABOUT SECTION - dynamic */}
       <section className="section about-section">
         <h2 className="section-title">Learn about me</h2>
         <div className="about-container">
           <div className="card about glass">
             <h3 className="about-title">{name}</h3>
-            <p className="about-subtitle">@{whopData.slug} • Joined {new Date(whopData.created_at).toLocaleDateString()}</p>
-            <button className="btn outline about-btn">Send creator a message…</button>
+            <p className="about-subtitle">
+              @{slug} • Joined {new Date(created_at).toLocaleDateString()}
+            </p>
             <div className="about-socials">
               {website_url && <a href={website_url}><FaGlobe /></a>}
               {socials.instagram && <a href={socials.instagram}><FaInstagram /></a>}
               {socials.discord && <a href={socials.discord}><FaDiscord /></a>}
             </div>
-            <p className="about-bio">{whopData.bio}</p>
+            <p className="about-bio">{about_bio}</p>
           </div>
         </div>
       </section>
 
-      {/* WHO THIS IS FOR */}
-      <section className="section who-section alt">
-        <h2 className="section-title">Who this is for</h2>
-        <div className="who-grid">
-          <div className="card glass"><h4>Investors</h4><p>Great investing option.</p></div>
-          <div className="card glass"><h4>Traders</h4><p>Learn in our learning center.</p></div>
-        </div>
-      </section>
+      {/* WHO THIS IS FOR - dynamic */}
+      {who_for.length > 0 && (
+        <section className="section who-section alt">
+          <h2 className="section-title">Who this is for</h2>
+          <div className="who-grid">
+            {who_for.map((w, i) => (
+              <div key={i} className="card glass">
+                <h4>{w.title}</h4>
+                <p>{w.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* PRICING SECTION */}
+      {/* PRICING SECTION - dynamic list */}
       <section className="section pricing-section">
         <h2 className="section-title">Pricing</h2>
         <div className="pricing-container">
@@ -206,45 +211,48 @@ export default function LandingPage({
             <h3 className="pricing-title">Join {name}</h3>
             <p className="pricing-price">{priceLabel}</p>
             <ul className="pricing-list">
-              <li>Automated trading</li>
-              <li>Video courses</li>
-              <li>24/7 support</li>
-              <li>Ambassador program</li>
+              {features.map((f, i) => (
+                <li key={i}>{f.title}</li>
+              ))}
             </ul>
             <button
               className="btn primary pricing-btn"
-              onClick={waitlist_enabled ? handleWaitlist : handleSubscribe}
+              onClick={waitlist_enabled ? handleWaitlistClick : handleSubscribe}
               disabled={memberLoading || requested}
             >
-              {waitlist_enabled ? <><FaClock /> Request Access</> : <><FaUserPlus /> Join</>}
+              {waitlist_enabled
+                ? <><FaClock /> Request Access</>
+                : <><FaUserPlus /> Join</>}
             </button>
           </div>
         </div>
       </section>
 
-      {/* FAQ SECTION */}
-      <section className="section faq-section alt">
-        <h2 className="section-title">Frequently asked questions</h2>
-        <div className="faq-container">
-          {faqList.map((f, i) => (
-            <div key={i} className="faq-item">
-              <button className="faq-question" onClick={() => toggleFaq(i)}>
-                <span>{f.q}</span>
-                <span className="faq-icon">
-                  {faqOpen[i] ? <FaChevronUp /> : <FaChevronDown />}
-                </span>
-              </button>
-              {faqOpen[i] && (
-                <div className="faq-answer">
-                  <p>{f.a}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* FAQ SECTION - dynamic */}
+      {faq.length > 0 && (
+        <section className="section faq-section alt">
+          <h2 className="section-title">Frequently asked questions</h2>
+          <div className="faq-container">
+            {faq.map((f, i) => (
+              <div key={i} className="faq-item">
+                <button className="faq-question" onClick={() => toggleFaq(i)}>
+                  <span>{f.question}</span>
+                  <span className="faq-icon">
+                    {faqOpen[i] ? <FaChevronUp /> : <FaChevronDown />}
+                  </span>
+                </button>
+                {faqOpen[i] && (
+                  <div className="faq-answer">
+                    <p>{f.answer}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* AFFILIATE & REPORT SECTION */}
+      {/* AFFILIATE & REPORT SECTION - static */}
       <section className="section affiliate-section">
         <h2 className="section-title">Become an affiliate</h2>
         <div className="affiliate-grid">

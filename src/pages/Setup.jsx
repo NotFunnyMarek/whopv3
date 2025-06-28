@@ -10,47 +10,70 @@ export default function Setup() {
   const navigate = useNavigate();
   const { showNotification } = useNotifications();
 
-  // Load existing data from cookie if available
-  const cookieData = getWhopSetupCookie();
-  const initialName       = cookieData?.name        || "";
-  const initialDesc       = cookieData?.description || "";
-  const initialLogo       = cookieData?.logoUrl     || "";
-  const initialPrice      = cookieData?.price?.toString() || "0.00";
-  const initialBilling    = cookieData?.billing_period || "none";
-  const initialWaitlist   = cookieData?.waitlist_enabled || false;
-  const initialQuestions  = cookieData?.waitlist_questions || ["", "", "", "", ""];
+  // Load from cookie
+  const cookieData = getWhopSetupCookie() || {};
 
-  const [whopName, setWhopName]             = useState(initialName);
-  const [description, setDescription]       = useState(initialDesc);
-  const [logoUrl, setLogoUrl]               = useState(initialLogo);
-  const [price, setPrice]                   = useState(initialPrice);
-  const [billingPeriod, setBillingPeriod]   = useState(initialBilling);
-  const [waitlistEnabled, setWaitlistEnabled]     = useState(initialWaitlist);
-  const [waitlistQuestions, setWaitlistQuestions] = useState(initialQuestions);
+  // State variables
+  const [whopName, setWhopName] = useState(cookieData.name || "");
+  const [description, setDescription] = useState(cookieData.description || "");
+  const [logoUrl, setLogoUrl] = useState(cookieData.logoUrl || "");
+  const [price, setPrice] = useState(
+    cookieData.price != null ? cookieData.price.toString() : "0.00"
+  );
+  const [billingPeriod, setBillingPeriod] = useState(
+    cookieData.billing_period || "none"
+  );
+  const [waitlistEnabled, setWaitlistEnabled] = useState(
+    Boolean(cookieData.waitlist_enabled)
+  );
+  const [waitlistQuestions, setWaitlistQuestions] = useState(
+    Array.isArray(cookieData.waitlist_questions)
+      ? cookieData.waitlist_questions
+      : ["", "", "", "", ""]
+  );
+  const [aboutBio, setAboutBio] = useState(cookieData.about_bio || "");
+  const [websiteUrl, setWebsiteUrl] = useState(cookieData.website_url || "");
+  const [socials, setSocials] = useState({
+    instagram: cookieData.socials?.instagram || "",
+    discord: cookieData.socials?.discord || "",
+  });
+  const [whoFor, setWhoFor] = useState(
+    Array.isArray(cookieData.who_for) && cookieData.who_for.length > 0
+      ? cookieData.who_for
+      : [{ title: "", description: "" }]
+  );
+  const [faq, setFaq] = useState(
+    Array.isArray(cookieData.faq) && cookieData.faq.length > 0
+      ? cookieData.faq
+      : [{ question: "", answer: "" }]
+  );
 
+  // Constants
   const maxNameLength = 30;
   const maxDescLength = 200;
+  const isRecurring =
+    billingPeriod !== "none" && billingPeriod !== "single" ? 1 : 0;
 
-  // Determine if this is a recurring payment
-  const isRecurring = billingPeriod !== "none" && billingPeriod !== "single" ? 1 : 0;
-
-  // Save to cookie whenever any setup field changes
+  // Persist to cookie
   useEffect(() => {
-    const newData = {
-      ...(cookieData || {}),
-      name:               whopName,
-      description:        description,
-      logoUrl:            logoUrl,
-      price:              parseFloat(price),
-      billing_period:     billingPeriod,
-      is_recurring:       isRecurring,
-      currency:           "USD",
-      waitlist_enabled:   waitlistEnabled,
+    setWhopSetupCookie({
+      name: whopName,
+      description,
+      logoUrl,
+      price: parseFloat(price) || 0,
+      billing_period: billingPeriod,
+      is_recurring: isRecurring,
+      currency: "USD",
+      waitlist_enabled: waitlistEnabled,
       waitlist_questions: waitlistEnabled
-                             ? waitlistQuestions.filter((q) => q.trim() !== "")
-                             : [],
-    };
-    setWhopSetupCookie(newData);
+        ? waitlistQuestions.filter((q) => q.trim() !== "")
+        : [],
+      about_bio: aboutBio,
+      website_url: websiteUrl,
+      socials,
+      who_for: whoFor,
+      faq,
+    });
   }, [
     whopName,
     description,
@@ -60,35 +83,30 @@ export default function Setup() {
     isRecurring,
     waitlistEnabled,
     waitlistQuestions,
-    cookieData,
+    aboutBio,
+    websiteUrl,
+    socials,
+    whoFor,
+    faq,
   ]);
 
-  // Handlers for inputs
+  // Handlers
   const handleNameChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= maxNameLength) {
-      setWhopName(value);
+    if (e.target.value.length <= maxNameLength) {
+      setWhopName(e.target.value);
     }
   };
-
   const handleDescChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= maxDescLength) {
-      setDescription(value);
+    if (e.target.value.length <= maxDescLength) {
+      setDescription(e.target.value);
     }
   };
-
   const handlePriceChange = (e) => {
-    const value = e.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value)) {
-      setPrice(value);
+    if (/^\d*\.?\d{0,2}$/.test(e.target.value)) {
+      setPrice(e.target.value);
     }
   };
-
-  const handleBillingChange = (e) => {
-    setBillingPeriod(e.target.value);
-  };
-
+  const handleBillingChange = (e) => setBillingPeriod(e.target.value);
   const handleWaitlistToggle = (e) => {
     const enabled = e.target.checked;
     setWaitlistEnabled(enabled);
@@ -96,84 +114,77 @@ export default function Setup() {
       setWaitlistQuestions(["", "", "", "", ""]);
     }
   };
-
-  const handleQuestionChange = (index, value) => {
-    const qs = [...waitlistQuestions];
-    qs[index] = value;
-    setWaitlistQuestions(qs);
+  const handleQuestionChange = (i, v) => {
+    const arr = [...waitlistQuestions];
+    arr[i] = v;
+    setWaitlistQuestions(arr);
+  };
+  const handleBioChange = (e) => setAboutBio(e.target.value);
+  const handleWebsiteChange = (e) => setWebsiteUrl(e.target.value);
+  const handleSocialChange = (key, v) =>
+    setSocials((prev) => ({ ...prev, [key]: v }));
+  const addWhoFor = () =>
+    setWhoFor((prev) => [...prev, { title: "", description: "" }]);
+  const removeWhoFor = (i) => {
+    if (whoFor.length <= 1) return;
+    setWhoFor((prev) => prev.filter((_, idx) => idx !== i));
+  };
+  const handleWhoForChange = (i, field, v) => {
+    setWhoFor((prev) =>
+      prev.map((item, idx) => (idx === i ? { ...item, [field]: v } : item))
+    );
+  };
+  const addFaq = () => setFaq((prev) => [...prev, { question: "", answer: "" }]);
+  const removeFaq = (i) => {
+    if (faq.length <= 1) return;
+    setFaq((prev) => prev.filter((_, idx) => idx !== i));
+  };
+  const handleFaqChange = (i, field, v) => {
+    setFaq((prev) =>
+      prev.map((item, idx) => (idx === i ? { ...item, [field]: v } : item))
+    );
   };
 
-  // Validation helpers
-  const pricingInvalid = () => {
-    if (billingPeriod === "none") {
-      return false;
-    }
-    const numeric = parseFloat(price);
-    return isNaN(numeric) || numeric <= 0;
-  };
+  // Validation
+  const pricingInvalid =
+    billingPeriod !== "none" && (isNaN(parseFloat(price)) || parseFloat(price) <= 0);
+  const waitlistInvalid =
+    waitlistEnabled && waitlistQuestions.every((q) => !q.trim());
 
-  const waitlistInvalid = () => {
-    if (!waitlistEnabled) return false;
-    return waitlistQuestions.every((q) => q.trim() === "");
-  };
+  // Decide if Continue enabled
+  const continueEnabled =
+    whopName.trim() &&
+    description.trim() &&
+    !pricingInvalid &&
+    !waitlistInvalid;
 
-  // Continue to next step
+  // Navigation
   const handleContinue = () => {
-    if (
-      !whopName.trim() ||
-      !description.trim() ||
-      pricingInvalid() ||
-      waitlistInvalid()
-    ) {
+    if (!continueEnabled) {
       showNotification({
         type: "error",
         message: "Please fill out all required fields correctly.",
       });
       return;
     }
-
-    const whopData = {
-      name:               whopName.trim(),
-      description:        description.trim(),
-      slug:               cookieData?.slug || "",
-      features:           cookieData?.features || [],
-      logoUrl:            logoUrl.trim(),
-      price:              parseFloat(price),
-      billing_period:     billingPeriod,
-      is_recurring:       isRecurring,
-      currency:           "USD",
-      waitlist_enabled:   waitlistEnabled,
-      waitlist_questions: waitlistEnabled
-                             ? waitlistQuestions.filter((q) => q.trim() !== "")
-                             : [],
-    };
-
-    setWhopSetupCookie(whopData);
-    showNotification({ type: "success", message: "Settings saved. Continuing..." });
+    const whopData = getWhopSetupCookie();
     navigate("/setup/link", { state: { whopData } });
   };
-
-  const handleBack = () => {
-    navigate("/onboarding");
-  };
+  const handleBack = () => navigate("/onboarding");
 
   return (
     <div className="setup-container">
       <div className="setup-header">
-        <h1 className="setup-title">Name Your Whop</h1>
+        <h1 className="setup-title">Configure Your Whop</h1>
       </div>
 
       <div className="setup-content">
-        <p className="setup-subtitle">
-          Enter a name and description for your Whop. This description will be visible to visitors.
-        </p>
-
-        {/* Whop name input */}
+        {/* Name */}
         <div className="setup-input-wrapper">
           <input
             type="text"
             className="setup-input"
-            placeholder="Enter your Whop name"
+            placeholder="Whop name"
             value={whopName}
             onChange={handleNameChange}
           />
@@ -182,11 +193,11 @@ export default function Setup() {
           </div>
         </div>
 
-        {/* Description textarea */}
+        {/* Description */}
         <div className="setup-input-wrapper">
           <textarea
             className="setup-textarea"
-            placeholder="Enter your Whop description"
+            placeholder="Description"
             value={description}
             onChange={handleDescChange}
             rows="3"
@@ -196,7 +207,7 @@ export default function Setup() {
           </div>
         </div>
 
-        {/* Logo URL input */}
+        {/* Logo URL */}
         <div className="setup-input-wrapper">
           <input
             type="text"
@@ -207,80 +218,171 @@ export default function Setup() {
           />
         </div>
 
-        {/* Price input */}
+        {/* Price */}
         <div className="setup-input-wrapper">
-          <label htmlFor="price-input">Price (USD) *</label>
+          <label>Price (USD) *</label>
           <input
-            id="price-input"
             type="text"
             className="setup-input"
-            placeholder="0.00"
             value={price}
             onChange={handlePriceChange}
           />
         </div>
 
-        {/* Billing period selector */}
+        {/* Billing */}
         <div className="setup-input-wrapper">
-          <label htmlFor="billing-select">Payment Type *</label>
+          <label>Payment Type *</label>
           <select
-            id="billing-select"
             className="setup-input"
             value={billingPeriod}
             onChange={handleBillingChange}
           >
             <option value="none">Free</option>
             <option value="single">Single Payment</option>
-            <option value="1min">Recurring: every 1 minute</option>
-            <option value="7days">Recurring: every 7 days</option>
-            <option value="14days">Recurring: every 14 days</option>
-            <option value="30days">Recurring: every 30 days</option>
-            <option value="1year">Recurring: every 1 year</option>
+            <option value="1min">Every 1 minute</option>
+            <option value="7days">Every 7 days</option>
+            <option value="14days">Every 14 days</option>
+            <option value="30days">Every 30 days</option>
+            <option value="1year">Every 1 year</option>
           </select>
-          {billingPeriod !== "none" && billingPeriod !== "single" && (
-            <p className="setup-note">
-              This setting will charge the specified amount automatically at the selected interval.
-            </p>
-          )}
         </div>
 
-        {/* Waitlist toggle */}
+        {/* Waitlist */}
         <div className="setup-input-wrapper">
-          <label htmlFor="waitlist-checkbox">
+          <label>
             <input
-              id="waitlist-checkbox"
               type="checkbox"
               checked={waitlistEnabled}
               onChange={handleWaitlistToggle}
-            />
+            />{" "}
             Enable Waitlist
           </label>
-          <p className="setup-note">
-            If enabled, users will join a waitlist and you can approve or reject their requests.
-          </p>
         </div>
-
-        {/* Waitlist questions */}
         {waitlistEnabled && (
           <div className="setup-input-wrapper">
-            <p className="setup-subtitle">
-              Add up to 5 screening questions for the waitlist:
-            </p>
-            {waitlistQuestions.map((q, idx) => (
-              <div key={idx} className="setup-input-wrapper">
-                <input
-                  type="text"
-                  className="setup-input"
-                  placeholder={`Question ${idx + 1} (optional)`}
-                  value={q}
-                  onChange={(e) => handleQuestionChange(idx, e.target.value)}
-                />
-              </div>
+            {waitlistQuestions.map((q, i) => (
+              <input
+                key={i}
+                type="text"
+                className="setup-input"
+                placeholder={`Question ${i + 1}`}
+                value={q}
+                onChange={(e) => handleQuestionChange(i, e.target.value)}
+              />
             ))}
           </div>
         )}
 
-        {/* Navigation buttons */}
+        {/* About Bio */}
+        <div className="setup-input-wrapper">
+          <textarea
+            className="setup-textarea"
+            placeholder="About me"
+            value={aboutBio}
+            onChange={handleBioChange}
+            rows="3"
+          />
+        </div>
+
+        {/* Website URL */}
+        <div className="setup-input-wrapper">
+          <input
+            type="text"
+            className="setup-input"
+            placeholder="Website URL (optional)"
+            value={websiteUrl}
+            onChange={handleWebsiteChange}
+          />
+        </div>
+
+        {/* Socials */}
+        <div className="setup-input-wrapper">
+          <input
+            type="text"
+            className="setup-input"
+            placeholder="Instagram URL"
+            value={socials.instagram}
+            onChange={(e) => handleSocialChange("instagram", e.target.value)}
+          />
+        </div>
+        <div className="setup-input-wrapper">
+          <input
+            type="text"
+            className="setup-input"
+            placeholder="Discord URL"
+            value={socials.discord}
+            onChange={(e) => handleSocialChange("discord", e.target.value)}
+          />
+        </div>
+
+        {/* Who This Is For */}
+        <div className="setup-section">
+          <h2>Who This Is For</h2>
+          {whoFor.map((item, i) => (
+            <div key={i} className="setup-subgroup">
+              <input
+                type="text"
+                className="setup-input"
+                placeholder="Title"
+                value={item.title}
+                onChange={(e) => handleWhoForChange(i, "title", e.target.value)}
+              />
+              <textarea
+                className="setup-textarea"
+                placeholder="Description"
+                value={item.description}
+                onChange={(e) =>
+                  handleWhoForChange(i, "description", e.target.value)
+                }
+                rows="2"
+              />
+              {whoFor.length > 1 && (
+                <button
+                  className="remove-btn"
+                  onClick={() => removeWhoFor(i)}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+          <button className="add-btn" onClick={addWhoFor}>
+            + Add Who For
+          </button>
+        </div>
+
+        {/* FAQ */}
+        <div className="setup-section">
+          <h2>FAQ</h2>
+          {faq.map((item, i) => (
+            <div key={i} className="setup-subgroup">
+              <input
+                type="text"
+                className="setup-input"
+                placeholder="Question"
+                value={item.question}
+                onChange={(e) => handleFaqChange(i, "question", e.target.value)}
+              />
+              <textarea
+                className="setup-textarea"
+                placeholder="Answer"
+                value={item.answer}
+                onChange={(e) => handleFaqChange(i, "answer", e.target.value)}
+                rows="2"
+              />
+              {faq.length > 1 && (
+                <button className="remove-btn" onClick={() => removeFaq(i)}>
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+          <button className="add-btn" onClick={addFaq}>
+            + Add FAQ
+          </button>
+        </div>
+
+        {/* Navigation */}
         <div className="setup-buttons">
           <button className="back-button" onClick={handleBack}>
             ← Back
@@ -288,12 +390,7 @@ export default function Setup() {
           <button
             className="setup-button"
             onClick={handleContinue}
-            disabled={
-              !whopName.trim() ||
-              !description.trim() ||
-              pricingInvalid() ||
-              waitlistInvalid()
-            }
+            disabled={!continueEnabled}
           >
             Continue
           </button>

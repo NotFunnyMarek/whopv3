@@ -1,155 +1,174 @@
-// src/pages/Home.jsx
-
+// src/components/Home.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import CardGrid from '../components/CardGrid';
 import '../styles/home.scss';
 
-const API_URL = 'https://app.byxbot.com/php/campaign.php';
+const API_WHOPS_URL = 'https://app.byxbot.com/php/search_whops.php?all=1';
+
+const FILTER_TAGS = [
+  'Biggest revenue',
+  'Most addicting',
+  'Newest',
+  'Most money made',
+];
+
+const applyFilter = (whops, filter) => {
+  switch (filter) {
+    case 'Biggest revenue':
+    case 'Most money made':
+      return [...whops].sort((a, b) => b.revenue - a.revenue);
+    case 'Most addicting':
+      return [...whops].sort((a, b) => b.members_count - a.members_count);
+    case 'Newest':
+      return [...whops].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    default:
+      return whops;
+  }
+};
 
 export default function Home() {
-  const [cardsData, setCardsData] = useState([]);
+  const [whops, setWhops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+  const [activeFilter, setActiveFilter] = useState('Biggest revenue');
 
-  const [filterType, setFilterType] = useState('All');
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [sortOption, setSortOption] = useState('Highest Budget');
+  // pro staggered reveal
+  const [visibleCount, setVisibleCount] = useState(0);
 
   useEffect(() => {
-    fetchCampaigns();
+    (async () => {
+      try {
+        const res = await fetch(API_WHOPS_URL, { credentials: 'include' });
+        const json = await res.json();
+        setWhops(json.data.map(w => ({
+          ...w,
+          revenue:       parseFloat(w.revenue) || 0,
+          price:         parseFloat(w.price)   || 0,
+          members_count: parseInt(w.members_count, 10) || 0,
+          review_count:  parseInt(w.review_count, 10)  || 0,
+          features:      Array.isArray(w.features) ? w.features : [],
+          created_at:    w.created_at || null,
+        })));
+      } catch {
+        setErrorMsg('Chyba při načítání.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const fetchCampaigns = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await fetch(API_URL, {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const data = await res.json();
-      setCardsData(data);
-    } catch (error) {
-      setErrorMsg('Unable to load campaigns: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const displayedWhops = useMemo(() => applyFilter(whops, activeFilter), [whops, activeFilter]);
 
-  // Only show campaigns that are active and still within budget
-  const liveCampaigns = useMemo(
-    () =>
-      cardsData.filter(
-        (c) => c.is_active === 1 && c.paid_out < c.total_paid_out
-      ),
-    [cardsData]
-  );
+  // rozdělíme na sloupce 1–5 / 6–10
+  const leftColumn  = displayedWhops.slice(0, 5);
+  const rightColumn = displayedWhops.slice(5, 10);
 
-  // Apply filters and sorting
-  const filteredData = useMemo(() => {
-    let arr = [...liveCampaigns];
-
-    if (filterType !== 'All') {
-      arr = arr.filter((c) => c.type === filterType);
+  // spustíme staggered reveal, když data dojdou
+  useEffect(() => {
+    if (!loading) {
+      setVisibleCount(0);
+      const total = displayedWhops.length;
+      const interval = setInterval(() => {
+        setVisibleCount(v => {
+          if (v + 1 >= total) {
+            clearInterval(interval);
+            return total;
+          }
+          return v + 1;
+        });
+      }, 100);
+      return () => clearInterval(interval);
     }
-    if (filterCategory !== 'All') {
-      arr = arr.filter((c) => c.category === filterCategory);
-    }
-
-    switch (sortOption) {
-      case 'Highest Budget':
-        arr.sort((a, b) => b.budget - a.budget);
-        break;
-      case 'Lowest Budget':
-        arr.sort((a, b) => a.budget - b.budget);
-        break;
-      case 'Newest':
-        arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        break;
-      case 'Oldest':
-        arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        break;
-      default:
-        break;
-    }
-    return arr;
-  }, [liveCampaigns, filterType, filterCategory, sortOption]);
+  }, [loading, displayedWhops]);
 
   return (
-    <div className="home-container">
-      <div className="home-header">
-        <h1 className="home-title">Content Rewards</h1>
+    <div className="main-content home-container">
+      <header className="home-header">
+        <h1>Search our most popular Backs!</h1>
         <p className="home-subtitle">
           Post content on social media and get paid for the views you generate. If you want to start a campaign{' '}
           <Link className="home-link" to="/intro">click here</Link>.
         </p>
-      </div>
+      </header>
 
-      <div className="home-controls">
-        <div className="home-count">
-          {loading ? 'Loading campaigns…' : `${filteredData.length} live campaigns`}
-        </div>
-
-        <div className="home-filters">
-          <label className="home-filter-item">
-            Type:
-            <select
-              className="home-select"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option>All</option>
-              <option>Clipping</option>
-              <option>UGC</option>
-            </select>
-          </label>
-
-          <label className="home-filter-item">
-            Category:
-            <select
-              className="home-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option>All</option>
-              <option>Personal brand</option>
-              <option>Product review</option>
-              <option>Entertainment</option>
-            </select>
-          </label>
-        </div>
-
-        <label className="home-sort">
-          Sort by:
-          <select
-            className="home-select"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
+      <div className="home-filters">
+        {FILTER_TAGS.map(tag => (
+          <span
+            key={tag}
+            className={`home-filter-tag${activeFilter === tag ? ' active' : ''}`}
+            onClick={() => setActiveFilter(tag)}
           >
-            <option>Highest Budget</option>
-            <option>Lowest Budget</option>
-            <option>Newest</option>
-            <option>Oldest</option>
-          </select>
-        </label>
+            {tag}
+          </span>
+        ))}
       </div>
 
-      <div className="home-grid">
-        {errorMsg && <div className="home-error">{errorMsg}</div>}
+      {errorMsg && <div className="home-error">{errorMsg}</div>}
 
-        {loading ? (
-          <div className="cards-grid">
-            {Array.from({ length: 8 }).map((_, idx) => (
-              <div key={idx} className="card-item card-skeleton" />
-            ))}
-          </div>
-        ) : (
-          <CardGrid cardsData={filteredData} />
-        )}
+      <div className="home-whop-grid">
+        <div className="home-whop-column">
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="whop-card-skeleton" />
+              ))
+            : leftColumn.map((item, i) => (
+                <Card key={item.slug} item={item} index={i} visibleCount={visibleCount} />
+              ))
+          }
+        </div>
+        <div className="home-whop-column">
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="whop-card-skeleton" />
+              ))
+            : rightColumn.map((item, i) => (
+                <Card key={item.slug} item={item} index={i + leftColumn.length} visibleCount={visibleCount} />
+              ))
+          }
+        </div>
       </div>
     </div>
+  );
+}
+
+function Card({ item, index, visibleCount }) {
+  const isFree = item.price === 0;
+  const visible = index < visibleCount;
+  return (
+    <Link to={`/c/${item.slug}`} className="whop-card-link">
+      <div
+        className={`whop-card${visible ? ' visible' : ''}`}
+        style={{ transitionDelay: `${index * 0.1}s` }}
+      >
+        <div className="whop-thumb">
+          <img src={item.banner_url || item.logo_url || '/placeholder.png'} alt={item.name} />
+        </div>
+        <div className="whop-content">
+          <div className="whop-title"><strong>{item.name}</strong></div>
+          <div className="whop-desc">{item.description || 'No description'}</div>
+          <div className="whop-info">
+            <span className="whop-revenue">
+              All‑Time: {item.currency}{item.revenue.toFixed(2)}
+            </span>
+            <span className="whop-members">{item.members_count} members</span>
+          </div>
+          <div className="whop-features">
+            {item.features.map((f, i) => (
+              <div key={i} className="whop-feature">
+                <strong>{f.title}</strong>: {f.subtitle}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="whop-tag">
+          {isFree
+            ? <span className="free-access">Free Access</span>
+            : <span>{item.currency}{item.price.toFixed(2)}{item.is_recurring ? ` / ${item.billing_period}` : ''}</span>
+          }
+        </div>
+      </div>
+    </Link>
   );
 }
