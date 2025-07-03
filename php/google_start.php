@@ -19,6 +19,26 @@ use Google_Client;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function generateUniqueUsername(mysqli $conn, string $email): string {
+    $base = explode('@', $email)[0];
+    $base = preg_replace('/[^a-zA-Z0-9]/', '', $base);
+    if ($base === '') {
+        $base = 'user';
+    }
+    $username = $base;
+    $i = 1;
+    while (true) {
+        $esc = $conn->real_escape_string($username);
+        $check = $conn->query("SELECT id FROM users4 WHERE username='$esc' LIMIT 1");
+        if (!$check || $check->num_rows === 0) {
+            break;
+        }
+        $username = $base . $i;
+        $i++;
+    }
+    return $username;
+}
+
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON, true);
 $idToken = $data['id_token'] ?? '';
@@ -62,20 +82,12 @@ if ($res && $res->num_rows > 0) {
     $username = $user['username'];
 } elseif ($mode === 'register') {
     // create new user during registration
-    $base = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]);
-    if ($base === '') { $base = 'user'; }
-    $username = $base;
-    $i = 1;
-    while (true) {
-        $check = $conn->query("SELECT id FROM users4 WHERE username='".$conn->real_escape_string($username)."' LIMIT 1");
-        if (!$check || $check->num_rows === 0) break;
-        $username = $base . $i;
-        $i++;
-    }
-    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance) VALUES ('$username', '$emailEsc', NULL, 0)";
+    $username = generateUniqueUsername($conn, $email);
+    $usernameEsc = $conn->real_escape_string($username);
+    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance) VALUES ('$usernameEsc', '$emailEsc', NULL, 0)";
     if ($conn->query($insertSql) !== TRUE) {
         http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Error creating user']);
+        echo json_encode(['status' => 'error', 'message' => 'Error creating user: ' . $conn->error]);
         $conn->close();
         exit;
     }
