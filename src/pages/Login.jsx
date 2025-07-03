@@ -33,9 +33,13 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ id_token: resp.credential }),
+        body: JSON.stringify({ id_token: resp.credential, mode: 'login' }),
       });
       const data = await res.json();
+      if (res.status === 404 && data.status === 'not_found') {
+        navigate('/register');
+        return;
+      }
       if (res.ok && data.token) {
         setTwofaToken(data.token);
         showNotification({ type: 'info', message: 'Verification code sent.' });
@@ -71,13 +75,13 @@ const Login = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
+    <div className="auth-page">
+      <div className="auth-card">
         <h2>Login</h2>
         {!twofaToken ? (
           <div id="google-btn" className="google-btn"></div>
         ) : (
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="auth-form">
             <label>
               2FA Code
               <input

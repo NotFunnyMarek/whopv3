@@ -1,0 +1,3 @@
+ALTER TABLE users4
+  ADD COLUMN deposit_address VARCHAR(64) DEFAULT NULL,
+  ADD COLUMN deposit_secret  VARCHAR(128) DEFAULT NULL;

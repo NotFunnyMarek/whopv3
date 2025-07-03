@@ -22,6 +22,7 @@ use PHPMailer\PHPMailer\Exception;
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON, true);
 $idToken = $data['id_token'] ?? '';
+$mode    = $data['mode']    ?? 'login';
 
 if (!$idToken) {
     http_response_code(400);
@@ -59,8 +60,8 @@ if ($res && $res->num_rows > 0) {
     $user = $res->fetch_assoc();
     $userId = (int)$user['id'];
     $username = $user['username'];
-} else {
-    // create new user
+} elseif ($mode === 'register') {
+    // create new user during registration
     $base = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]);
     if ($base === '') { $base = 'user'; }
     $username = $base;
@@ -81,9 +82,15 @@ if ($res && $res->num_rows > 0) {
     $userId = $conn->insert_id;
     // run node script for deposit addresses
     $nodePath   = '/usr/bin/node';
-    $scriptPath = '/solana-monitor/setup_deposit_addresses.js';
+    $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
     $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
     exec($cmd . " 2>&1", $outputLines, $returnVal);
+} else {
+    // login attempt with unregistered email
+    http_response_code(404);
+    echo json_encode(['status' => 'not_found']);
+    $conn->close();
+    exit;
 }
 
 $code  = random_int(100000, 999999);

@@ -33,7 +33,7 @@ const Register = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ id_token: resp.credential }),
+        body: JSON.stringify({ id_token: resp.credential, mode: 'register' }),
       });
       const data = await res.json();
       if (res.ok && data.token) {
@@ -71,13 +71,13 @@ const Register = () => {
   };
 
   return (
-    <div className="register-page">
-      <div className="register-card">
+    <div className="auth-page">
+      <div className="auth-card">
         <h2>Register</h2>
         {!twofaToken ? (
           <div id="google-btn" className="google-btn"></div>
         ) : (
-          <form onSubmit={handleSubmit} className="register-form">
+          <form onSubmit={handleSubmit} className="auth-form">
             <label>
               2FA Code
               <input
