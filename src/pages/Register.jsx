@@ -1,45 +1,72 @@
 // src/pages/Register.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import '../styles/register.scss';
 
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // replace with real client ID
+
 const Register = () => {
   const { showNotification } = useNotifications();
-  const [username, setUsername] = useState('');
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
+  const [twofaToken, setTwofaToken] = useState(null);
+  const [code, setCode] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    showNotification({ type: 'info', message: 'Registering...' });
+  useEffect(() => {
+    if (window.google && !twofaToken) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogle,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-btn'),
+        { theme: 'outline', size: 'large' }
+      );
+    }
+  }, [twofaToken]);
+
+  const handleGoogle = async (resp) => {
+    showNotification({ type: 'info', message: 'Processing...' });
     try {
-      const res = await fetch('https://app.byxbot.com/php/register.php', {
+      const res = await fetch('https://app.byxbot.com/php/google_start.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ id_token: resp.credential }),
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        showNotification({ type: 'success', message: data.message || 'Registration successful. Please log in.' });
-        setUsername('');
-        setEmail('');
-        setPassword('');
-        setTimeout(() => navigate('/login'), 1500);
+      const data = await res.json();
+      if (res.ok && data.token) {
+        setTwofaToken(data.token);
+        showNotification({ type: 'info', message: 'Verification code sent.' });
       } else {
-        let errText = `Registration error (HTTP ${res.status})`;
-        try {
-          const errJson = await res.json();
-          if (errJson.message) errText = errJson.message;
-        } catch {}
-        showNotification({ type: 'error', message: errText });
+        showNotification({ type: 'error', message: data.message || 'Error' });
       }
     } catch (err) {
-      showNotification({ type: 'error', message: 'Error: ' + err.message });
+      showNotification({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('https://app.byxbot.com/php/verify_code.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token: twofaToken, code }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('authToken', 'loggedIn');
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showNotification({ type: 'success', message: 'Registration complete.' });
+        setTimeout(() => navigate('/'), 1000);
+      } else {
+        showNotification({ type: 'error', message: data.message || 'Invalid code' });
+      }
+    } catch (err) {
+      showNotification({ type: 'error', message: err.message });
     }
   };
 
@@ -47,39 +74,23 @@ const Register = () => {
     <div className="register-page">
       <div className="register-card">
         <h2>Register</h2>
-        <form onSubmit={handleSubmit} className="register-form">
-          <label>
-            Username
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Password (min. 6 characters)
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </label>
-          <button type="submit" className="btn-primary">
-            Sign Up
-          </button>
-        </form>
+        {!twofaToken ? (
+          <div id="google-btn" className="google-btn"></div>
+        ) : (
+          <form onSubmit={handleSubmit} className="register-form">
+            <label>
+              2FA Code
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                maxLength={6}
+                required
+              />
+            </label>
+            <button type="submit" className="btn-primary">Verify</button>
+          </form>
+        )}
         <p className="switch-link">
           Already have an account? <Link to="/login">Go to Login</Link>
         </p>
