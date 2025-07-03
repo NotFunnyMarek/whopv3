@@ -1,56 +1,72 @@
 // src/pages/Login.jsx
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import '../styles/login.scss';
 
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // replace with real client ID
+
 const Login = () => {
   const { showNotification } = useNotifications();
-  const [username, setUsername]   = useState('');
-  const [password, setPassword]   = useState('');
-  const navigate                  = useNavigate();
+  const [twofaToken, setTwofaToken] = useState(null);
+  const [code, setCode] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    showNotification({ type: 'info', message: 'Logging in...' });
+  useEffect(() => {
+    if (window.google && !twofaToken) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogle,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-btn'),
+        { theme: 'outline', size: 'large' }
+      );
+    }
+  }, [twofaToken]);
+
+  const handleGoogle = async (resp) => {
+    showNotification({ type: 'info', message: 'Processing...' });
     try {
-      const res = await fetch('https://app.byxbot.com/php/login.php', {
+      const res = await fetch('https://app.byxbot.com/php/google_start.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ id_token: resp.credential }),
       });
-
-      if (res.ok) {
-        let data = {};
-        try {
-          data = await res.json();
-        } catch {
-          data = {};
-        }
-        // Mark as logged in
-        localStorage.setItem('authToken', 'loggedIn');
-        const userObj = {
-          id:    data.user?.id      || null,
-          username: data.user?.username || username,
-          email: data.user?.email   || '',
-          name:  data.user?.username || username,
-          bio:   '',
-          phone: '',
-        };
-        localStorage.setItem('user', JSON.stringify(userObj));
-        showNotification({ type: 'success', message: 'Login successful.' });
-        setUsername('');
-        setPassword('');
-        setTimeout(() => navigate('/'), 1000);
-      } else if (res.status === 401) {
-        showNotification({ type: 'error', message: 'Incorrect username or password.' });
+      const data = await res.json();
+      if (res.ok && data.token) {
+        setTwofaToken(data.token);
+        showNotification({ type: 'info', message: 'Verification code sent.' });
       } else {
-        showNotification({ type: 'error', message: `Login error (HTTP ${res.status}).` });
+        showNotification({ type: 'error', message: data.message || 'Login error' });
       }
     } catch (err) {
-      showNotification({ type: 'error', message: 'Network error: ' + err.message });
+      showNotification({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('https://app.byxbot.com/php/verify_code.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token: twofaToken, code }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('authToken', 'loggedIn');
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showNotification({ type: 'success', message: 'Login successful.' });
+        setTimeout(() => navigate('/'), 1000);
+      } else {
+        showNotification({ type: 'error', message: data.message || 'Invalid code' });
+      }
+    } catch (err) {
+      showNotification({ type: 'error', message: err.message });
     }
   };
 
@@ -58,29 +74,23 @@ const Login = () => {
     <div className="login-page">
       <div className="login-card">
         <h2>Login</h2>
-        <form onSubmit={handleSubmit} className="login-form">
-          <label>
-            Username or Email
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
-          <button type="submit" className="btn-primary">
-            Sign In
-          </button>
-        </form>
+        {!twofaToken ? (
+          <div id="google-btn" className="google-btn"></div>
+        ) : (
+          <form onSubmit={handleSubmit} className="login-form">
+            <label>
+              2FA Code
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                maxLength={6}
+                required
+              />
+            </label>
+            <button type="submit" className="btn-primary">Verify</button>
+          </form>
+        )}
         <p className="switch-link">
           Don’t have an account? <Link to="/register">Go to Register</Link>
         </p>
