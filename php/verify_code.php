@@ -72,8 +72,22 @@ if (!password_verify($code, $record['code_hash'])) {
 $userId = (int)$record['user_id'];
 $conn->query("DELETE FROM two_factor_codes WHERE id=" . (int)$record['id']);
 
-$userRes = $conn->query("SELECT id, username, email FROM users4 WHERE id=$userId LIMIT 1");
+$userRes = $conn->query("SELECT id, username, email, deposit_address FROM users4 WHERE id=$userId LIMIT 1");
 $user = $userRes ? $userRes->fetch_assoc() : null;
+
+if ($user) {
+    if ($user['username'] === null || $user['username'] === '') {
+        $derived = explode('@', $user['email'])[0];
+        $user['username'] = $derived;
+        $conn->query("UPDATE users4 SET username='".$conn->real_escape_string($derived)."' WHERE id=$userId");
+    }
+    if ($user['deposit_address'] === null || $user['deposit_address'] === '') {
+        $nodePath   = '/usr/bin/node';
+        $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
+        $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
+        exec($cmd . " 2>&1", $out, $ret);
+    }
+}
 
 $_SESSION['user_id'] = $userId;
 

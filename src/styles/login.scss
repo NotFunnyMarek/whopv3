@@ -6,18 +6,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
   padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15), transparent 70%),
+                    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1), transparent 70%);
+  animation: move 20s linear infinite;
+}
+
+@keyframes move {
+  from { transform: translateX(-10%); }
+  to   { transform: translateX(10%); }
 }
 
 .auth-card {
   width: 420px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(16px);
-  border-radius: 1rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  padding: 2.5rem;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(30px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 3rem 2.5rem;
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -27,39 +43,40 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
 
-  label {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.875rem;
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+}
 
-    input {
-      margin-top: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-    }
-  }
+.auth-form input {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-base);
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+}
 
-  .btn-primary {
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: #fff;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-  }
+.auth-form .btn-primary {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-base);
+  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
 }
 
 .switch-link {
   text-align: center;
   font-size: 0.875rem;
-  a {
-    color: #fff;
-    text-decoration: underline;
-  }
+  color: var(--text-color);
+}
+
+.switch-link a {
+  color: var(--primary-color);
+  text-decoration: underline;
 }
