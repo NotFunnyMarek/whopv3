@@ -29,7 +29,7 @@ if (!$idToken) {
     exit;
 }
 
-$clientID = 'YOUR_GOOGLE_CLIENT_ID'; // TODO: replace with real client ID
+$clientID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // TODO: replace with real client ID
 $client = new Google_Client(['client_id' => $clientID]);
 $payload = $client->verifyIdToken($idToken);
 if (!$payload) {
@@ -97,15 +97,24 @@ $conn->query("INSERT INTO two_factor_codes (user_id, code_hash, token, expires_a
 
 $mail = new PHPMailer(true);
 try {
-    // Configure your mailer here (SMTP settings etc.)
-    $mail->setFrom('no-reply@example.com', 'Auth');
+    // zapni SMTP
+    $mail->isSMTP();
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = 'verify.byx@gmail.com';           // tvůj Gmail
+    $mail->Password = 'aqzz izve csfu quxc';           // heslo aplikace
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
+
+    $mail->setFrom('verify.byx@gmail.com', 'Auth');
     $mail->addAddress($email);
     $mail->Subject = 'Your verification code';
     $mail->Body    = "Your verification code is: $code";
     $mail->send();
 } catch (Exception $e) {
-    // ignore email errors
+    error_log("Mailer Error: {$mail->ErrorInfo}");
 }
+
 
 $conn->close();
 

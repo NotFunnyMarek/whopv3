@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import '../styles/register.scss';
 
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // replace with real client ID
+const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
 
 const Register = () => {
   const { showNotification } = useNotifications();

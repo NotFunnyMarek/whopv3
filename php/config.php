@@ -1,34 +1,24 @@
 <?php
-// php/config.php
+// config.php
 
-// 1) START SESSION
-session_start();
-
-// 2) Kontrola autentizace
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
-    exit;
-}
-
-// 3) Připojení k MySQL
-$dbHost = 'localhost';
-$dbName = 'nazev_vasi_databaze';
-$dbUser = 'db_user';
-$dbPass = 'db_password';
-
-try {
-    $pdo = new PDO(
-        "mysql:host=$dbHost;dbname=$dbName;charset=utf8mb4",
-        $dbUser,
-        $dbPass,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]
-    );
-} catch (PDOException $e) {
+// 1) Připojení k databázi
+$servername  = "localhost";
+$db_username = "dbadmin";
+$db_password = "3otwj3zR6EI";
+$database    = "byx";
+$db = new mysqli($servername, $db_username, $db_password, $database);
+if ($db->connect_error) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode(['error'=>'DB connection failed']);
     exit;
 }
+
+// 2) JWT nastavení
+const JWT_SECRET       = 'YOUR_VERY_STRONG_RANDOM_SECRET';
+const JWT_ISSUER       = 'app.byxbot.com';
+const ACCESS_TOKEN_EXP  = 3600;       // 1 hodina
+const REFRESH_TOKEN_EXP = 2592000;    // 30 dní
+
+// 3) Email “From” hlavička (mail() přes Google SMTP v php.ini)
+const MAIL_FROM_EMAIL = 'no-reply@yourdomain.com';
+const MAIL_FROM_NAME  = 'ByxBot';

@@ -1,9 +1,9 @@
 <?php
 // php/get_whop.php
 
-// —————————————————————————————
+// =========================================
 // 0) CORS & headers (must be at the very top)
-// —————————————————————————————
+// =========================================
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// —————————————————————————————
+// =========================================
 // 1) Session & user authentication
-// —————————————————————————————
+// =========================================
 session_start();
 $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 if ($user_id <= 0) {
@@ -30,9 +30,9 @@ if ($user_id <= 0) {
     exit;
 }
 
-// —————————————————————————————
+// =========================================
 // 2) Database connection
-// —————————————————————————————
+// =========================================
 require_once __DIR__ . '/config_login.php';
 try {
     $pdo = new PDO(
@@ -50,9 +50,10 @@ try {
     exit;
 }
 
-// —————————————————————————————
+// =========================================
 // 3) Process recurring payments
-// —————————————————————————————
+//    (unchanged from before, keep as is)
+// =========================================
 try {
     $stmt = $pdo->prepare("
         SELECT
@@ -149,12 +150,13 @@ try {
     error_log("Recurring processing error: " . $e->getMessage());
 }
 
-// —————————————————————————————
+// =========================================
 // 4) Route GET and POST
-// —————————————————————————————
+// =========================================
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
+
     // ----- detail by slug -----
     if (isset($_GET['slug'])) {
         $slug = trim($_GET['slug']);
@@ -175,6 +177,11 @@ if ($method === 'GET') {
                   w.billing_period,
                   w.waitlist_enabled,
                   w.waitlist_questions,
+                  w.about_bio,
+                  w.website_url,
+                  w.socials,
+                  w.who_for,
+                  w.faq,
                   w.created_at
                 FROM whops AS w
                 JOIN users4 AS u ON w.owner_id = u.id
@@ -248,31 +255,36 @@ if ($method === 'GET') {
             echo json_encode([
                 "status" => "success",
                 "data"   => [
-                    "id"                   => (int)$w['id'],
-                    "owner_id"             => (int)$w['owner_id'],
-                    "owner_username"       => $w['owner_username'],
-                    "name"                 => $w['name'],
-                    "slug"                 => $w['slug'],
-                    "description"          => $w['description'],
-                    "logo_url"             => $w['logo_url'],
-                    "banner_url"           => $w['banner_url'],
-                    "price"                => (float)$w['price'],
-                    "currency"             => $w['currency'],
-                    "is_recurring"         => (int)$w['is_recurring'],
-                    "billing_period"       => $w['billing_period'],
-                    "waitlist_enabled"     => (int)$w['waitlist_enabled'],
-                    "waitlist_questions"   => json_decode($w['waitlist_questions'], true) ?: [],
-                    "created_at"           => $w['created_at'],
-                    "is_owner"             => $is_owner,
-                    "is_member_free"       => $is_free,
-                    "is_member_paid"       => $is_paid,
-                    "is_member"            => ($is_free || $is_paid) ? 1 : 0,
-                    "members_count"        => $members_count,
-                    "features"             => $features,
-                    "user_balance"         => $user_balance,
-                    "is_pending_waitlist"  => $is_pending_waitlist,
-                    "is_accepted_waitlist" => $is_accepted_waitlist,
-                    "waitlist_answers"     => $waitlist_answers
+                    "id"                     => (int)$w['id'],
+                    "owner_id"               => (int)$w['owner_id'],
+                    "owner_username"         => $w['owner_username'],
+                    "name"                   => $w['name'],
+                    "slug"                   => $w['slug'],
+                    "description"            => $w['description'],
+                    "logo_url"               => $w['logo_url'],
+                    "banner_url"             => $w['banner_url'],
+                    "price"                  => (float)$w['price'],
+                    "currency"               => $w['currency'],
+                    "is_recurring"           => (int)$w['is_recurring'],
+                    "billing_period"         => $w['billing_period'],
+                    "waitlist_enabled"       => (int)$w['waitlist_enabled'],
+                    "waitlist_questions"     => json_decode($w['waitlist_questions'], true) ?: [],
+                    "about_bio"              => $w['about_bio'],
+                    "website_url"            => $w['website_url'],
+                    "socials"                => json_decode($w['socials'], true) ?: new stdClass(),
+                    "who_for"                => json_decode($w['who_for'], true)   ?: [],
+                    "faq"                    => json_decode($w['faq'], true)       ?: [],
+                    "created_at"             => $w['created_at'],
+                    "is_owner"               => $is_owner,
+                    "is_member_free"         => $is_free,
+                    "is_member_paid"         => $is_paid,
+                    "is_member"              => ($is_free || $is_paid) ? 1 : 0,
+                    "members_count"          => $members_count,
+                    "features"               => $features,
+                    "user_balance"           => $user_balance,
+                    "is_pending_waitlist"    => $is_pending_waitlist,
+                    "is_accepted_waitlist"   => $is_accepted_waitlist,
+                    "waitlist_answers"       => $waitlist_answers
                 ]
             ]);
             exit;
@@ -327,136 +339,13 @@ if ($method === 'GET') {
     exit;
 
 } elseif ($method === 'POST') {
-    // ----- create a new whop -----
-    $input = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($input)) {
-        http_response_code(400);
-        echo json_encode([
-            "status"  => "error",
-            "message" => "Invalid JSON body"
-        ]);
-        exit;
-    }
-
-    $required = ['name','description','slug','price','billing_period','is_recurring','currency'];
-    foreach ($required as $f) {
-        if (empty($input[$f]) && $input[$f] !== "0") {
-            http_response_code(400);
-            echo json_encode([
-                "status"  => "error",
-                "message" => "Missing required field '$f'"
-            ]);
-            exit;
-        }
-    }
-
-    // prepare values
-    $name           = trim($input['name']);
-    $description    = trim($input['description']);
-    $slug           = trim($input['slug']);
-    $price          = (float)$input['price'];
-    $billing_period = trim($input['billing_period']);
-    $is_recurring   = (int)$input['is_recurring'];
-    $currency       = trim($input['currency']);
-    $logo_url       = isset($input['logoUrl'])   ? trim($input['logoUrl'])   : '';
-    $banner_url     = isset($input['bannerUrl']) ? trim($input['bannerUrl']) : '';
-
-    // unique slug check
-    try {
-        $chk = $pdo->prepare("SELECT id FROM whops WHERE slug = :slug");
-        $chk->execute(['slug' => $slug]);
-        if ($chk->rowCount() > 0) {
-            http_response_code(409);
-            echo json_encode([
-                "status"  => "error",
-                "message" => "Slug already exists"
-            ]);
-            exit;
-        }
-    } catch (PDOException $ex) {
-        http_response_code(500);
-        echo json_encode([
-            "status"  => "error",
-            "message" => "SQL Error: " . $ex->getMessage()
-        ]);
-        exit;
-    }
-
-    // insert new whop
-    try {
-        $ins = $pdo->prepare("
-            INSERT INTO whops
-                (owner_id, user_id, name, slug, description,
-                 logo_url, banner_url, price, currency,
-                 is_recurring, billing_period)
-            VALUES
-                (:oid, :uid, :name, :slug, :desc,
-                 :logo, :ban, :price, :curr,
-                 :rec, :bp)
-        ");
-        $ins->execute([
-            'oid'   => $user_id,
-            'uid'   => $user_id,
-            'name'  => $name,
-            'slug'  => $slug,
-            'desc'  => $description,
-            'logo'  => $logo_url,
-            'ban'   => $banner_url,
-            'price' => $price,
-            'curr'  => $currency,
-            'rec'   => $is_recurring,
-            'bp'    => $billing_period
-        ]);
-        $newId = (int)$pdo->lastInsertId();
-
-        // insert features if provided
-        if (!empty($input['features']) && is_array($input['features'])) {
-            $fs = $pdo->prepare("
-                INSERT INTO whop_features
-                  (whop_id, title, subtitle, image_url)
-                VALUES
-                  (:wid, :t, :s, :u)
-            ");
-            foreach ($input['features'] as $f) {
-                if (!empty($f['title']) && !empty($f['image_url'])) {
-                    $fs->execute([
-                        'wid' => $newId,
-                        't'   => trim($f['title']),
-                        's'   => trim($f['subtitle']  ?? ''),
-                        'u'   => trim($f['image_url'])
-                    ]);
-                }
-            }
-        }
-
-        http_response_code(201);
-        echo json_encode([
-            "status" => "success",
-            "data"   => [
-                "id"             => $newId,
-                "owner_id"       => $user_id,
-                "name"           => $name,
-                "slug"           => $slug,
-                "description"    => $description,
-                "logo_url"       => $logo_url,
-                "banner_url"     => $banner_url,
-                "price"          => $price,
-                "currency"       => $currency,
-                "is_recurring"   => $is_recurring,
-                "billing_period" => $billing_period
-            ]
-        ]);
-        exit;
-
-    } catch (PDOException $ex) {
-        http_response_code(500);
-        echo json_encode([
-            "status"  => "error",
-            "message" => "Database insert failed: " . $ex->getMessage()
-        ]);
-        exit;
-    }
-
+    // POST not supported here
+    http_response_code(405);
+    echo json_encode([
+        "status"  => "error",
+        "message" => "Method not allowed"
+    ]);
+    exit;
 } else {
     // unsupported method
     http_response_code(405);
