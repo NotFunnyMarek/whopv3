@@ -14,6 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/config_login.php';
 
+function generateUniqueUsername(mysqli $conn, string $email): string {
+    $base = explode('@', $email)[0];
+    // keep only alphanumeric characters to avoid SQL issues
+    $base = preg_replace('/[^a-zA-Z0-9]/', '', $base);
+    if ($base === '') {
+        $base = 'user';
+    }
+    $username = $base;
+    $i = 1;
+    while (true) {
+        $esc = $conn->real_escape_string($username);
+        $check = $conn->query("SELECT id FROM users4 WHERE username='$esc' LIMIT 1");
+        if (!$check || $check->num_rows === 0) {
+            break;
+        }
+        $username = $base . $i;
+        $i++;
+    }
+    return $username;
+}
+
 $cookieParams = session_get_cookie_params();
 session_set_cookie_params([
     'lifetime' => 60 * 60 * 24 * 30, // 30 days
@@ -77,9 +98,10 @@ $user = $userRes ? $userRes->fetch_assoc() : null;
 
 if ($user) {
     if ($user['username'] === null || $user['username'] === '') {
-        $derived = explode('@', $user['email'])[0];
-        $user['username'] = $derived;
-        $conn->query("UPDATE users4 SET username='".$conn->real_escape_string($derived)."' WHERE id=$userId");
+        $newUsername = generateUniqueUsername($conn, $user['email']);
+        $user['username'] = $newUsername;
+        $esc = $conn->real_escape_string($newUsername);
+        $conn->query("UPDATE users4 SET username='$esc' WHERE id=$userId");
     }
     if ($user['deposit_address'] === null || $user['deposit_address'] === '') {
         $nodePath   = '/usr/bin/node';
