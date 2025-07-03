@@ -5,7 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import '../styles/register.scss';
 
-const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
+const GOOGLE_CLIENT_ID =
+  '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
 
 const Register = () => {
   const { showNotification } = useNotifications();
@@ -14,7 +15,8 @@ const Register = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (window.google && !twofaToken) {
+    if (!window.google || twofaToken) return;
+    try {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogle,
@@ -23,6 +25,9 @@ const Register = () => {
         document.getElementById('google-btn'),
         { theme: 'outline', size: 'large' }
       );
+    } catch (err) {
+      console.error('Google init failed', err);
+      showNotification({ type: 'error', message: 'Google init failed' });
     }
   }, [twofaToken]);
 
