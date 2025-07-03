@@ -82,6 +82,12 @@ if ($res && $res->num_rows > 0) {
     $userId = $conn->insert_id;
     // run node script for deposit addresses
     $nodePath   = '/usr/bin/node';
+    $whichOut = [];
+    $whichRet = 0;
+    @exec('which node', $whichOut, $whichRet);
+    if ($whichRet === 0 && !empty($whichOut[0])) {
+        $nodePath = trim($whichOut[0]);
+    }
     $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
     $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
     exec($cmd . " 2>&1", $outputLines, $returnVal);
