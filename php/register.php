@@ -112,7 +112,7 @@ $newUserId = $conn->insert_id;
 // 8) Run `setup_deposit_addresses.js` for this user
 //    Adjust the paths to Node and to your script as needed
 $nodePath   = '/usr/bin/node';         // Adjust to your Node.js path
-$scriptPath = '/solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
+$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
 
 $cmd = escapeshellcmd("$nodePath $scriptPath $newUserId");
 exec($cmd . " 2>&1", $outputLines, $returnVal);
