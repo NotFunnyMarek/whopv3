@@ -1,7 +1,8 @@
 <?php
 // google_start.php - verify Google ID token and send 2FA code
 
-header("Access-Control-Allow-Origin: http://localhost:3000");
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+header("Access-Control-Allow-Origin: $origin");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -81,7 +82,7 @@ if ($res && $res->num_rows > 0) {
     }
     $userId = $conn->insert_id;
     // run node script for deposit addresses
-    $nodePath   = '/usr/bin/node';
+    $nodePath   = 'node';
     $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
     $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
     exec($cmd . " 2>&1", $outputLines, $returnVal);

@@ -2,7 +2,8 @@
 // php/register.php
 
 // 1) CORS – allow only our frontend at http://localhost:3000
-header("Access-Control-Allow-Origin: http://localhost:3000");
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+header("Access-Control-Allow-Origin: $origin");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -111,7 +112,7 @@ $newUserId = $conn->insert_id;
 
 // 8) Run `setup_deposit_addresses.js` for this user
 //    Adjust the paths to Node and to your script as needed
-$nodePath   = '/usr/bin/node';         // Adjust to your Node.js path
+$nodePath   = 'node';         // Adjust to your Node.js path
 $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
 
 $cmd = escapeshellcmd("$nodePath $scriptPath $newUserId");
