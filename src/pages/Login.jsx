@@ -11,6 +11,8 @@ const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.goo
 const Login = () => {
   const { showNotification } = useNotifications();
   const [twofaToken, setTwofaToken] = useState(null);
+  const [idToken, setIdToken] = useState(null);
+  const [resendTimer, setResendTimer] = useState(0);
   const [code, setCode] = useState(Array(6).fill(''));
   const navigate = useNavigate();
 
@@ -27,8 +29,17 @@ const Login = () => {
     }
   }, [twofaToken]);
 
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const timer = setInterval(() => {
+      setResendTimer((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendTimer]);
+
 const handleGoogle = async (resp) => {
   showNotification({ type: 'info', message: 'Processing...' });
+  setIdToken(resp.credential);
   try {
     const res = await fetch('https://app.byxbot.com/php/google_start.php', {
       method: 'POST',
@@ -43,9 +54,33 @@ const handleGoogle = async (resp) => {
     const data = await res.json();
     if (res.ok && data.token) {
       setTwofaToken(data.token);
+      setResendTimer(30);
       showNotification({ type: 'info', message: 'Verification code sent.' });
     } else {
       showNotification({ type: 'error', message: data.message || 'Login error' });
+    }
+  } catch (err) {
+    showNotification({ type: 'error', message: err.message });
+  }
+};
+
+const handleResend = async () => {
+  if (!idToken) return;
+  showNotification({ type: 'info', message: 'Resending code...' });
+  try {
+    const res = await fetch('https://app.byxbot.com/php/google_start.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id_token: idToken }),
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      setTwofaToken(data.token);
+      setResendTimer(30);
+      showNotification({ type: 'info', message: 'Verification code sent.' });
+    } else {
+      showNotification({ type: 'error', message: data.message || 'Error' });
     }
   } catch (err) {
     showNotification({ type: 'error', message: err.message });
@@ -86,6 +121,14 @@ const handleGoogle = async (resp) => {
           <form onSubmit={handleSubmit} className="auth-form">
             <label>2FA Code</label>
             <TwoFactorCodeInput value={code} onChange={setCode} />
+            <button
+              type="button"
+              className="btn-resend"
+              onClick={handleResend}
+              disabled={resendTimer > 0}
+            >
+              {resendTimer > 0 ? `Resend (${resendTimer})` : 'Resend'}
+            </button>
             <button type="submit" className="btn-primary">Verify</button>
           </form>
         )}
