@@ -6,64 +6,47 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15), transparent 70%),
-                    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1), transparent 70%);
-  animation: move 20s linear infinite;
-}
-
-@keyframes move {
-  from { transform: translateX(-10%); }
-  to   { transform: translateX(10%); }
+  background: var(--bg-color);
+  padding: var(--spacing-lg);
 }
 
 .auth-card {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(30px);
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  padding: 3rem 2.5rem;
+  box-shadow: var(--shadow-soft);
+  padding: var(--spacing-xl) var(--spacing-lg);
   color: var(--text-color);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
+  text-align: center;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .auth-form label {
-  display: flex;
-  flex-direction: column;
   font-size: 0.875rem;
+  text-align: left;
 }
 
 .auth-form input {
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: var(--spacing-sm);
   border-radius: var(--radius-base);
   border: 1px solid var(--border-color);
   background: var(--surface-color);
 }
 
 .auth-form .btn-primary {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: var(--spacing-sm);
   border-radius: var(--radius-base);
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: #fff;
   font-weight: 600;
   border: none;
@@ -79,4 +62,19 @@
 .switch-link a {
   color: var(--primary-color);
   text-decoration: underline;
+}
+
+.twofa-input {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+.twofa-input input {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.25rem;
+  border-radius: var(--radius-base);
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
 }
