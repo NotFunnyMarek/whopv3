@@ -131,6 +131,14 @@ export default function BannerSetup() {
       billing_period: prevWhopData.billing_period || "none",
       is_recurring: prevWhopData.is_recurring || 0,
       currency: prevWhopData.currency || "USD",
+      about_bio: prevWhopData.about_bio || "",
+      website_url: prevWhopData.website_url || "",
+      socials: prevWhopData.socials || {},
+      who_for: prevWhopData.who_for || [],
+      faq: prevWhopData.faq || [],
+      waitlist_enabled: prevWhopData.waitlist_enabled || 0,
+      waitlist_questions: prevWhopData.waitlist_questions || [],
+      landing_texts: prevWhopData.landing_texts || {},
     };
 
     try {
