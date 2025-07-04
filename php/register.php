@@ -44,8 +44,7 @@ if (!$data) {
 
 // 4) Extract and validate fields
 $username = trim($conn->real_escape_string($data['username'] ?? ''));
-$emailRaw = trim($data['email'] ?? '');
-$email    = strtolower($conn->real_escape_string($emailRaw));
+$email    = trim($conn->real_escape_string($data['email']    ?? ''));
 $password = $data['password'] ?? '';
 
 // Check required fields
@@ -72,10 +71,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 // 5) Check uniqueness of username and email
 $sqlCheck = "
-  SELECT id
-    FROM users4
-   WHERE username = '$username'
-      OR LOWER(email) = '$email'
+  SELECT id 
+    FROM users4 
+   WHERE username = '$username' 
+      OR email    = '$email'
    LIMIT 1
 ";
 $resCheck = $conn->query($sqlCheck);
@@ -111,16 +110,9 @@ if ($conn->query($insertSql) !== TRUE) {
 $newUserId = $conn->insert_id;
 
 // 8) Run `setup_deposit_addresses.js` for this user
-//    Try to autodetect Node.js path but fall back to /usr/bin/node
-$nodePath   = '/usr/bin/node';
-// Use `which node` to detect a custom install if available
-$whichOut = [];
-$whichRet = 0;
-@exec('which node', $whichOut, $whichRet);
-if ($whichRet === 0 && !empty($whichOut[0])) {
-    $nodePath = trim($whichOut[0]);
-}
-$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
+//    Adjust the paths to Node and to your script as needed
+$nodePath   = '/usr/bin/node';         // Adjust to your Node.js path
+$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
 
 $cmd = escapeshellcmd("$nodePath $scriptPath $newUserId");
 exec($cmd . " 2>&1", $outputLines, $returnVal);

@@ -12,34 +12,9 @@ const ProtectedRoute = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    async function verify() {
-      const token = localStorage.getItem('authToken');
-      const jwt = localStorage.getItem('jwtToken');
-      if (!token || !jwt) {
-        setLoggedIn(false);
-        setChecking(false);
-        return;
-      }
-
-      try {
-        const res = await fetch('https://app.byxbot.com/php/profile.php', {
-          method: 'GET',
-        });
-        if (res.status === 401) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('jwtToken');
-          setLoggedIn(false);
-        } else {
-          setLoggedIn(true);
-        }
-      } catch {
-        setLoggedIn(false);
-      } finally {
-        setChecking(false);
-      }
-    }
-
-    verify();
+    const token = localStorage.getItem('authToken');
+    setLoggedIn(!!token);
+    setChecking(false);
   }, []);
 
   if (checking) {

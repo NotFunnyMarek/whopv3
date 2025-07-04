@@ -15,8 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/session_init.php';
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/utils.php';
 
 // Database connection
 require_once __DIR__ . '/config_login.php';
@@ -73,15 +71,13 @@ if (!password_verify($password, $hash)) {
 $_SESSION['user_id'] = $user['id'];
 
 // Return JSON with user info
-$jwt = generate_jwt((int)$user['id']);
 $response = [
     "status" => "success",
-    "user"   => [
+    "user" => [
         "id"       => $user['id'],
         "username" => $user['username'],
         "email"    => $user['email']
-    ],
-    "token"  => $jwt
+    ]
 ];
 echo json_encode($response);
 $conn->close();

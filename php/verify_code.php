@@ -13,8 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/config_login.php';
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/utils.php';
 
 function generateUniqueUsername(mysqli $conn, string $email): string {
     $base = explode('@', $email)[0];
@@ -98,31 +96,17 @@ if ($user) {
     }
     if ($user['deposit_address'] === null || $user['deposit_address'] === '') {
         $nodePath   = '/usr/bin/node';
-        $whichOut = [];
-        $whichRet = 0;
-        @exec('which node', $whichOut, $whichRet);
-        if ($whichRet === 0 && !empty($whichOut[0])) {
-            $nodePath = trim($whichOut[0]);
-        }
         $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
         $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
         exec($cmd . " 2>&1", $out, $ret);
-        if ($ret === 0) {
-            $resAddr = $conn->query("SELECT deposit_address FROM users4 WHERE id=$userId LIMIT 1");
-            if ($resAddr && $resAddr->num_rows > 0) {
-                $user['deposit_address'] = $resAddr->fetch_assoc()['deposit_address'];
-            }
-        }
     }
 }
 
 $_SESSION['user_id'] = $userId;
 
-$jwt = generate_jwt($userId);
 $conn->close();
 
 echo json_encode([
     'status' => 'success',
-    'user'   => $user,
-    'token'  => $jwt
+    'user' => $user
 ]);
