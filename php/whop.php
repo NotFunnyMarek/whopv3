@@ -297,9 +297,6 @@ if ($method === 'GET') {
    $faq         = isset($input['faq'])
                   ? json_encode($input['faq'], JSON_UNESCAPED_UNICODE)
                   : json_encode([], JSON_UNESCAPED_UNICODE);
-    $landing_texts = isset($input['landing_texts'])
-                   ? json_encode($input['landing_texts'], JSON_UNESCAPED_UNICODE)
-                   : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 
     // Slug uniqueness
     try {
@@ -329,12 +326,12 @@ if ($method === 'GET') {
             (owner_id, user_id, name, slug, description, logo_url, banner_url,
              price, billing_period, is_recurring, currency,
              waitlist_enabled, waitlist_questions,
-             about_bio, website_url, socials, who_for, faq, landing_texts)
+             about_bio, website_url, socials, who_for, faq)
           VALUES
             (:owner_id, :user_id, :name, :slug, :description, :logo_url, :banner_url,
              :price, :billing_period, :is_recurring, :currency,
              :wlen, :wlq,
-             :abt, :web, :soc, :who, :faq, :ltx)
+             :abt, :web, :soc, :who, :faq)
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -356,7 +353,6 @@ if ($method === 'GET') {
             'soc'            => $socials,
             'who'            => $who_for,
             'faq'            => $faq,
-            'ltx'            => $landing_texts,
         ]);
         $newId = (int)$pdo->lastInsertId();
 
