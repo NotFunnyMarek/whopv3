@@ -44,7 +44,8 @@ if (!$data) {
 
 // 4) Extract and validate fields
 $username = trim($conn->real_escape_string($data['username'] ?? ''));
-$email    = trim($conn->real_escape_string($data['email']    ?? ''));
+$emailRaw = trim($data['email'] ?? '');
+$email    = strtolower($conn->real_escape_string($emailRaw));
 $password = $data['password'] ?? '';
 
 // Check required fields
@@ -71,10 +72,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 // 5) Check uniqueness of username and email
 $sqlCheck = "
-  SELECT id 
-    FROM users4 
-   WHERE username = '$username' 
-      OR email    = '$email'
+  SELECT id
+    FROM users4
+   WHERE username = '$username'
+      OR LOWER(email) = '$email'
    LIMIT 1
 ";
 $resCheck = $conn->query($sqlCheck);

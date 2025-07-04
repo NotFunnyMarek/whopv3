@@ -51,9 +51,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $res = $conn->query($sql);
     if ($res && $res->num_rows > 0) {
         $row = $res->fetch_assoc();
-        // If deposit_address is NULL or empty, return empty string
         $deposit_address = $row["deposit_address"] ?: '';
+
+        // If no deposit address yet, attempt to generate one
+        if ($deposit_address === '') {
+            $nodePath   = '/usr/bin/node';
+            $whichOut = [];
+            $whichRet = 0;
+            @exec('which node', $whichOut, $whichRet);
+            if ($whichRet === 0 && !empty($whichOut[0])) {
+                $nodePath = trim($whichOut[0]);
+            }
+            $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
+            $cmd = escapeshellcmd("$nodePath $scriptPath $user_id_int");
+            exec($cmd . " 2>&1", $outputLines, $returnVal);
+
+            if ($returnVal === 0) {
+                $resAddr = $conn->query("SELECT deposit_address FROM users4 WHERE id=$user_id_int LIMIT 1");
+                if ($resAddr && $resAddr->num_rows > 0) {
+                    $deposit_address = $resAddr->fetch_assoc()['deposit_address'] ?: '';
+                }
+            }
+        }
+
         $balance = number_format(floatval($row["balance"]), 8, '.', '');
+
         echo json_encode([
             "status" => "success",
             "data"   => [

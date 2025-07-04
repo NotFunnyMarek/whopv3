@@ -59,7 +59,7 @@ if (!$payload) {
     exit;
 }
 
-$email = $payload['email'] ?? '';
+$email = strtolower($payload['email'] ?? '');
 $name  = $payload['name'] ?? '';
 if (!$email) {
     http_response_code(400);
@@ -75,7 +75,7 @@ if ($conn->connect_error) {
 }
 
 $emailEsc = $conn->real_escape_string($email);
-$res = $conn->query("SELECT id, username FROM users4 WHERE email='$emailEsc' LIMIT 1");
+$res = $conn->query("SELECT id, username FROM users4 WHERE LOWER(email)='$emailEsc' LIMIT 1");
 if ($res && $res->num_rows > 0) {
     $user = $res->fetch_assoc();
     $userId = (int)$user['id'];
