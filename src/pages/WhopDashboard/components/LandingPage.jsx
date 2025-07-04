@@ -26,6 +26,8 @@ export default function LandingPage({
   const [answers, setAnswers] = useState([]);
   const [requested, setRequested] = useState(false);
   const [faqOpen, setFaqOpen] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ name: "", text: "", rating: 5 });
 
   // Delay entrance animation
   useEffect(() => {
@@ -39,6 +41,17 @@ export default function LandingPage({
       Boolean(whopData.is_pending_waitlist || whopData.is_accepted_waitlist)
     );
     setAnswers((whopData.waitlist_questions || []).map(() => ""));
+  }, [whopData]);
+
+  // Load reviews when whop changes
+  useEffect(() => {
+    if (!whopData?.id) return;
+    fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${whopData.id}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.status === "success") setReviews(j.data);
+      })
+      .catch(() => {});
   }, [whopData]);
 
   if (!whopData) return null;
@@ -63,6 +76,7 @@ export default function LandingPage({
     faq = [],
     slug,
     created_at,
+    landing_texts = {},
   } = whopData;
 
   const priceLabel =
@@ -70,15 +84,10 @@ export default function LandingPage({
       ? `${currency}${price.toFixed(2)}${is_recurring ? `/${billing_period}` : ""}`
       : "Free";
 
-  // Static reviews — leave as is
-  const reviews = [
-    { name: "Tadeáš Beránek", text: "100% recommend, I've used it 14 days and made 12% profit.", date: "Nov 9, 2024", rating: 5 },
-    { name: "Hell",         text: "Great app, beta without bugs.",                     date: "Oct 18, 2024", rating: 4 },
-    { name: "kubadockal4",  text: "Simple, friendly team.",                            date: "Jun 11, 2024", rating: 5 },
-    { name: "Marwik",       text: "nice",                                              date: "Jul 23, 2023", rating: 3 },
-  ];
-
-  // Submit waitlist request
+  const reviewsTitle = landing_texts.reviews_title || "See what other people are saying";
+  const featuresTitle = landing_texts.features_title || "Here's what you'll get";
+  const aboutTitle = landing_texts.about_title || "Learn about me";
+  const faqTitle = landing_texts.faq_title || "Frequently asked questions";
   async function handleWaitlistClick() {
     if (price > 0 && user_balance < price) {
       showNotification({ type: "error", message: "Insufficient balance." });
@@ -134,12 +143,12 @@ export default function LandingPage({
         </div>
       </div>
 
-      {/* REVIEWS SECTION - static */}
+      {/* REVIEWS SECTION */}
       <section className="section reviews-section">
-        <h2 className="section-title">See what other people are saying</h2>
+        <h2 className="section-title">{reviewsTitle}</h2>
         <div className="reviews-grid">
-          {reviews.map((r, i) => (
-            <div key={i} className="card review glass">
+          {reviews.map(r => (
+            <div key={r.id} className="card review glass">
               <div className="review-rating">
                 {Array.from({ length: r.rating }).map((_, j) => <FaStar key={j} />)}
               </div>
@@ -151,12 +160,49 @@ export default function LandingPage({
             </div>
           ))}
         </div>
+        <div className="review-form">
+          <input
+            type="text"
+            className="review-input"
+            placeholder="Your name"
+            value={newReview.name}
+            onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+          />
+          <textarea
+            className="review-input"
+            placeholder="Your review"
+            value={newReview.text}
+            onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+          />
+          <button
+            className="btn primary"
+            onClick={async () => {
+              const payload = { ...newReview, whop_id: id };
+              const res = await fetch("https://app.byxbot.com/php/add_review.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              const j = await res.json();
+              if (j.status === "success") {
+                setNewReview({ name: "", text: "", rating: 5 });
+                const fr = await fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${id}`);
+                const jj = await fr.json();
+                if (jj.status === "success") setReviews(jj.data);
+              } else {
+                showNotification({ type: "error", message: j.message || "Error" });
+              }
+            }}
+          >
+            Submit Review
+          </button>
+        </div>
       </section>
 
       {/* FEATURES SECTION - dynamic */}
       {features.length > 0 && (
         <section className="section features-section alt">
-          <h2 className="section-title">Here's what you'll get</h2>
+          <h2 className="section-title">{featuresTitle}</h2>
           <div className="features-grid">
             {features.map((f, i) => (
               <div key={i} className="card feature glass">
@@ -171,7 +217,7 @@ export default function LandingPage({
 
       {/* ABOUT SECTION - dynamic */}
       <section className="section about-section">
-        <h2 className="section-title">Learn about me</h2>
+        <h2 className="section-title">{aboutTitle}</h2>
         <div className="about-container">
           <div className="card about glass">
             <h3 className="about-title">{name}</h3>
@@ -231,7 +277,7 @@ export default function LandingPage({
       {/* FAQ SECTION - dynamic */}
       {faq.length > 0 && (
         <section className="section faq-section alt">
-          <h2 className="section-title">Frequently asked questions</h2>
+        <h2 className="section-title">{faqTitle}</h2>
           <div className="faq-container">
             {faq.map((f, i) => (
               <div key={i} className="faq-item">

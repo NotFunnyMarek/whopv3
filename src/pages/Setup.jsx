@@ -47,6 +47,14 @@ export default function Setup() {
       ? cookieData.faq
       : [{ question: "", answer: "" }]
   );
+  const [landingTexts, setLandingTexts] = useState(
+    cookieData.landing_texts || {
+      reviews_title: "",
+      features_title: "",
+      about_title: "",
+      faq_title: "",
+    }
+  );
 
   // Constants
   const maxNameLength = 30;
@@ -73,6 +81,7 @@ export default function Setup() {
       socials,
       who_for: whoFor,
       faq,
+      landing_texts: landingTexts,
     });
   }, [
     whopName,
@@ -88,6 +97,7 @@ export default function Setup() {
     socials,
     whoFor,
     faq,
+    landingTexts,
   ]);
 
   // Handlers
@@ -143,6 +153,9 @@ export default function Setup() {
     setFaq((prev) =>
       prev.map((item, idx) => (idx === i ? { ...item, [field]: v } : item))
     );
+  };
+  const handleLandingTextChange = (field, value) => {
+    setLandingTexts((prev) => ({ ...prev, [field]: value }));
   };
 
   // Validation
@@ -377,10 +390,43 @@ export default function Setup() {
               )}
             </div>
           ))}
-          <button className="add-btn" onClick={addFaq}>
-            + Add FAQ
-          </button>
-        </div>
+        <button className="add-btn" onClick={addFaq}>
+          + Add FAQ
+        </button>
+      </div>
+
+      {/* Landing Page Texts */}
+      <div className="setup-section">
+        <h2>Landing Page Texts</h2>
+        <input
+          type="text"
+          className="setup-input"
+          placeholder="Reviews section title"
+          value={landingTexts.reviews_title}
+          onChange={(e) => handleLandingTextChange("reviews_title", e.target.value)}
+        />
+        <input
+          type="text"
+          className="setup-input"
+          placeholder="Features section title"
+          value={landingTexts.features_title}
+          onChange={(e) => handleLandingTextChange("features_title", e.target.value)}
+        />
+        <input
+          type="text"
+          className="setup-input"
+          placeholder="About section title"
+          value={landingTexts.about_title}
+          onChange={(e) => handleLandingTextChange("about_title", e.target.value)}
+        />
+        <input
+          type="text"
+          className="setup-input"
+          placeholder="FAQ section title"
+          value={landingTexts.faq_title}
+          onChange={(e) => handleLandingTextChange("faq_title", e.target.value)}
+        />
+      </div>
 
         {/* Navigation */}
         <div className="setup-buttons">
