@@ -110,9 +110,16 @@ if ($conn->query($insertSql) !== TRUE) {
 $newUserId = $conn->insert_id;
 
 // 8) Run `setup_deposit_addresses.js` for this user
-//    Adjust the paths to Node and to your script as needed
-$nodePath   = '/usr/bin/node';         // Adjust to your Node.js path
-$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
+//    Try to autodetect Node.js path but fall back to /usr/bin/node
+$nodePath   = '/usr/bin/node';
+// Use `which node` to detect a custom install if available
+$whichOut = [];
+$whichRet = 0;
+@exec('which node', $whichOut, $whichRet);
+if ($whichRet === 0 && !empty($whichOut[0])) {
+    $nodePath = trim($whichOut[0]);
+}
+$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
 
 $cmd = escapeshellcmd("$nodePath $scriptPath $newUserId");
 exec($cmd . " 2>&1", $outputLines, $returnVal);
