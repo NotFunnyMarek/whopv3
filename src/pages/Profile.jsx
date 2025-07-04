@@ -240,6 +240,7 @@ export default function Profile() {
       .then(res => {
         if (res.ok) {
           localStorage.removeItem('authToken');
+          localStorage.removeItem('jwtToken');
           localStorage.removeItem('user');
           showNotification({ type:'info', message:'You have been logged out.' });
           navigate('/login');

@@ -64,6 +64,9 @@ const handleGoogle = async (resp) => {
       if (res.ok) {
         const username = data.user.username || data.user.email.split('@')[0];
         localStorage.setItem('authToken', 'loggedIn');
+        if (data.token) {
+          localStorage.setItem('jwtToken', data.token);
+        }
         localStorage.setItem('user', JSON.stringify({ ...data.user, username }));
         showNotification({ type: 'success', message: 'Login successful.' });
         setTimeout(() => navigate('/'), 1000);
