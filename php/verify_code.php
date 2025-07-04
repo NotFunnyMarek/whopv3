@@ -105,6 +105,12 @@ if ($user) {
         $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
         $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
         exec($cmd . " 2>&1", $out, $ret);
+        if ($ret === 0) {
+            $resAddr = $conn->query("SELECT deposit_address FROM users4 WHERE id=$userId LIMIT 1");
+            if ($resAddr && $resAddr->num_rows > 0) {
+                $user['deposit_address'] = $resAddr->fetch_assoc()['deposit_address'];
+            }
+        }
     }
 }
 

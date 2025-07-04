@@ -6,33 +6,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+  background: var(--bg-color);
   padding: 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15), transparent 70%),
-                    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1), transparent 70%);
-  animation: move 20s linear infinite;
-}
-
-@keyframes move {
-  from { transform: translateX(-10%); }
-  to   { transform: translateX(10%); }
 }
 
 .auth-card {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(30px);
+  width: 360px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  padding: 3rem 2.5rem;
+  box-shadow: var(--shadow-soft);
+  padding: 2rem;
   color: var(--text-color);
   display: flex;
   flex-direction: column;
@@ -63,7 +47,7 @@
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-base);
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: #fff;
   font-weight: 600;
   border: none;
