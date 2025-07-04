@@ -78,3 +78,16 @@
   border: 1px solid var(--border-color);
   background: var(--surface-color);
 }
+
+.resend-button {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.resend-button:disabled {
+  color: var(--muted-color);
+  cursor: not-allowed;
+}

@@ -12,6 +12,7 @@ const Register = () => {
   const { showNotification } = useNotifications();
   const [twofaToken, setTwofaToken] = useState(null);
   const [code, setCode] = useState(Array(6).fill(''));
+  const [resendTimer, setResendTimer] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,8 +25,16 @@ const Register = () => {
         document.getElementById('google-btn'),
         { theme: 'outline', size: 'large' }
       );
+    } else if (twofaToken) {
+      setResendTimer(30);
     }
   }, [twofaToken]);
+
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const id = setInterval(() => setResendTimer((t) => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [resendTimer]);
 
   const handleGoogle = async (resp) => {
     showNotification({ type: 'info', message: 'Processing...' });
@@ -72,6 +81,26 @@ const Register = () => {
     }
   };
 
+  const handleResend = async () => {
+    try {
+      const res = await fetch('https://app.byxbot.com/php/resend_code.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token: twofaToken }),
+      });
+      if (res.ok) {
+        showNotification({ type: 'info', message: 'Verification code resent.' });
+        setResendTimer(30);
+      } else {
+        const data = await res.json();
+        showNotification({ type: 'error', message: data.message || 'Error sending code' });
+      }
+    } catch (err) {
+      showNotification({ type: 'error', message: err.message });
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -83,6 +112,14 @@ const Register = () => {
             <label>2FA Code</label>
             <TwoFactorCodeInput value={code} onChange={setCode} />
             <button type="submit" className="btn-primary">Verify</button>
+            <button
+              type="button"
+              className="resend-button"
+              onClick={handleResend}
+              disabled={resendTimer > 0}
+            >
+              {resendTimer > 0 ? `Resend (${resendTimer}s)` : 'Resend Code'}
+            </button>
           </form>
         )}
         <p className="switch-link">
