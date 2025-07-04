@@ -16,7 +16,7 @@ import bs58 from 'bs58';
 
 // --- 1) Konfigurace připojení k DB ---
 const dbConfig = {
-  host: '127.0.0.1',     // nikoli "localhost", ale 127.0.0.1
+  host: 'localhost',
   user: 'dbadmin',
   password: '3otwj3zR6EI',
   database: 'byx',

@@ -37,7 +37,7 @@ import {
 
 // MySQL připojení
 const dbConfig = {
-  host: '127.0.0.1',
+  host: 'localhost',
   user: 'dbadmin',
   password: '3otwj3zR6EI',
   database: 'byx',
