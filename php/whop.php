@@ -290,16 +290,19 @@ if ($method === 'GET') {
                         : json_encode([], JSON_UNESCAPED_UNICODE);
     $about_bio   = trim($input['about_bio']   ?? "");
     $long_desc   = trim($input['long_description'] ?? "");
-    $website_url = trim($input['website_url'] ?? "");
-    $socials     = isset($input['socials'])
-                   ? json_encode($input['socials'], JSON_UNESCAPED_UNICODE)
-                   : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
-    $who_for     = isset($input['who_for'])
-                   ? json_encode($input['who_for'], JSON_UNESCAPED_UNICODE)
-                   : json_encode([], JSON_UNESCAPED_UNICODE);
+   $website_url = trim($input['website_url'] ?? "");
+   $socials     = isset($input['socials'])
+                  ? json_encode($input['socials'], JSON_UNESCAPED_UNICODE)
+                  : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
+   $who_for     = isset($input['who_for'])
+                  ? json_encode($input['who_for'], JSON_UNESCAPED_UNICODE)
+                  : json_encode([], JSON_UNESCAPED_UNICODE);
    $faq         = isset($input['faq'])
                   ? json_encode($input['faq'], JSON_UNESCAPED_UNICODE)
                   : json_encode([], JSON_UNESCAPED_UNICODE);
+   $landing_texts = isset($input['landing_texts'])
+                   ? json_encode($input['landing_texts'], JSON_UNESCAPED_UNICODE)
+                   : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 
     // Slug uniqueness
     try {
@@ -329,12 +332,12 @@ if ($method === 'GET') {
             (owner_id, user_id, name, slug, description, long_description, logo_url, banner_url,
              price, billing_period, is_recurring, currency,
              waitlist_enabled, waitlist_questions,
-             about_bio, website_url, socials, who_for, faq)
+             about_bio, website_url, socials, who_for, faq, landing_texts)
           VALUES
             (:owner_id, :user_id, :name, :slug, :description, :long_desc, :logo_url, :banner_url,
              :price, :billing_period, :is_recurring, :currency,
              :wlen, :wlq,
-             :abt, :web, :soc, :who, :faq)
+             :abt, :web, :soc, :who, :faq, :land)
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -357,6 +360,7 @@ if ($method === 'GET') {
             'soc'            => $socials,
             'who'            => $who_for,
             'faq'            => $faq,
+            'land'           => $landing_texts,
         ]);
         $newId = (int)$pdo->lastInsertId();
 

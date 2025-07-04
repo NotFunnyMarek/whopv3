@@ -206,6 +206,7 @@ export default function LandingPage({
               const res = await fetch("https://app.byxbot.com/php/add_review.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload),
               });
               const j = await res.json();
