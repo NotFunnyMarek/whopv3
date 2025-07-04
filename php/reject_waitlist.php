@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // 2) Session & user authentication (must be the owner)
-session_start();
+require_once __DIR__ . '/session_init.php';
 $owner_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 if ($owner_id <= 0) {
     http_response_code(401);

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // 2) Session & user authentication
-session_start();
+require_once __DIR__ . '/session_init.php';
 $currentUserId = $_SESSION['user_id'] ?? null;
 if (!$currentUserId) {
     http_response_code(401);

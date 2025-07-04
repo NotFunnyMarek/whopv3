@@ -84,7 +84,9 @@ if ($res && $res->num_rows > 0) {
     // create new user during registration
     $username = generateUniqueUsername($conn, $email);
     $usernameEsc = $conn->real_escape_string($username);
-    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance) VALUES ('$usernameEsc', '$emailEsc', NULL, 0)";
+    $dummyPass = bin2hex(random_bytes(16));
+    $dummyHash = $conn->real_escape_string(password_hash($dummyPass, PASSWORD_BCRYPT));
+    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance) VALUES ('$usernameEsc', '$emailEsc', '$dummyHash', 0)";
     if ($conn->query($insertSql) !== TRUE) {
         http_response_code(500);
         echo json_encode(['status' => 'error', 'message' => 'Error creating user: ' . $conn->error]);
