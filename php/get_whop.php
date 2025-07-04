@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // =========================================
 // 1) Session & user authentication
 // =========================================
-session_start();
+require_once __DIR__ . '/session_init.php';
 $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 if ($user_id <= 0) {
     http_response_code(401);

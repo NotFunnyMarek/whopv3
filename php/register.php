@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-session_start(); // If you use sessions for anything
+require_once __DIR__ . '/session_init.php'; // If you use sessions for anything
 
 // 2) Connect to the database
 require_once __DIR__ . '/config_login.php';

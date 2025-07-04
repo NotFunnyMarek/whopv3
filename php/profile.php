@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 header("Content-Type: application/json; charset=UTF-8");
-session_start();
+require_once __DIR__ . '/session_init.php';
 
 // Check authentication
 $user_id = $_SESSION['user_id'] ?? null;

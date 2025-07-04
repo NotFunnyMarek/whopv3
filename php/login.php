@@ -14,26 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-/**
- * === 2) PHP SESSION COOKIE PARAMS ===
- * ONLY HERE, BEFORE session_start(), we call session_set_cookie_params.
- * Here we define:
- *   - 'secure'   => true  (required if the page is served over HTTPS; set to false if not using HTTPS)
- *   - 'samesite' => 'None' (required for cross-domain, otherwise the cookie from localhost:3000
- *                           will not be sent to app.byxbot.com)
- */
-$cookieParams = session_get_cookie_params();
-session_set_cookie_params([
-    'lifetime' => $cookieParams['lifetime'],
-    'path'     => $cookieParams['path'],
-    'domain'   => $cookieParams['domain'], // can be an empty string for the current host
-    'secure'   => true,    // true if your PHP is indeed on HTTPS; change to false otherwise
-    'httponly' => true,
-    'samesite' => 'None'
-]);
-
-session_start();
-// ======================= end SESSION cookie configuration =======================
+require_once __DIR__ . '/session_init.php';
 
 // Database connection
 require_once __DIR__ . '/config_login.php';

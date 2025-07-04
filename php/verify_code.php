@@ -35,17 +35,8 @@ function generateUniqueUsername(mysqli $conn, string $email): string {
     return $username;
 }
 
-$cookieParams = session_get_cookie_params();
-session_set_cookie_params([
-    'lifetime' => 60 * 60 * 24 * 30, // 30 days
-    'path'     => $cookieParams['path'],
-    'domain'   => $cookieParams['domain'],
-    'secure'   => true,
-    'httponly' => true,
-    'samesite' => 'None'
-]);
 
-session_start();
+require_once __DIR__ . '/session_init.php';
 
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON, true);
