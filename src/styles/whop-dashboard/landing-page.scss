@@ -130,6 +130,15 @@
 .review .review-meta {
   display: flex; justify-content: space-between; font-size: 0.85rem; color: #666;
 }
+.review-avatar {
+  width: 24px; height: 24px; border-radius: 50%; margin-right: 6px;
+  vertical-align: middle;
+}
+.rating-select svg { cursor: pointer; }
+.rating-select .active { color: #f5a623; }
+.long-desc {
+  margin: 10px 0; font-size: 1rem; line-height: 1.4;
+}
 
 /* Features */
 .feature .feature-icon {

@@ -16,6 +16,9 @@ export default function Setup() {
   // State variables
   const [whopName, setWhopName] = useState(cookieData.name || "");
   const [description, setDescription] = useState(cookieData.description || "");
+  const [longDescription, setLongDescription] = useState(
+    cookieData.long_description || ""
+  );
   const [logoUrl, setLogoUrl] = useState(cookieData.logoUrl || "");
   const [price, setPrice] = useState(
     cookieData.price != null ? cookieData.price.toString() : "0.00"
@@ -67,6 +70,7 @@ export default function Setup() {
     setWhopSetupCookie({
       name: whopName,
       description,
+      long_description: longDescription,
       logoUrl,
       price: parseFloat(price) || 0,
       billing_period: billingPeriod,
@@ -86,6 +90,7 @@ export default function Setup() {
   }, [
     whopName,
     description,
+    longDescription,
     logoUrl,
     price,
     billingPeriod,
@@ -111,6 +116,7 @@ export default function Setup() {
       setDescription(e.target.value);
     }
   };
+  const handleLongDescChange = (e) => setLongDescription(e.target.value);
   const handlePriceChange = (e) => {
     if (/^\d*\.?\d{0,2}$/.test(e.target.value)) {
       setPrice(e.target.value);
@@ -218,6 +224,17 @@ export default function Setup() {
           <div className="char-count">
             {description.length}/{maxDescLength}
           </div>
+        </div>
+
+        {/* Long Description */}
+        <div className="setup-input-wrapper">
+          <textarea
+            className="setup-textarea"
+            placeholder="Long description about your Whop"
+            value={longDescription}
+            onChange={handleLongDescChange}
+            rows="5"
+          />
         </div>
 
         {/* Logo URL */}

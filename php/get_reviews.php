@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+require_once __DIR__ . '/session_init.php';
+$current_user = $_SESSION['user_id'] ?? 0;
 require_once __DIR__ . '/config_login.php';
 
 $whop_id = isset($_GET['whop_id']) ? intval($_GET['whop_id']) : 0;
@@ -28,19 +30,23 @@ try {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
     $stmt = $pdo->prepare(
-        "SELECT id, reviewer_name, text, rating, created_at
-         FROM whop_reviews WHERE whop_id = :wid
-         ORDER BY created_at DESC"
+        "SELECT r.id, r.user_id, r.text, r.rating, r.purchase_date, r.created_at, u.username, u.avatar_url
+         FROM whop_reviews r
+         JOIN users4 u ON r.user_id = u.id
+         WHERE r.whop_id = :wid
+         ORDER BY r.created_at DESC"
     );
     $stmt->execute(['wid' => $whop_id]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $reviews = array_map(function($r){
+    $reviews = array_map(function($r) use ($current_user){
         return [
-            'id'    => (int)$r['id'],
-            'name'  => $r['reviewer_name'],
-            'text'  => $r['text'],
-            'rating'=> (int)$r['rating'],
-            'date'  => $r['created_at']
+            'id'          => (int)$r['id'],
+            'username'    => $r['username'],
+            'avatar_url'  => $r['avatar_url'],
+            'text'        => $r['text'],
+            'rating'      => (int)$r['rating'],
+            'purchase_at' => $r['purchase_date'],
+            'is_mine'     => ((int)$r['user_id'] === (int)$current_user) ? 1 : 0
         ];
     }, $rows);
     echo json_encode(["status" => "success", "data" => $reviews]);
