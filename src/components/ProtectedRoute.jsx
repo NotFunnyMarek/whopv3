@@ -14,7 +14,8 @@ const ProtectedRoute = ({ children }) => {
   useEffect(() => {
     async function verify() {
       const token = localStorage.getItem('authToken');
-      if (!token) {
+      const jwt = localStorage.getItem('jwtToken');
+      if (!token || !jwt) {
         setLoggedIn(false);
         setChecking(false);
         return;
@@ -23,10 +24,10 @@ const ProtectedRoute = ({ children }) => {
       try {
         const res = await fetch('https://app.byxbot.com/php/profile.php', {
           method: 'GET',
-          credentials: 'include',
         });
         if (res.status === 401) {
           localStorage.removeItem('authToken');
+          localStorage.removeItem('jwtToken');
           setLoggedIn(false);
         } else {
           setLoggedIn(true);

@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/config_login.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/utils.php';
 
 function generateUniqueUsername(mysqli $conn, string $email): string {
     $base = explode('@', $email)[0];
@@ -116,9 +118,11 @@ if ($user) {
 
 $_SESSION['user_id'] = $userId;
 
+$jwt = generate_jwt($userId);
 $conn->close();
 
 echo json_encode([
     'status' => 'success',
-    'user' => $user
+    'user'   => $user,
+    'token'  => $jwt
 ]);
