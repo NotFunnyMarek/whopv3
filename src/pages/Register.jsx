@@ -1,6 +1,6 @@
 // src/pages/Register.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import '../styles/register.scss';
@@ -10,7 +10,8 @@ const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.goo
 const Register = () => {
   const { showNotification } = useNotifications();
   const [twofaToken, setTwofaToken] = useState(null);
-  const [code, setCode] = useState('');
+  const [digits, setDigits] = useState(Array(6).fill(''));
+  const inputsRef = useRef([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +26,22 @@ const Register = () => {
       );
     }
   }, [twofaToken]);
+
+  const handleDigitChange = (index, value) => {
+    if (!/^[0-9]?$/.test(value)) return;
+    const arr = [...digits];
+    arr[index] = value;
+    setDigits(arr);
+    if (value && index < 5) {
+      inputsRef.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !digits[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
+    }
+  };
 
   const handleGoogle = async (resp) => {
     showNotification({ type: 'info', message: 'Processing...' });
@@ -49,6 +66,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const code = digits.join('');
     try {
       const res = await fetch('https://app.byxbot.com/php/verify_code.php', {
         method: 'POST',
@@ -81,13 +99,22 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="register-form">
             <label>
               2FA Code
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                maxLength={6}
-                required
-              />
+              <div className="code-inputs">
+                {digits.map((d, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => (inputsRef.current[idx] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={d}
+                    onChange={(e) => handleDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(idx, e)}
+                    required
+                  />
+                ))}
+              </div>
             </label>
             <button type="submit" className="btn-primary">Verify</button>
           </form>

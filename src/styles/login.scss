@@ -6,43 +6,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15), transparent 70%),
-                    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1), transparent 70%);
-  animation: move 20s linear infinite;
-}
-
-@keyframes move {
-  from { transform: translateX(-10%); }
-  to   { transform: translateX(10%); }
+  background: var(--bg-color);
+  padding: var(--spacing-lg);
 }
 
 .auth-card {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(30px);
+  width: 360px;
+  background: var(--surface-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  padding: 3rem 2.5rem;
+  padding: var(--spacing-lg);
   color: var(--text-color);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-md);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.code-inputs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.code-inputs input {
+  width: 2rem;
+  height: 2.5rem;
+  text-align: center;
+  font-size: 1.25rem;
 }
 
 .auth-form label {
@@ -52,7 +48,7 @@
 }
 
 .auth-form input {
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-xs);
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-base);
   border: 1px solid var(--border-color);
@@ -60,10 +56,10 @@
 }
 
 .auth-form .btn-primary {
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-base);
-  background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: #fff;
   font-weight: 600;
   border: none;
