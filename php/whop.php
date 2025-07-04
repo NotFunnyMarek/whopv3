@@ -69,6 +69,7 @@ if ($method === 'GET') {
                   w.name,
                   w.slug,
                   w.description,
+                  w.long_description,
                   w.logo_url,
                   w.banner_url,
                   w.price,
@@ -162,6 +163,7 @@ if ($method === 'GET') {
                     "name"                 => $w['name'],
                     "slug"                 => $w['slug'],
                     "description"          => $w['description'],
+                    "long_description"     => $w['long_description'],
                     "logo_url"             => $w['logo_url'],
                     "banner_url"           => $w['banner_url'],
                     "price"                => (float)$w['price'],
@@ -287,6 +289,7 @@ if ($method === 'GET') {
                         ? json_encode($input['waitlist_questions'], JSON_UNESCAPED_UNICODE)
                         : json_encode([], JSON_UNESCAPED_UNICODE);
     $about_bio   = trim($input['about_bio']   ?? "");
+    $long_desc   = trim($input['long_description'] ?? "");
     $website_url = trim($input['website_url'] ?? "");
     $socials     = isset($input['socials'])
                    ? json_encode($input['socials'], JSON_UNESCAPED_UNICODE)
@@ -323,12 +326,12 @@ if ($method === 'GET') {
     try {
         $sql = "
           INSERT INTO whops
-            (owner_id, user_id, name, slug, description, logo_url, banner_url,
+            (owner_id, user_id, name, slug, description, long_description, logo_url, banner_url,
              price, billing_period, is_recurring, currency,
              waitlist_enabled, waitlist_questions,
              about_bio, website_url, socials, who_for, faq)
           VALUES
-            (:owner_id, :user_id, :name, :slug, :description, :logo_url, :banner_url,
+            (:owner_id, :user_id, :name, :slug, :description, :long_desc, :logo_url, :banner_url,
              :price, :billing_period, :is_recurring, :currency,
              :wlen, :wlq,
              :abt, :web, :soc, :who, :faq)
@@ -340,6 +343,7 @@ if ($method === 'GET') {
             'name'           => $name,
             'slug'           => $slug,
             'description'    => $description,
+            'long_desc'      => $long_desc,
             'logo_url'       => $logoUrl,
             'banner_url'     => $bannerUrl,
             'price'          => $price,

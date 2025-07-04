@@ -27,7 +27,7 @@ export default function LandingPage({
   const [requested, setRequested] = useState(false);
   const [faqOpen, setFaqOpen] = useState({});
   const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState({ name: "", text: "", rating: 5 });
+  const [newReview, setNewReview] = useState({ text: "", rating: 5 });
 
   // Delay entrance animation
   useEffect(() => {
@@ -46,7 +46,8 @@ export default function LandingPage({
   // Load reviews when whop changes
   useEffect(() => {
     if (!whopData?.id) return;
-    fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${whopData.id}`)
+    fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${whopData.id}`,
+      { credentials: "include" })
       .then((r) => r.json())
       .then((j) => {
         if (j.status === "success") setReviews(j.data);
@@ -59,6 +60,7 @@ export default function LandingPage({
   const {
     name,
     description,
+    long_description,
     banner_url,
     members_count,
     price,
@@ -114,6 +116,9 @@ export default function LandingPage({
         <div className="hero-content">
           <h1 className="hero-title">{name}</h1>
           <p className="hero-desc">{description}</p>
+          {long_description && (
+            <p className="long-desc">{long_description}</p>
+          )}
           <div className="hero-buttons">
             <button
               className="btn primary"
@@ -154,20 +159,40 @@ export default function LandingPage({
               </div>
               <p className="review-text">“{r.text}”</p>
               <div className="review-meta">
-                <span className="review-author">{r.name}</span>
-                <span className="review-date">{r.date}</span>
+                <span className="review-author">
+                  <img src={r.avatar_url} alt="avatar" className="review-avatar" /> {r.username}
+                </span>
+                <span className="review-date">Bought {new Date(r.purchase_at).toLocaleDateString()}</span>
               </div>
+              {r.is_mine === 1 && (
+                <button
+                  className="btn outline"
+                  onClick={async () => {
+                    await fetch("https://app.byxbot.com/php/delete_review.php", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ review_id: r.id }),
+                      credentials: "include",
+                    });
+                    const fr = await fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${id}`, { credentials: "include" });
+                    const jj = await fr.json();
+                    if (jj.status === "success") setReviews(jj.data);
+                  }}
+                >Remove</button>
+              )}
             </div>
           ))}
         </div>
         <div className="review-form">
-          <input
-            type="text"
-            className="review-input"
-            placeholder="Your name"
-            value={newReview.name}
-            onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-          />
+          <div className="rating-select">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <FaStar
+                key={i}
+                onClick={() => setNewReview({ ...newReview, rating: i + 1 })}
+                className={i < newReview.rating ? "active" : ""}
+              />
+            ))}
+          </div>
           <textarea
             className="review-input"
             placeholder="Your review"
@@ -185,8 +210,9 @@ export default function LandingPage({
               });
               const j = await res.json();
               if (j.status === "success") {
-                setNewReview({ name: "", text: "", rating: 5 });
-                const fr = await fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${id}`);
+                setNewReview({ text: "", rating: 5 });
+                const fr = await fetch(`https://app.byxbot.com/php/get_reviews.php?whop_id=${id}`,
+                  { credentials: "include" });
                 const jj = await fr.json();
                 if (jj.status === "success") setReviews(jj.data);
               } else {

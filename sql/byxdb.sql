@@ -2004,6 +2004,7 @@ CREATE TABLE `whops` (
   `name` varchar(100) NOT NULL,
   `slug` varchar(100) NOT NULL,
   `description` text NOT NULL,
+  `long_description` text DEFAULT NULL,
   `logo_url` text NOT NULL,
   `banner_url` text NOT NULL,
   `price` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -2291,9 +2292,10 @@ INSERT INTO `whop_pricing_plans` (`id`, `whop_id`, `plan_name`, `description`, `
 CREATE TABLE `whop_reviews` (
   `id` int(11) NOT NULL,
   `whop_id` int(10) UNSIGNED NOT NULL,
-  `reviewer_name` varchar(100) NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
   `text` text NOT NULL,
   `rating` tinyint(4) NOT NULL,
+  `purchase_date` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -2669,7 +2671,8 @@ ALTER TABLE `whop_pricing_plans`
 --
 ALTER TABLE `whop_reviews`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `whop_id` (`whop_id`);
+  ADD KEY `whop_id` (`whop_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `whop_waitlist`
@@ -3038,7 +3041,8 @@ ALTER TABLE `whop_pricing_plans`
 -- Constraints for table `whop_reviews`
 --
 ALTER TABLE `whop_reviews`
-  ADD CONSTRAINT `fk_reviews_whop` FOREIGN KEY (`whop_id`) REFERENCES `whops` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_reviews_whop` FOREIGN KEY (`whop_id`) REFERENCES `whops` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users4` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `whop_waitlist`

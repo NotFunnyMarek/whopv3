@@ -131,6 +131,7 @@ export default function BannerSetup() {
       billing_period: prevWhopData.billing_period || "none",
       is_recurring: prevWhopData.is_recurring || 0,
       currency: prevWhopData.currency || "USD",
+      long_description: prevWhopData.long_description || "",
       about_bio: prevWhopData.about_bio || "",
       website_url: prevWhopData.website_url || "",
       socials: prevWhopData.socials || {},
