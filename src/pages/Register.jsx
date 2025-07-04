@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
+import TwoFactorCodeInput from '../components/TwoFactorCodeInput';
 import '../styles/register.scss';
 
 const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
@@ -10,7 +11,7 @@ const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.goo
 const Register = () => {
   const { showNotification } = useNotifications();
   const [twofaToken, setTwofaToken] = useState(null);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(Array(6).fill(''));
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,7 +55,7 @@ const Register = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ token: twofaToken, code }),
+        body: JSON.stringify({ token: twofaToken, code: code.join('') }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -78,17 +79,9 @@ const Register = () => {
         {!twofaToken ? (
           <div id="google-btn" className="google-btn"></div>
         ) : (
-          <form onSubmit={handleSubmit} className="register-form">
-            <label>
-              2FA Code
-              <input
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                maxLength={6}
-                required
-              />
-            </label>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <label>2FA Code</label>
+            <TwoFactorCodeInput value={code} onChange={setCode} />
             <button type="submit" className="btn-primary">Verify</button>
           </form>
         )}
