@@ -77,6 +77,12 @@ if ($conn->connect_error) {
 $emailEsc = $conn->real_escape_string($email);
 $res = $conn->query("SELECT id, username FROM users4 WHERE email='$emailEsc' LIMIT 1");
 if ($res && $res->num_rows > 0) {
+    if ($mode === 'register') {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Email already registered, please login']);
+        $conn->close();
+        exit;
+    }
     $user = $res->fetch_assoc();
     $userId = (int)$user['id'];
     $username = $user['username'];
