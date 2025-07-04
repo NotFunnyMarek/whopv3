@@ -69,26 +69,33 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// 5) Check uniqueness of username and email
-$sqlCheck = "
-  SELECT id 
-    FROM users4 
-   WHERE username = '$username' 
-      OR email    = '$email'
-   LIMIT 1
-";
-$resCheck = $conn->query($sqlCheck);
-if ($resCheck && $resCheck->num_rows > 0) {
+// 5) Check if email already exists
+$sqlEmail = "SELECT id FROM users4 WHERE email = '$email' LIMIT 1";
+$resEmail = $conn->query($sqlEmail);
+if ($resEmail && $resEmail->num_rows > 0) {
     http_response_code(400);
     echo json_encode([
         "status"  => "error",
-        "message" => "A user with that username or email already exists"
+        "message" => "Email already registered, please login"
     ]);
     $conn->close();
     exit;
 }
 
-// 6) Insert the new user (we leave `name` NULL)
+// 6) Check if username already exists
+$sqlUsername = "SELECT id FROM users4 WHERE username = '$username' LIMIT 1";
+$resUsername = $conn->query($sqlUsername);
+if ($resUsername && $resUsername->num_rows > 0) {
+    http_response_code(400);
+    echo json_encode([
+        "status"  => "error",
+        "message" => "Username already exists"
+    ]);
+    $conn->close();
+    exit;
+}
+
+// 7) Insert the new user (we leave `name` NULL)
 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 $insertSql = "
   INSERT INTO users4
@@ -106,10 +113,10 @@ if ($conn->query($insertSql) !== TRUE) {
     exit;
 }
 
-// 7) Get the new user's ID
+// 8) Get the new user's ID
 $newUserId = $conn->insert_id;
 
-// 8) Run `setup_deposit_addresses.js` for this user
+// 9) Run `setup_deposit_addresses.js` for this user
 //    Adjust the paths to Node and to your script as needed
 $nodePath   = '/usr/bin/node';         // Adjust to your Node.js path
 $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js'; // Absolute path to your script
@@ -128,7 +135,7 @@ if ($returnVal !== 0) {
     exit;
 }
 
-// 9) All good — return success
+// 10) All good — return success
 http_response_code(201);
 echo json_encode([
     "status"  => "success",
