@@ -1,25 +1,38 @@
 /**
  * setup_deposit_addresses.js
  *
- * Tento skript jednor√°zovƒõ projde v≈°echny z√°znamy v tabulce users4,
- * kter√Ωm chyb√≠ `deposit_address`, vygeneruje pro nƒõ nov√Ω Solana Keypair
- * a ulo≈æ√≠ do datab√°ze jejich ve≈ôejn√Ω i priv√°tn√≠ kl√≠ƒç (Base58).
+ * Tento skript vygeneruje Solana Keypair pro konkrÈtnÌho uûivatele (user_id),
+ * uloûÌ do datab·ze jeho `deposit_address` a `deposit_secret` (Base58).
  *
- * Pou≈æit√≠:
- *   cd solana-monitor
- *   node setup_deposit_addresses.js
+ * SpouötÌ se p¯es p¯Ìkazovou ¯·dku:
+ *   node setup_deposit_addresses.js <user_id>
+ *
+ * Vyûaduje:
+ *   npm install mysql2 @solana/web3.js bs58
  */
 
 import mysql from 'mysql2/promise';
 import { Keypair } from '@solana/web3.js';
 import bs58 from 'bs58';
 
-// --- 1) Konfigurace p≈ôipojen√≠ k DB ---
+// === 1) Parametry ===
+if (process.argv.length < 3) {
+  console.error('? Chyba: Nebyl p¯ed·n user_id. PouûitÌ: node setup_deposit_addresses.js <user_id>');
+  process.exit(1);
+}
+const userId = parseInt(process.argv[2], 10);
+if (isNaN(userId)) {
+  console.error('? Chyba: user_id musÌ b˝t ËÌslo.');
+  process.exit(1);
+}
+
+// === 2) Konfigurace DB ===
 const dbConfig = {
-  host: '127.0.0.1',     // nikoli "localhost", ale 127.0.0.1
+  host: 'localhost',
   user: 'dbadmin',
   password: '3otwj3zR6EI',
   database: 'byx',
+  port: 3306,
   charset: 'utf8mb4',
 };
 
@@ -27,52 +40,44 @@ async function main() {
   let conn;
   try {
     conn = await mysql.createConnection(dbConfig);
-  } catch (err) {
-    console.error('‚ùå Nelze se p≈ôipojit k datab√°zi:', err);
+  } catch (e) {
+    console.error('? Nelze se p¯ipojit k DB:', e.message);
     process.exit(1);
   }
 
-  // 2) Vybereme v≈°echny u≈æivatele bez deposit_address
-  let rows;
   try {
-    const [res] = await conn.execute(
-      "SELECT id FROM users4 WHERE deposit_address IS NULL OR deposit_address = ''"
+    // OvÏ¯Ìme, ûe uûivatel existuje
+    const [userRows] = await conn.execute(
+      'SELECT id FROM users4 WHERE id = ?',
+      [userId]
     );
-    rows = res;
-  } catch (err) {
-    console.error('‚ùå Chyba p≈ôi SELECT u≈æivatel≈Ø:', err);
-    await conn.end();
-    process.exit(1);
-  }
-
-  console.log(`Nalezeno ${rows.length} u≈æivatel≈Ø bez deposit_address.`);
-
-  for (const row of rows) {
-    const userId = row.id;
-
-    // 3) Vygenerujeme nov√Ω Solana Keypair
-    const keypair = Keypair.generate();
-    const publicKey = keypair.publicKey.toBase58();
-    // Priv√°tn√≠ kl√≠ƒç zak√≥dujeme do Base58
-    const secretKeyBase58 = bs58.encode(Buffer.from(keypair.secretKey));
-
-    // 4) Ulo≈æ√≠me do DB
-    try {
-      await conn.execute(
-        "UPDATE users4 SET deposit_address = ?, deposit_secret = ? WHERE id = ?",
-        [publicKey, secretKeyBase58, userId]
-      );
-      console.log(`‚Üí U≈æivatel ${userId} : deposit_address=${publicKey}`);
-    } catch (err) {
-      console.error(`‚ùå Chyba p≈ôi UPDATE u≈æivatele ${userId}:`, err);
-      // Pokraƒçujeme na dal≈°√≠ho u≈æivatele
+    if (userRows.length === 0) {
+      console.error(`? Uûivatel s ID=${userId} neexistuje.`);
+      process.exit(1);
     }
-  }
 
-  await conn.end();
-  console.log('‚úÖ Hotovo: deposit_address a deposit_secret nastaveny.');
+    // === 3) Generov·nÌ Solana Keypair ===
+    const newKeypair = Keypair.generate();
+    const publicKey = newKeypair.publicKey.toBase58();
+    const secretBase58 = bs58.encode(newKeypair.secretKey);
+
+    // === 4) UloûenÌ do DB ===
+    await conn.execute(
+      `UPDATE users4 
+         SET deposit_address = ?, deposit_secret = ?
+       WHERE id = ?`,
+      [publicKey, secretBase58, userId]
+    );
+
+    console.log(`? Nastaven deposit_address a deposit_secret pro user_id=${userId}`);
+    console.log(`   deposit_address: ${publicKey}`);
+    console.log(`   deposit_secret: <skrytÏ, priv·tnÌ klÌË>`);
+  } catch (e) {
+    console.error('? Chyba p¯i ukl·d·nÌ do DB:', e.message);
+    process.exit(1);
+  } finally {
+    await conn.end();
+  }
 }
 
-main().catch((err) => {
-  console.error('‚ùå Neoƒçek√°van√° chyba v setup_deposit_addresses.js:', err);
-});
+main();

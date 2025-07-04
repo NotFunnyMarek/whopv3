@@ -1,287 +1,315 @@
 /**
  * monitor.js
  *
- * Pravidelnƒõ (ka≈æd√Ωch 30 s) kontroluje transakce na v≈°ech u≈æivatelsk√Ωch deposit_address,
- * ulo≈æ√≠ je do tabulky deposit_records a z√°rove≈à provede ‚Äûsweep‚Äú ‚Äì po≈°le v≈°echny SOL
- * z t√© u≈æivatelsk√© penƒõ≈æenky na centr√°ln√≠ penƒõ≈æenku CENTRAL_ADDRESS.
+ * Tento skript pravidelnÏ kontroluje vöechny `deposit_address`
+ * uloûenÈ v tabulce `users4` a zpracov·v· novÈ p¯ÌchozÌ transakce v Solana Testnetu.
  *
- * P≈ôedpoklady:
- * 1) V package.json m√°te:
- *    "type": "module",
- *    "dependencies": { "@solana/web3.js", "mysql2", "bs58" }
- * 2) P≈ô√≠stup k MySQL (127.0.0.1:3306, u≈æivatel dbadmin, heslo 3otwj3zR6EI).
- * 3) Priv√°tn√≠ kl√≠ƒç va≈°√≠ centr√°ln√≠ penƒõ≈æenky v Base58 (replace n√≠≈æe).
- * 4) Node.js v18+ (m√° nativn√≠ fetch).
+ * Pro kaûdou deposit_address:
+ *   1) ZjistÌ novÈ transakce (signatures) od poslednÌho zpracov·nÌ.
+ *   2) St·hne detail transakce a spoËÌt·, kolik SOL p¯iölo na danou adresu.
+ *   3) VloûÌ z·znam do `deposit_records` (user_id, deposit_address, sol_amount, usd_amount, tx_signature).
+ *   4) Aktualizuje sloupec `balance` v `users4` (nav˝öÌ o odpovÌdajÌcÌ USD ekvivalent).
+ *   5) Pokud m· uûivatel nenulov˝ a ne-pr·zdn˝ `deposit_secret`, provede Ñsweepì ñ p¯epoöle SOL z depozitnÌ adresy na centr·lnÌ penÏûenku.
  *
- * Spu≈°tƒõn√≠:  
- *   cd solana-monitor
- *   node monitor.js
+ * Validuje, ûe kaûd· adresa je platn· (Base58). Pokud nenÌ, vypÌöe varov·nÌ a danou adresu p¯eskoËÌ.
  */
 
 import mysql from 'mysql2/promise';
-import bs58 from 'bs58';
 import {
   Connection,
   PublicKey,
   clusterApiUrl,
-  Keypair,
   LAMPORTS_PER_SOL,
-  SystemProgram,
+  Keypair,
   Transaction,
-  sendAndConfirmTransaction,
+  SystemProgram
 } from '@solana/web3.js';
+import bs58 from 'bs58';
+import fetch from 'node-fetch';
 
-// ---------------------------------------------
-// 1) Konfigurace
-// ---------------------------------------------
+// --- 1) Konfigurace SOLANA a DB ---
+const SOLANA_CLUSTER = 'testnet';
+const connection = new Connection(clusterApiUrl(SOLANA_CLUSTER), 'confirmed');
 
-// MySQL p≈ôipojen√≠
 const dbConfig = {
-  host: '127.0.0.1',
+  host: 'localhost',
   user: 'dbadmin',
   password: '3otwj3zR6EI',
   database: 'byx',
+  port: 3306,
   charset: 'utf8mb4',
 };
 
-// P≈ôipojen√≠ k Solana Testnet RPC
-const connection = new Connection(clusterApiUrl('testnet'), 'confirmed');
+// *** Base58 priv·tnÌ klÌË centr·lnÌ penÏûenky (vygenerovan˝ export_secret_base58.js) ***
+const CENTRAL_SECRET_BASE58 =
+  '3tbU6bmmc3XCNs5m8RFMK2DRw7cdeRLq2zrbcao2E5cMEEm2urpsbr3buKXvXiTFDav5HgRvBLRiP5mDSCGBbLwo';
 
-// Va≈°e centr√°ln√≠ (sweep) penƒõ≈æenka ‚Äì priv√°tn√≠ kl√≠ƒç v Base58
-const CENTRAL_SECRET_BASE58 = '3tbU6bmmc3XCNs5m8RFMK2DRw7cdeRLq2zrbcao2E5cMEEm2urpsbr3buKXvXiTFDav5HgRvBLRiP5mDSCGBbLwo';
-let centralKeypair;
-let CENTRAL_PUBLIC_KEY = '';
-try {
-  const secretBytes = bs58.decode(CENTRAL_SECRET_BASE58);
-  centralKeypair = Keypair.fromSecretKey(Uint8Array.from(secretBytes));
-  CENTRAL_PUBLIC_KEY = centralKeypair.publicKey.toBase58();
-} catch (err) {
-  console.error('‚ùå Neplatn√Ω form√°t CENTRAL_SECRET_BASE58:', err);
-  process.exit(1);
-}
+const CENTRAL_SECRET = bs58.decode(CENTRAL_SECRET_BASE58);
+const centralKeypair = Keypair.fromSecretKey(Uint8Array.from(CENTRAL_SECRET));
+const CENTRAL_PUBLIC_KEY = centralKeypair.publicKey.toBase58();
 
-console.log(`Centr√°ln√≠ penƒõ≈æenka: ${CENTRAL_PUBLIC_KEY}`);
+// Interval kontroly (ms)
+const POLL_INTERVAL = 30 * 1000;
 
-// Interval mezi kontrolami (v ms)
-const POLL_INTERVAL = 30 * 1000; // 30 sekund
+// --- PomocnÈ funkce ---
 
-// Pro p≈ôepoƒçet lamports‚ÜíSOL
-const LAMPORTS = LAMPORTS_PER_SOL;
-
-// ---------------------------------------------
-// 2) Z√≠sk√°n√≠ ceny SOL v USD (CoinGecko)
-// ---------------------------------------------
-const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd';
-async function getSolPriceUsd() {
+/**
+ * Vr·tÌ aktu·lnÌ cenu SOL v USD z CoinGecko.
+ */
+async function fetchSolPrice() {
   try {
-    const response = await fetch(COINGECKO_API_URL);
-    const data = await response.json();
-    return data?.solana?.usd || 0;
-  } catch (err) {
-    console.error('‚ùå Nelze z√≠skat cenu SOL z CoinGecko:', err);
-    return 0;
+    const res = await fetch(
+      'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd'
+    );
+    if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
+    const data = await res.json();
+    return data.solana.usd || null;
+  } catch {
+    return null;
   }
 }
 
-// ---------------------------------------------
-// 3) Hlavn√≠ funkce: zpracov√°n√≠ deposit≈Ø + sweep
-// ---------------------------------------------
-async function processAllDeposits() {
-  console.log('üîç Kontrola v≈°ech u≈æivatelsk√Ωch adres a nov√Ωch deposit≈Ø‚Ä¶');
+/**
+ * NaËte mapu vöech deposit_address õ user_id z tabulky `users4`.
+ */
+async function loadDepositAddresses(conn) {
+  const map = new Map();
+  const [rows] = await conn.execute(
+    'SELECT id AS user_id, deposit_address FROM users4 WHERE deposit_address IS NOT NULL AND deposit_address != ""'
+  );
+  for (const row of rows) {
+    map.set(row.deposit_address, row.user_id);
+  }
+  return map;
+}
 
+/**
+ * Vr·tÌ poslednÌ zpracovanou tx_signature pro danou deposit_address.
+ */
+async function getLastSignature(conn, depositAddress) {
+  const [rows] = await conn.execute(
+    'SELECT tx_signature FROM deposit_records WHERE deposit_address = ? ORDER BY created_at DESC LIMIT 1',
+    [depositAddress]
+  );
+  if (rows.length > 0) {
+    return rows[0].tx_signature;
+  }
+  return null;
+}
+
+/**
+ * UloûÌ z·znam do `deposit_records` a aktualizuje `users4.balance`.
+ */
+async function storeDepositAndUpdateBalance(
+  conn,
+  userId,
+  depositAddress,
+  txSignature,
+  solAmount,
+  usdAmount
+) {
+  await conn.execute(
+    `INSERT INTO deposit_records
+      (tx_signature, user_id, deposit_address, sol_amount, usd_amount)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      txSignature,
+      userId,
+      depositAddress,
+      solAmount.toFixed(8),
+      usdAmount.toFixed(8),
+    ]
+  );
+  await conn.execute(
+    `UPDATE users4 SET balance = balance + ? WHERE id = ?`,
+    [usdAmount.toFixed(8), userId]
+  );
+}
+
+/**
+ * ÑSweepneì SOL z uûivatelskÈ depozitnÌ adresy na centr·lnÌ penÏûenku.
+ */
+async function sweepToCentral(userKeypair) {
+  try {
+    const lamportsBalance = await connection.getBalance(
+      userKeypair.publicKey
+    );
+    if (lamportsBalance <= 0) return;
+
+    // Rezervujeme p·r tisÌc lamport˘ na fee
+    const feeLamports = 5000;
+    const lamportsToSend = lamportsBalance - feeLamports;
+    if (lamportsToSend <= 0) return;
+
+    // SestavÌme transakci
+    const transaction = new Transaction();
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: userKeypair.publicKey,
+        toPubkey: centralKeypair.publicKey,
+        lamports: lamportsToSend,
+      })
+    );
+
+    // NastavÌme feePayer a recentBlockhash
+    transaction.feePayer = userKeypair.publicKey;
+    const { blockhash } = await connection.getLatestBlockhash('finalized');
+    transaction.recentBlockhash = blockhash;
+
+    // PodepÌöeme transakci priv·tnÌm klÌËem uûivatele
+    transaction.sign(userKeypair);
+
+    // Odeöleme a potvrdÌme
+    const raw = transaction.serialize();
+    const sig = await connection.sendRawTransaction(raw);
+    await connection.confirmTransaction(sig, 'confirmed');
+
+    console.log(
+      `? Sweep OK: posl·no ${ (lamportsToSend / LAMPORTS_PER_SOL).toFixed(8) } SOL ª ${centralKeypair.publicKey.toBase58()}. TX=${sig}`
+    );
+  } catch (err) {
+    console.error('? Chyba p¯i sweepu:', err.message);
+  }
+}
+
+/**
+ * Pro jednu deposit_address zpracuje novÈ transakce (od lastSig k nejnovÏjöÌmu).
+ * Validuje, ûe depositAddress je Base58 a odpovÌd· form·tu pro Solana.
+ * Pokud nenÌ, vypÌöe varov·nÌ a danou adresu p¯eskoËÌ.
+ */
+async function processAddress(
+  conn,
+  depositAddress,
+  userId,
+  lastSig,
+  solPrice
+) {
+  let pubkey;
+  try {
+    pubkey = new PublicKey(depositAddress);
+  } catch {
+    console.warn(`?? Neplatn· adresa, p¯eskoËeno: ${depositAddress}`);
+    return;
+  }
+
+  try {
+    const options = lastSig
+      ? { until: lastSig, limit: 1000 }
+      : { limit: 1000 };
+    const signaturesInfo = await connection.getSignaturesForAddress(
+      pubkey,
+      options
+    );
+    if (signaturesInfo.length === 0) return;
+
+    // ObnovÌme po¯adÌ od nejstaröÌch k nejnovÏjöÌm
+    const sigs = signaturesInfo.map((info) => info.signature).reverse();
+
+    for (const txSig of sigs) {
+      if (txSig === lastSig) continue;
+
+      const parsedTx = await connection.getParsedTransaction(
+        txSig,
+        'confirmed'
+      );
+      if (!parsedTx) continue;
+
+      let lamportsIn = 0;
+      for (const instr of parsedTx.transaction.message.instructions) {
+        if (instr.program === 'system' && instr.parsed?.type === 'transfer') {
+          const info = instr.parsed.info;
+          if (info.destination === depositAddress) {
+            lamportsIn += parseInt(info.lamports, 10);
+          }
+        }
+      }
+      if (lamportsIn <= 0) continue;
+
+      const solAmount = lamportsIn / LAMPORTS_PER_SOL;
+      const usdAmount = solPrice !== null ? solPrice * solAmount : 0;
+
+      await storeDepositAndUpdateBalance(
+        conn,
+        userId,
+        depositAddress,
+        txSig,
+        solAmount,
+        usdAmount
+      );
+      console.log(
+        `?? Deposit uloûen: user=${userId}, ${solAmount.toFixed(
+          8
+        )} SOL (? $${usdAmount.toFixed(2)}), TX=${txSig}`
+      );
+
+      // TeÔ se podÌv·me, jestli m˘ûeme sweepnout
+      const [rows] = await conn.execute(
+        'SELECT deposit_secret FROM users4 WHERE id = ?',
+        [userId]
+      );
+      if (
+        rows.length > 0 &&
+        rows[0].deposit_secret &&
+        rows[0].deposit_secret.trim() !== ''
+      ) {
+        try {
+          const userSecret = bs58.decode(rows[0].deposit_secret);
+          const userKeypair = Keypair.fromSecretKey(Uint8Array.from(userSecret));
+          await sweepToCentral(userKeypair);
+        } catch {
+          console.warn(
+            `?? Sweep p¯eskoËen (invalid deposit_secret) pro user=${userId}`
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error(
+      `? Chyba p¯i zpracov·nÌ address=${depositAddress} (user=${userId}):`,
+      err.message
+    );
+  }
+}
+
+/**
+ * HlavnÌ funkce: kaûd˝ch POLL_INTERVAL naËte nov˝ SOL u vöech deposit_address a zpracuje je.
+ */
+async function processTransactions() {
   let conn;
   try {
     conn = await mysql.createConnection(dbConfig);
   } catch (err) {
-    console.error('‚ùå Nelze se p≈ôipojit k datab√°zi:', err);
+    console.error('? Nelze se p¯ipojit k DB:', err.message);
     return;
   }
 
-  // 3.1) Naƒçteme v≈°echny u≈æivatele (user_id, deposit_address, deposit_secret)
-  let users;
   try {
-    const [rows] = await conn.execute(
-      "SELECT id AS user_id, deposit_address, deposit_secret FROM users4 WHERE deposit_address IS NOT NULL AND deposit_secret IS NOT NULL"
-    );
-    users = rows;
+    const solPrice = await fetchSolPrice();
+
+    const depositMap = await loadDepositAddresses(conn);
+    if (depositMap.size === 0) {
+      console.log('??  é·dnÈ deposit_address v DB.');
+      await conn.end();
+      return;
+    }
+
+    for (const [depositAddress, userId] of depositMap) {
+      const lastSig = await getLastSignature(conn, depositAddress);
+      await processAddress(conn, depositAddress, userId, lastSig, solPrice);
+    }
   } catch (err) {
-    console.error('‚ùå Chyba SELECT u≈æivatel≈Ø:', err);
+    console.error('? Chyba v processTransactions:', err.message);
+  } finally {
     await conn.end();
-    return;
   }
-
-  for (const user of users) {
-    const userId = user.user_id;
-    const depositAddress = user.deposit_address;
-    const depositSecretBase58 = user.deposit_secret;
-
-    // 3.2) Dek√≥dujeme priv√°tn√≠ kl√≠ƒç a ovƒõ≈ô√≠me publicKey
-    let userKeypair;
-    try {
-      const secretBytes = bs58.decode(depositSecretBase58);
-      userKeypair = Keypair.fromSecretKey(Uint8Array.from(secretBytes));
-    } catch (err) {
-      console.error(`‚ùå Chyba dek√≥dov√°n√≠ deposit_secret pro u≈æivatele ${userId}:`, err);
-      continue;
-    }
-    if (userKeypair.publicKey.toBase58() !== depositAddress) {
-      console.error(`‚ö†Ô∏è Nesoulad kl√≠ƒç≈Ø u u≈æivatele ${userId}: deposit_address != publicKey(priv)`);
-      continue;
-    }
-
-    // 3.3) Z√≠sk√°me posledn√≠ch 20 potvrzen√Ωch signatures pro depositAddress
-    let signatures;
-    try {
-      signatures = await connection.getSignaturesForAddress(
-        userKeypair.publicKey,
-        { limit: 20 }
-      );
-    } catch (err) {
-      console.error(`‚ùå Chyba getSignaturesForAddress (${depositAddress}):`, err);
-      continue;
-    }
-
-    for (const sigInfo of signatures) {
-      const signature = sigInfo.signature;
-
-      // 3.4) Zkontrolujeme, jestli z√°znam ji≈æ neexistuje
-      let existing;
-      try {
-        const [rowsExist] = await conn.execute(
-          "SELECT id, swept FROM deposit_records WHERE tx_signature = ?",
-          [signature]
-        );
-        existing = rowsExist;
-      } catch (err) {
-        console.error(`‚ùå Chyba SELECT deposit_records (TX=${signature}):`, err);
-        continue;
-      }
-      if (existing.length > 0) {
-        if (existing[0].swept) {
-          // U≈æ byl sweep proveden
-          continue;
-        }
-        // swept=false ‚Üí budeme pokraƒçovat do sweep f√°ze
-      }
-
-      // 3.5) Z√≠sk√°me detail transakce
-      let txDetail;
-      try {
-        txDetail = await connection.getParsedTransaction(signature, 'confirmed');
-      } catch (err) {
-        console.error(`‚ùå Chyba getParsedTransaction (TX=${signature}):`, err);
-        continue;
-      }
-      if (!txDetail) continue;
-
-      // 3.6) Spoƒç√≠t√°me lamports, kter√© p≈ôi≈°ly na depositAddress
-      let lamportsReceived = 0;
-      for (const instr of txDetail.transaction.message.instructions) {
-        if (
-          instr.parsed &&
-          instr.parsed.type === 'transfer' &&
-          instr.parsed.info.destination === depositAddress
-        ) {
-          lamportsReceived += instr.parsed.info.lamports;
-        }
-      }
-      if (lamportsReceived <= 0) continue;
-
-      const solAmount = lamportsReceived / LAMPORTS;
-
-      // 3.7) Z√≠sk√°me cenu SOL v USD
-      const solPriceUsd = await getSolPriceUsd();
-      const usdAmount = solAmount * solPriceUsd;
-
-      // 3.8) Vlo≈æ√≠me nov√Ω z√°znam do deposit_records
-      let depositRecordId;
-      try {
-        const [insertRes] = await conn.execute(
-          `INSERT INTO deposit_records 
-             (tx_signature, user_id, sol_amount, usd_amount, swept) 
-           VALUES (?, ?, ?, ?, false)`,
-          [signature, userId, solAmount, usdAmount]
-        );
-        depositRecordId = insertRes.insertId;
-        console.log(`‚ûï Deposit ulo≈æen (ID=${depositRecordId}) user=${userId}: ${solAmount.toFixed(4)} SOL (‚âà $${usdAmount.toFixed(2)}).`);
-      } catch (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-          const [rowDup] = await conn.execute(
-            "SELECT id FROM deposit_records WHERE tx_signature = ?",
-            [signature]
-          );
-          if (rowDup.length > 0) {
-            depositRecordId = rowDup[0].id;
-          }
-        } else {
-          console.error(`‚ùå Chyba INSERT deposit_records (TX=${signature}):`, err);
-          continue;
-        }
-      }
-
-      // 3.9) Aktualizujeme balance u≈æivatele
-      try {
-        await conn.execute(
-          "UPDATE users4 SET balance = balance + ? WHERE id = ?",
-          [usdAmount, userId]
-        );
-        console.log(`‚úîÔ∏è Balance user=${userId} +$${usdAmount.toFixed(2)} USD.`);
-      } catch (err) {
-        console.error(`‚ùå Chyba update balance user=${userId}:`, err);
-        continue;
-      }
-
-      // 3.10) Provedeme sweep (po≈°leme SOL do centr√°ly)
-      try {
-        const userLamportsBalance = await connection.getBalance(userKeypair.publicKey, 'confirmed');
-        if (userLamportsBalance <= 0) {
-          console.warn(`‚ö†Ô∏è Sweep: user=${userId} m√° 0 lamports na ${depositAddress}.`);
-        } else {
-          const feeLamports = 5000;  // ~0.000005 SOL na testnet
-          const lamportsToSend = userLamportsBalance - feeLamports;
-          if (lamportsToSend <= 0) {
-            console.warn(`‚ö†Ô∏è Sweep: user=${userId}, z≈Østatek ${userLamportsBalance} nestaƒç√≠ na fee.`);
-          } else {
-            const transaction = new Transaction().add(
-              SystemProgram.transfer({
-                fromPubkey: userKeypair.publicKey,
-                toPubkey:   centralKeypair.publicKey,
-                lamports:   lamportsToSend,
-              })
-            );
-
-            const sweepSignature = await sendAndConfirmTransaction(
-              connection,
-              transaction,
-              [userKeypair]
-            );
-
-            console.log(`üîÄ Sweep OK user=${userId}: posl√°no ${(lamportsToSend / LAMPORTS).toFixed(6)} SOL ‚Üí ${CENTRAL_PUBLIC_KEY}. TX=${sweepSignature}`);
-
-            // 3.10.2) Oznaƒç√≠me record jako sweeplen√Ω
-            await conn.execute(
-              "UPDATE deposit_records SET swept = true, swept_signature = ? WHERE id = ?",
-              [sweepSignature, depositRecordId]
-            );
-          }
-        }
-      } catch (err) {
-        console.error(`‚ùå Chyba p≈ôi sweep user=${userId}:`, err);
-        continue;
-      }
-    }
-  }
-
-  await conn.end();
 }
 
-// ---------------------------------------------
-// 4) Spu≈°tƒõn√≠ monitoru
-// ---------------------------------------------
-console.log(`‚ñ∂Ô∏è Monitor spu≈°tƒõn. Centr√°ln√≠ adresa=${CENTRAL_PUBLIC_KEY}. Kontrola ka≈æd√Ωch ${POLL_INTERVAL/1000} s.`);
+// === Start monitoru ===
+console.log(`?? Centr·lnÌ penÏûenka: ${CENTRAL_PUBLIC_KEY}`);
+console.log(
+  `??  Monitor spuötÏn (Testnet). Kontrola kaûd˝ch ${POLL_INTERVAL / 1000}s.`
+);
 
-// Spust√≠me jednou hned
-processAllDeposits();
-
-// Pot√© periodicky
-setInterval(processAllDeposits, POLL_INTERVAL);
+// OkamûitÏ jedno spuötÏnÌ, pak kaûd˝ch 30s
+processTransactions();
+setInterval(processTransactions, POLL_INTERVAL);
