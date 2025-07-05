@@ -39,32 +39,44 @@ function generateUniqueUsername(mysqli $conn, string $email): string {
     return $username;
 }
 
+
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON, true);
-$idToken = $data['id_token'] ?? '';
-$mode    = $data['mode']    ?? 'login';
+$idToken    = $data['id_token'] ?? '';
+$emailInput = $data['email']   ?? '';
+$mode       = $data['mode']    ?? 'login';
 
-if (!$idToken) {
+if (!$idToken && !$emailInput) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Missing id_token']);
+    echo json_encode(['status' => 'error', 'message' => 'Missing id_token or email']);
     exit;
 }
 
-$clientID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // TODO: replace with real client ID
-$client = new Google_Client(['client_id' => $clientID]);
-$payload = $client->verifyIdToken($idToken);
-if (!$payload) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Invalid ID token']);
-    exit;
-}
-
-$email = $payload['email'] ?? '';
-$name  = $payload['name'] ?? '';
-if (!$email) {
-    http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Email not provided']);
-    exit;
+$email = '';
+$name  = '';
+if ($idToken) {
+    $clientID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // TODO: replace with real client ID
+    $client = new Google_Client(['client_id' => $clientID]);
+    $payload = $client->verifyIdToken($idToken);
+    if (!$payload) {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid ID token']);
+        exit;
+    }
+    $email = $payload['email'] ?? '';
+    $name  = $payload['name'] ?? '';
+    if (!$email) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Email not provided']);
+        exit;
+    }
+} else {
+    $email = trim($emailInput);
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid email']);
+        exit;
+    }
 }
 
 $conn = new mysqli($servername, $db_username, $db_password, $database);
