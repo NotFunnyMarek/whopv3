@@ -128,10 +128,10 @@ export default function WhopDashboard() {
       setEditBannerUrl,
       setNewSlugValue,
       setEditFeatures,
-      setEditCourseSteps,
       fetchCampaignsBound,
       setWaitlistEnabled,
       setWaitlistQuestions,
+      setEditCourseSteps,
       setEditLongDescription,
       setEditAboutBio,
       setEditWebsiteUrl,
@@ -139,8 +139,7 @@ export default function WhopDashboard() {
       setEditWhoFor,
       setEditFaq,
       setEditLandingTexts,
-      setEditModules,
-      setEditCourseSteps
+      setEditModules
     );
   }, [initialSlug, location.pathname]);
 
@@ -323,10 +322,10 @@ export default function WhopDashboard() {
         setEditBannerUrl,
         setNewSlugValue,
         setEditFeatures,
-        setEditCourseSteps,
         fetchCampaignsBound,
         setWaitlistEnabled,
         setWaitlistQuestions,
+        setEditCourseSteps,
         setEditLongDescription,
         setEditAboutBio,
         setEditWebsiteUrl,
