@@ -56,15 +56,8 @@ export default function ChooseLink() {
     if (!slug.trim()) return;
 
     const whopData = {
-      name: prevWhopData.name,
-      description: prevWhopData.description,
+      ...prevWhopData,
       slug: slug.trim(),
-      features: prevWhopData.features || [],
-      logoUrl: prevWhopData.logoUrl || "",
-      price: prevWhopData.price || 0.0,
-      billing_period: prevWhopData.billing_period || "none",
-      is_recurring: prevWhopData.is_recurring || 0,
-      currency: prevWhopData.currency || "USD",
     };
 
     setWhopSetupCookie(whopData);
