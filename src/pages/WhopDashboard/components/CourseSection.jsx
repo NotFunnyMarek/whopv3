@@ -5,7 +5,7 @@ export default function CourseSection({
   isEditing,
   courseSteps,
   handleCourseChange,
-  handleVideoUpload,
+  handleFileUpload,
   addStep,
   removeStep,
 }) {
@@ -45,13 +45,20 @@ export default function CourseSection({
               />
               <input
                 type="file"
-                accept="video/*"
                 className="course-input"
-                onChange={(e) => handleVideoUpload(step.id, e.target.files[0])}
+                onChange={(e) => handleFileUpload(step.id, e.target.files[0])}
               />
               {step.isUploading && <div className="uploading-msg">Uploading...</div>}
-              {step.videoUrl && !step.isUploading && (
-                <video src={step.videoUrl} controls className="course-video-preview" />
+              {step.fileUrl && !step.isUploading && (
+                step.fileType.startsWith("video/") ? (
+                  <video src={step.fileUrl} controls className="course-video-preview" />
+                ) : step.fileType === "application/pdf" ? (
+                  <embed src={step.fileUrl} type="application/pdf" className="course-pdf-preview" />
+                ) : (
+                  <a href={step.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                    Download File
+                  </a>
+                )
               )}
               {step.error && <div className="course-error">{step.error}</div>}
             </div>
@@ -65,8 +72,16 @@ export default function CourseSection({
           {steps.map((step, idx) => (
             <li key={idx} className="course-step">
               <h3 className="course-step-title">{step.title}</h3>
-              {step.videoUrl && (
-                <video src={step.videoUrl} controls className="course-video" />
+              {step.fileUrl && (
+                step.fileType.startsWith("video/") ? (
+                  <video src={step.fileUrl} controls className="course-video" />
+                ) : step.fileType === "application/pdf" ? (
+                  <embed src={step.fileUrl} type="application/pdf" className="course-pdf" />
+                ) : (
+                  <a href={step.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                    Download File
+                  </a>
+                )
               )}
               <p className="course-step-content">{step.content}</p>
             </li>
