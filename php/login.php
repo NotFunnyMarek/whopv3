@@ -70,6 +70,24 @@ if (!password_verify($password, $hash)) {
 // Password is correct → store user ID in session (this will set the PHPSESSID cookie with SameSite=None)
 $_SESSION['user_id'] = $user['id'];
 
+// Persistent login token
+$tokenPlain = bin2hex(random_bytes(32));
+$tokenHash  = hash('sha256', $tokenPlain);
+$uaHash     = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
+$expiry     = date('Y-m-d H:i:s', time() + 60 * 60 * 24 * 30);
+$tokenHashEsc = $conn->real_escape_string($tokenHash);
+$uaHashEsc    = $conn->real_escape_string($uaHash);
+$userId = (int)$user['id'];
+$conn->query("INSERT INTO user_tokens (user_id, token_hash, user_agent_hash, expires_at) VALUES ($userId, '$tokenHashEsc', '$uaHashEsc', '$expiry')");
+setcookie('login_token', $tokenPlain, [
+    'expires'  => time() + 60 * 60 * 24 * 30,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => true,
+    'httponly' => true,
+    'samesite' => 'None',
+]);
+
 // Return JSON with user info
 $response = [
     "status" => "success",
