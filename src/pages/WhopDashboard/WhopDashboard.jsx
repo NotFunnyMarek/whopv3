@@ -11,6 +11,7 @@ import handleJoinFree from "./handleJoinFree";
 import handleLeave from "./handleLeave";
 import handleBannerUpload from "./handleBannerUpload";
 import handleFeatureImageUpload from "./handleFeatureImageUpload";
+import handleCourseVideoUpload from "./handleCourseVideoUpload";
 import manageFeatures from "./manageFeatures";
 import manageCourse from "./manageCourse";
 import handleSlugSave from "./handleSlugSave";
@@ -65,7 +66,9 @@ export default function WhopDashboard() {
 
   // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
-  const [editCourseSteps, setEditCourseSteps] = useState([{ id: 1, title: "", content: "" }]);
+  const [editCourseSteps, setEditCourseSteps] = useState([
+    { id: 1, title: "", content: "", videoUrl: "", isUploading: false, error: "" }
+  ]);
   const [editModules, setEditModules] = useState({
     chat: false,
     earn: false,
@@ -214,6 +217,9 @@ export default function WhopDashboard() {
   };
   const onFeatureImageUpload = async (id, file) => {
     await handleFeatureImageUpload(id, file, setEditFeatures, showNotification);
+  };
+  const onCourseVideoUpload = async (id, file) => {
+    await handleCourseVideoUpload(id, file, setEditCourseSteps, showNotification);
   };
 
   // 7️⃣ Manage features
@@ -436,6 +442,7 @@ export default function WhopDashboard() {
       addFeature={addFeature}
       editCourseSteps={editCourseSteps}
       handleCourseChange={handleCourseChange}
+      handleVideoUpload={onCourseVideoUpload}
       removeStep={removeStep}
       addStep={addStep}
       campaigns={campaigns}

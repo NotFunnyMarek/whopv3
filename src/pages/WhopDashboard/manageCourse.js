@@ -8,7 +8,7 @@ export default function manageCourse(editCourseSteps, setEditCourseSteps) {
         : 1;
     setEditCourseSteps((prev) => [
       ...prev,
-      { id: newId, title: "", content: "" },
+      { id: newId, title: "", content: "", videoUrl: "", isUploading: false, error: "" },
     ]);
   };
 

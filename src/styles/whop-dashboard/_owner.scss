@@ -784,3 +784,52 @@
     transform: translateY(-1px);
   }
 }
+
+.course-section {
+  margin-bottom: var(--spacing-lg);
+
+  .course-section-title {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+  }
+
+  .course-step-edit {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .course-input {
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+  }
+
+  .course-textarea {
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+  }
+
+  .course-add-btn,
+  .course-remove-btn {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+  }
+
+  .course-video-preview {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .course-error {
+    color: var(--error-color);
+  }
+}
