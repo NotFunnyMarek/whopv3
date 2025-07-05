@@ -185,6 +185,7 @@ if ($method === 'GET') {
                   w.faq,
                   w.landing_texts,
                   w.modules,
+                  w.course_steps,
                   w.created_at
                 FROM whops AS w
                 JOIN users4 AS u ON w.owner_id = u.id
@@ -274,7 +275,8 @@ if ($method === 'GET') {
                     "waitlist_enabled"       => (int)$w['waitlist_enabled'],
                     "waitlist_questions"     => json_decode($w['waitlist_questions'], true) ?: [],
                     "landing_texts"         => json_decode($w['landing_texts'], true) ?: new stdClass(),
-                    "modules"               => json_decode($w['modules'], true) ?: new stdClass(),
+                   "modules"               => json_decode($w['modules'], true) ?: new stdClass(),
+                    "course_steps"          => json_decode($w['course_steps'], true) ?: [],
                     "website_url"            => $w['website_url'],
                     "socials"                => json_decode($w['socials'], true) ?: new stdClass(),
                     "who_for"                => json_decode($w['who_for'], true)   ?: [],

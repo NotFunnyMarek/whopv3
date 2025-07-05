@@ -23,6 +23,7 @@ export default async function handleSaveWhop(
   setEditFaq,
   setEditLandingTexts,
   setEditModules,
+  setEditCourseSteps,
   waitlistEnabled,         // new parameter
   waitlistQuestions,       // new parameter
   editLongDescription,
@@ -32,7 +33,8 @@ export default async function handleSaveWhop(
   editWhoFor,
   editFaq,
   editLandingTexts,
-  editModules
+  editModules,
+  editCourseSteps
 ) {
   // 1) Validate name and description
   if (!editName.trim() || !editDescription.trim()) {
@@ -74,6 +76,10 @@ export default async function handleSaveWhop(
     faq:                editFaq,
     landing_texts:      editLandingTexts,
     modules:            editModules,
+    course_steps:       editCourseSteps.map(s => ({
+                          title: s.title.trim(),
+                          content: s.content.trim(),
+                        })),
   };
 
   try {
@@ -165,6 +171,16 @@ export default async function handleSaveWhop(
         error:       "",
       }));
       setEditFeatures(newFeatures);
+
+      setEditCourseSteps(
+        Array.isArray(data.course_steps) && data.course_steps.length
+          ? data.course_steps.map((s, i) => ({
+              id: i + 1,
+              title: s.title || "",
+              content: s.content || "",
+            }))
+          : [{ id: 1, title: "", content: "" }]
+      );
 
       setError("");
       setSlugError("");

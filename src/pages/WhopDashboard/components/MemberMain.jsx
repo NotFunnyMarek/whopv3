@@ -186,7 +186,14 @@ export default function MemberMain({
       {activeTab === "Course" && whopData.modules?.course && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Course</h3>
-          <p className="member-text">Course content coming soon.</p>
+          <ol className="course-step-list">
+            {whopData.course_steps?.map((step, idx) => (
+              <li key={idx} className="course-step">
+                <h4 className="course-step-title">{step.title}</h4>
+                <p className="course-step-content">{step.content}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 
