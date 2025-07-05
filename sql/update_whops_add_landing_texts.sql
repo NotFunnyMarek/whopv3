@@ -1,0 +1,2 @@
+ALTER TABLE whops
+  ADD COLUMN landing_texts TEXT DEFAULT NULL;
