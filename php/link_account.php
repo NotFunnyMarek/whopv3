@@ -1,131 +1,107 @@
-// src/pages/Profile.jsx
+<?php
+// link_account.php - Manage user's linked social accounts
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../components/NotificationProvider';
-import LinkAccountModal from '../components/LinkAccountModal';
-import '../styles/profile.scss';
-import '../styles/_link-account-modal.scss';
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json; charset=UTF-8");
 
-const CLOUDINARY_CLOUD_NAME    = 'dv6igcvz8';
-const CLOUDINARY_UPLOAD_PRESET = 'unsigned_profile_avatars';
-const CLOUDINARY_UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
-
-export default function Profile() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-  const { showNotification } = useNotifications();
-
-  const [form, setForm] = useState({ /* ... */ });
-  const [initialForm, setInitialForm] = useState(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-
-  const [linkedAccounts, setLinkedAccounts] = useState([]);
-  const [showLinkModal, setShowLinkModal] = useState(null);
-
-  // load basic profile data
-  useEffect(() => {
-    // ... your existing profile fetch ...
-  }, [navigate, showNotification]);
-
-  // load linked accounts
-  const loadLinked = () => {
-    fetch('https://app.byxbot.com/php/link_account.php', {
-      method: 'GET',
-      mode: 'cors',                        // ← CHANGED: explicitly allow CORS
-      credentials: 'include',
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(res => {
-        if (res.status === 401) {
-          navigate('/login');
-          return null;
-        }
-        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-        return res.json();
-      })
-      .then(json => {
-        if (json && json.status === 'success') {
-          setLinkedAccounts(json.data);
-        }
-      })
-      .catch(err => console.error('Link load error', err));
-  };
-  useEffect(loadLinked, [navigate]);
-
-  // ... your existing form handlers ...
-
-  // handle disconnect (DELETE)
-  const handleDisconnect = (accId) => {
-    fetch('https://app.byxbot.com/php/link_account.php', {
-      method: 'DELETE',
-      mode: 'cors',                            // ← CHANGED
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: accId })      // ← CHANGED: send JSON
-    })
-      .then(res => res.json())
-      .then(json => {
-        if (json.status === 'success') {
-          showNotification({ type: 'success', message: json.message });
-          loadLinked();
-        } else {
-          showNotification({ type: 'error', message: json.message });
-        }
-      })
-      .catch(err => {
-        console.error('Disconnect error', err);
-        showNotification({ type: 'error', message: 'Failed to disconnect.' });
-      });
-  };
-
-  return (
-    <div className="profile-container">
-      <h2>Account Settings</h2>
-      <form onSubmit={/* ... */} className="profile-form">
-        {/* ... avatar & left side ... */}
-        <div className="profile-right">
-          {/* ... other fields ... */}
-
-          <p className="section-title">Linked Accounts</p>
-          <ul className="linked-list">
-            {linkedAccounts.map(acc => (
-              <li key={acc.id}>
-                <strong>{acc.platform}</strong>:{" "}
-                <a href={acc.account_url} target="_blank" rel="noopener noreferrer">
-                  {acc.account_url}
-                </a>{" "}
-                {acc.is_verified
-                  ? <button type="button" className="btn disconnect"
-                      onClick={() => handleDisconnect(acc.id)}
-                    >Disconnect</button>
-                  : <button type="button" className="btn verify"
-                      onClick={() => setShowLinkModal(acc)}
-                    >Verify</button>
-                }
-              </li>
-            ))}
-          </ul>
-          <button type="button" className="btn create" onClick={() => setShowLinkModal({ action: 'create' })}>
-            Link New Account
-          </button>
-
-          <button type="submit" className="btn-save" disabled={!isDirty}>
-            Save
-          </button>
-        </div>
-      </form>
-
-      {showLinkModal && (
-        <LinkAccountModal
-          mode={showLinkModal}
-          onClose={(reload) => {
-            setShowLinkModal(null);
-            if (reload) loadLinked();
-          }}
-        />
-      )}
-    </div>
-  );
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
+
+require_once __DIR__ . '/session_init.php';
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+    http_response_code(401);
+    echo json_encode(["status" => "error", "message" => "Unauthorized"]);
+    exit;
+}
+
+require_once __DIR__ . '/config_login.php';
+
+try {
+    $pdo = new PDO(
+        "mysql:host=$servername;dbname=$database;charset=utf8mb4",
+        $db_username,
+        $db_password,
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Database connection error"]);
+    exit;
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET') {
+    $stmt = $pdo->prepare("SELECT id, platform, account_url, is_verified FROM linked_accounts WHERE user_id = :uid");
+    $stmt->execute(['uid' => $user_id]);
+    echo json_encode(['status' => 'success', 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    exit;
+}
+
+if ($method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!isset($input['action'])) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Missing action']);
+        exit;
+    }
+
+    if ($input['action'] === 'create') {
+        $platform = $input['platform'] ?? '';
+        $url      = trim($input['account_url'] ?? '');
+        if (!in_array($platform, ['instagram','tiktok','youtube']) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Invalid platform or URL']);
+            exit;
+        }
+        $dup = $pdo->prepare("SELECT id FROM linked_accounts WHERE user_id=:uid AND account_url=:url LIMIT 1");
+        $dup->execute(['uid' => $user_id, 'url' => $url]);
+        if ($dup->fetch()) {
+            http_response_code(409);
+            echo json_encode(['status' => 'error', 'message' => 'Account already linked']);
+            exit;
+        }
+        $code = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
+        $ins = $pdo->prepare("INSERT INTO linked_accounts (user_id, platform, account_url, verify_code, is_verified, created_at) VALUES (:uid, :plat, :url, :code, 0, NOW())");
+        $ins->execute(['uid' => $user_id, 'plat' => $platform, 'url' => $url, 'code' => $code]);
+        echo json_encode(['status' => 'success', 'data' => ['id' => $pdo->lastInsertId(), 'verify_code' => $code]]);
+        exit;
+    }
+
+    if ($input['action'] === 'verify') {
+        $id = intval($input['id'] ?? 0);
+        $stmt = $pdo->prepare("SELECT id FROM linked_accounts WHERE id=:id AND user_id=:uid LIMIT 1");
+        $stmt->execute(['id' => $id, 'uid' => $user_id]);
+        if (!$stmt->fetch()) {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Record not found']);
+            exit;
+        }
+        $upd = $pdo->prepare("UPDATE linked_accounts SET is_verified=1, verified_at=NOW() WHERE id=:id AND user_id=:uid");
+        $upd->execute(['id' => $id, 'uid' => $user_id]);
+        echo json_encode(['status' => 'success', 'message' => 'Verified']);
+        exit;
+    }
+
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Unknown action']);
+    exit;
+}
+
+if ($method === 'DELETE') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = intval($input['id'] ?? 0);
+    $stmt = $pdo->prepare("DELETE FROM linked_accounts WHERE id=:id AND user_id=:uid");
+    $stmt->execute(['id' => $id, 'uid' => $user_id]);
+    echo json_encode(['status' => 'success', 'message' => 'Account removed']);
+    exit;
+}
+
+http_response_code(405);
+echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
