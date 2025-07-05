@@ -19,7 +19,10 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (window.google && !twofaToken) {
+    if (twofaToken) return;
+
+    const initGoogle = () => {
+      if (!window.google) return false;
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogle,
@@ -28,6 +31,14 @@ const Login = () => {
         document.getElementById('google-btn'),
         { theme: 'outline', size: 'large' }
       );
+      return true;
+    };
+
+    if (!initGoogle()) {
+      const interval = setInterval(() => {
+        if (initGoogle()) clearInterval(interval);
+      }, 100);
+      return () => clearInterval(interval);
     }
   }, [twofaToken]);
 
