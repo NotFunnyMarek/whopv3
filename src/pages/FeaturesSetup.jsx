@@ -193,19 +193,12 @@ export default function FeaturesSetup() {
     if (!isContinueEnabled) return;
 
     const whopData = {
-      name: prevWhopData.name,
-      description: prevWhopData.description,
-      slug: prevWhopData.slug,
+      ...prevWhopData,
       features: features.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
         imageUrl: f.imageUrl,
       })),
-      logoUrl: prevWhopData.logoUrl || "",
-      price: prevWhopData.price || 0.0,
-      billing_period: prevWhopData.billing_period || "none",
-      is_recurring: prevWhopData.is_recurring || 0,
-      currency: prevWhopData.currency || "USD",
     };
 
     setWhopSetupCookie(whopData);

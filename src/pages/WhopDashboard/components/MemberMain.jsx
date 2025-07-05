@@ -3,6 +3,7 @@
 import React from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import ChatWindow from "../../../components/Chat/ChatWindow";
+import ReviewSection from "../../../components/ReviewSection";
 
 export default function MemberMain({
   whopData,
@@ -39,6 +40,10 @@ export default function MemberMain({
               </div>
             ))}
           </div>
+          <ReviewSection
+            whopId={whopData.id}
+            title={whopData.landing_texts?.reviews_title || "See what other people are saying"}
+          />
         </div>
       )}
 

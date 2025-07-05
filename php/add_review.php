@@ -48,6 +48,11 @@ try {
         $purchase = $st2->fetchColumn();
     }
     if (!$purchase) {
+        $st3 = $pdo->prepare("SELECT payment_date FROM payments WHERE user_id = :uid AND whop_id = :wid ORDER BY payment_date ASC LIMIT 1");
+        $st3->execute(['uid' => $user_id, 'wid' => $whop_id]);
+        $purchase = $st3->fetchColumn();
+    }
+    if (!$purchase) {
         http_response_code(403);
         echo json_encode(["status" => "error", "message" => "You must be a member to review."]);
         exit;
