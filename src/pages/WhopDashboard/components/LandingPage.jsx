@@ -227,7 +227,7 @@ export default function LandingPage({
       </section>
 
       {/* FEATURES SECTION - dynamic */}
-      {features.length > 0 && (
+      {features.length > 0 && whopData.modules?.text !== false && (
         <section className="section features-section alt">
           <h2 className="section-title">{featuresTitle}</h2>
           <div className="features-grid">

@@ -48,7 +48,7 @@ export default function MemberMain({
       )}
 
       {/* CHAT */}
-      {activeTab === "Chat" && (
+      {activeTab === "Chat" && whopData.modules?.chat && (
         <div className="member-tab-content member-chat-tab">
           <ChatWindow
             whopId={whopData.id}
@@ -59,7 +59,7 @@ export default function MemberMain({
       )}
 
       {/* EARN */}
-      {activeTab === "Earn" && (
+      {activeTab === "Earn" && whopData.modules?.earn && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Earn</h3>
           {campaignsLoading ? (
@@ -179,6 +179,14 @@ export default function MemberMain({
               })}
             </ul>
           )}
+        </div>
+      )}
+
+      {/* COURSE */}
+      {activeTab === "Course" && whopData.modules?.course && (
+        <div className="member-tab-content">
+          <h3 className="member-subtitle">Course</h3>
+          <p className="member-text">Course content coming soon.</p>
         </div>
       )}
 

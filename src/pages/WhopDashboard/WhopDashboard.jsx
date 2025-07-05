@@ -64,6 +64,13 @@ export default function WhopDashboard() {
 
   // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
+  const [editModules, setEditModules] = useState({
+    chat: false,
+    earn: false,
+    discord: false,
+    course: false,
+    text: true,
+  });
 
   // Text-edit states
   const [editLongDescription, setEditLongDescription] = useState("");
@@ -125,7 +132,8 @@ export default function WhopDashboard() {
       setEditSocials,
       setEditWhoFor,
       setEditFaq,
-      setEditLandingTexts
+      setEditLandingTexts,
+      setEditModules
     );
   }, [initialSlug, location.pathname]);
 
@@ -240,6 +248,7 @@ export default function WhopDashboard() {
       setEditWhoFor,
       setEditFaq,
       setEditLandingTexts,
+      setEditModules,
       waitlistEnabled,
       waitlistQuestions,
       editLongDescription,
@@ -248,7 +257,8 @@ export default function WhopDashboard() {
       editSocials,
       editWhoFor,
       editFaq,
-      editLandingTexts
+      editLandingTexts,
+      editModules
     );
   };
 
@@ -305,7 +315,8 @@ export default function WhopDashboard() {
         setEditSocials,
         setEditWhoFor,
         setEditFaq,
-        setEditLandingTexts
+        setEditLandingTexts,
+        setEditModules
       );
     } catch {
       // handleRequestWaitlist throws errors for conflict or server error
@@ -441,6 +452,8 @@ export default function WhopDashboard() {
       setEditFaq={setEditFaq}
       editLandingTexts={editLandingTexts}
       setEditLandingTexts={setEditLandingTexts}
+      editModules={editModules}
+      setEditModules={setEditModules}
     />
   );
 }

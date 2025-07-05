@@ -19,7 +19,8 @@ export default async function fetchWhopData(
   setEditSocials,
   setEditWhoFor,
   setEditFaq,
-  setEditLandingTexts
+  setEditLandingTexts,
+  setEditModules
 ) {
   setLoading(true);
   setError("");
@@ -88,6 +89,15 @@ export default async function fetchWhopData(
         about_title: "",
         faq_title: "",
       });
+      setEditModules(
+        data.modules || {
+          chat: false,
+          earn: false,
+          discord: false,
+          course: false,
+          text: true,
+        }
+      );
 
       // ** Waitlist state **
       setWaitlistEnabled(Boolean(data.waitlist_enabled));

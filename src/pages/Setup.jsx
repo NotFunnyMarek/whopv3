@@ -50,6 +50,15 @@ export default function Setup() {
       ? cookieData.faq
       : [{ question: "", answer: "" }]
   );
+  const [modules, setModules] = useState(
+    cookieData.modules || {
+      chat: false,
+      earn: false,
+      discord: false,
+      course: false,
+      text: true,
+    }
+  );
   const [landingTexts, setLandingTexts] = useState(
     cookieData.landing_texts || {
       reviews_title: "See what other people are saying",
@@ -86,6 +95,7 @@ export default function Setup() {
       who_for: whoFor,
       faq,
       landing_texts: landingTexts,
+      modules,
     });
   }, [
     whopName,
@@ -103,6 +113,7 @@ export default function Setup() {
     whoFor,
     faq,
     landingTexts,
+    modules,
   ]);
 
   // Handlers
@@ -134,6 +145,9 @@ export default function Setup() {
     const arr = [...waitlistQuestions];
     arr[i] = v;
     setWaitlistQuestions(arr);
+  };
+  const handleModuleToggle = (key) => {
+    setModules((prev) => ({ ...prev, [key]: !prev[key] }));
   };
   const handleBioChange = (e) => setAboutBio(e.target.value);
   const handleWebsiteChange = (e) => setWebsiteUrl(e.target.value);
@@ -343,6 +357,27 @@ export default function Setup() {
             value={socials.discord}
             onChange={(e) => handleSocialChange("discord", e.target.value)}
           />
+        </div>
+
+        {/* Modules */}
+        <div className="setup-section">
+          <h2>Enable Modules</h2>
+          {[
+            ["chat", "Chat"],
+            ["earn", "Earn"],
+            ["discord", "Discord Access"],
+            ["course", "Course"],
+            ["text", "Text Features"],
+          ].map(([key, label]) => (
+            <label key={key} className="setup-checkbox-label">
+              <input
+                type="checkbox"
+                checked={modules[key]}
+                onChange={() => handleModuleToggle(key)}
+              />
+              {` Enable ${label}`}
+            </label>
+          ))}
         </div>
 
         {/* Who This Is For */}

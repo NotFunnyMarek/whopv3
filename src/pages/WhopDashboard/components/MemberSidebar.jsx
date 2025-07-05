@@ -44,18 +44,30 @@ export default function MemberSidebar({
         >
           <FaHome /> Home
         </button>
-        <button
-          className={`nav-button ${activeTab === "Chat" ? "active" : ""}`}
-          onClick={() => setActiveTab("Chat")}
-        >
-          <FaComments /> Chat
-        </button>
-        <button
-          className={`nav-button ${activeTab === "Earn" ? "active" : ""}`}
-          onClick={() => setActiveTab("Earn")}
-        >
-          <FaDollarSign /> Earn
-        </button>
+        {whopData.modules?.chat && (
+          <button
+            className={`nav-button ${activeTab === "Chat" ? "active" : ""}`}
+            onClick={() => setActiveTab("Chat")}
+          >
+            <FaComments /> Chat
+          </button>
+        )}
+        {whopData.modules?.earn && (
+          <button
+            className={`nav-button ${activeTab === "Earn" ? "active" : ""}`}
+            onClick={() => setActiveTab("Earn")}
+          >
+            <FaDollarSign /> Earn
+          </button>
+        )}
+        {whopData.modules?.course && (
+          <button
+            className={`nav-button ${activeTab === "Course" ? "active" : ""}`}
+            onClick={() => setActiveTab("Course")}
+          >
+            <FaTools /> Course
+          </button>
+        )}
         <button
           className={`nav-button ${activeTab === "Tools" ? "active" : ""}`}
           onClick={() => setActiveTab("Tools")}

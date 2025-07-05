@@ -140,6 +140,7 @@ export default function BannerSetup() {
       waitlist_enabled: prevWhopData.waitlist_enabled || 0,
       waitlist_questions: prevWhopData.waitlist_questions || [],
       landing_texts: prevWhopData.landing_texts || {},
+      modules: prevWhopData.modules || {},
     };
 
     try {

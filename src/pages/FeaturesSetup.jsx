@@ -12,6 +12,7 @@ export default function FeaturesSetup() {
   const cookieData = getWhopSetupCookie();
   // We may get whopData either from location.state or from cookie
   const prevWhopData = location.state?.whopData || cookieData || null;
+  const textEnabled = prevWhopData?.modules?.text !== false;
 
   // Function returning initial features array state
   const getInitialFeatures = () => {
@@ -59,6 +60,22 @@ export default function FeaturesSetup() {
       <div className="features-setup-error">
         <p>Whop data not found. Please complete the previous steps first.</p>
         <button onClick={() => navigate("/setup")}>Go to Setup</button>
+      </div>
+    );
+  }
+
+  if (!textEnabled) {
+    const handleContinue = () => {
+      const newData = { ...prevWhopData };
+      setWhopSetupCookie(newData);
+      navigate("/setup/banner", { state: { whopData: newData } });
+    };
+    return (
+      <div className="features-setup-disabled">
+        <p>Text features are disabled. You can enable them in setup later.</p>
+        <button className="feature-add-btn" onClick={handleContinue}>
+          Continue
+        </button>
       </div>
     );
   }
