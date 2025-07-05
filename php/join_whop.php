@@ -133,6 +133,12 @@ try {
         'user_id' => $user_id,
         'whop_id' => $whop_id
     ]);
+    // Also log into history so former members can review
+    $hist = $pdo->prepare("INSERT IGNORE INTO whop_member_history (user_id, whop_id, joined_at) VALUES (:user_id, :whop_id, UTC_TIMESTAMP())");
+    $hist->execute([
+        'user_id' => $user_id,
+        'whop_id' => $whop_id
+    ]);
     echo json_encode([
         "status"  => "success",
         "message" => "You have joined the Whop."
@@ -145,6 +151,11 @@ try {
         echo json_encode([
             "status"  => "error",
             "message" => "You are already a member of this Whop."
+        ]);
+        $hist = $pdo->prepare("INSERT IGNORE INTO whop_member_history (user_id, whop_id, joined_at) VALUES (:user_id, :whop_id, UTC_TIMESTAMP())");
+        $hist->execute([
+            'user_id' => $user_id,
+            'whop_id' => $whop_id
         ]);
         exit;
     }

@@ -228,6 +228,8 @@ try {
     if (!$exists->fetch()) {
         $ins2 = $pdo->prepare("INSERT INTO whop_members (user_id, whop_id) VALUES (:uid, :wid)");
         $ins2->execute(['uid' => $user_id, 'wid' => $whop_id]);
+        $hist = $pdo->prepare("INSERT IGNORE INTO whop_member_history (user_id, whop_id, joined_at) VALUES (:uid, :wid, :joined_at)");
+        $hist->execute(['uid' => $user_id, 'wid' => $whop_id, 'joined_at' => $start_str]);
     }
 
     $pdo->commit();
