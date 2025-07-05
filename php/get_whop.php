@@ -184,6 +184,7 @@ if ($method === 'GET') {
                   w.who_for,
                   w.faq,
                   w.landing_texts,
+                  w.modules,
                   w.created_at
                 FROM whops AS w
                 JOIN users4 AS u ON w.owner_id = u.id
@@ -273,6 +274,7 @@ if ($method === 'GET') {
                     "waitlist_enabled"       => (int)$w['waitlist_enabled'],
                     "waitlist_questions"     => json_decode($w['waitlist_questions'], true) ?: [],
                     "landing_texts"         => json_decode($w['landing_texts'], true) ?: new stdClass(),
+                    "modules"               => json_decode($w['modules'], true) ?: new stdClass(),
                     "website_url"            => $w['website_url'],
                     "socials"                => json_decode($w['socials'], true) ?: new stdClass(),
                     "who_for"                => json_decode($w['who_for'], true)   ?: [],
@@ -310,6 +312,7 @@ if ($method === 'GET') {
                     logo_url, banner_url,
                     price, currency,
                     is_recurring, billing_period,
+                    modules,
                     created_at
                 FROM whops
                 WHERE owner_id = :uid

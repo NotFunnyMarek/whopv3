@@ -12,6 +12,7 @@ import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
 import OwnerTextMenu from "./OwnerTextMenu";
+import OwnerModules from "./OwnerModules";
 
 export default function OwnerMode({
   whopData,
@@ -66,6 +67,8 @@ export default function OwnerMode({
   setEditFaq,
   editLandingTexts,
   setEditLandingTexts,
+  editModules,
+  setEditModules,
 }) {
   if (!whopData) return null;
 
@@ -138,6 +141,13 @@ export default function OwnerMode({
           handleDelete={handleDelete}
           setViewAsMemberMode={setViewAsMemberMode}
           setIsCampaignModalOpen={setIsCampaignModalOpen}
+        />
+
+        {/* Modules section */}
+        <OwnerModules
+          editModules={editModules}
+          setEditModules={setEditModules}
+          isEditing={isEditing}
         />
 
         {/* Features section */}

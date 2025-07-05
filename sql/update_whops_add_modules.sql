@@ -1,0 +1,2 @@
+ALTER TABLE whops
+  ADD COLUMN modules TEXT DEFAULT NULL;

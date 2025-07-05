@@ -303,6 +303,9 @@ if ($method === 'GET') {
    $landing_texts = isset($input['landing_texts'])
                    ? json_encode($input['landing_texts'], JSON_UNESCAPED_UNICODE)
                    : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
+   $modules_json = isset($input['modules'])
+                   ? json_encode($input['modules'], JSON_UNESCAPED_UNICODE)
+                   : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 
     // Slug uniqueness
     try {
@@ -332,12 +335,12 @@ if ($method === 'GET') {
             (owner_id, user_id, name, slug, description, long_description, logo_url, banner_url,
              price, billing_period, is_recurring, currency,
              waitlist_enabled, waitlist_questions,
-             about_bio, website_url, socials, who_for, faq, landing_texts)
+             about_bio, website_url, socials, who_for, faq, landing_texts, modules)
           VALUES
             (:owner_id, :user_id, :name, :slug, :description, :long_desc, :logo_url, :banner_url,
              :price, :billing_period, :is_recurring, :currency,
              :wlen, :wlq,
-             :abt, :web, :soc, :who, :faq, :land)
+             :abt, :web, :soc, :who, :faq, :land, :modules)
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -361,6 +364,7 @@ if ($method === 'GET') {
             'who'            => $who_for,
             'faq'            => $faq,
             'land'           => $landing_texts,
+            'modules'        => $modules_json,
         ]);
         $newId = (int)$pdo->lastInsertId();
 

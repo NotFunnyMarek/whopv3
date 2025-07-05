@@ -22,6 +22,7 @@ export default async function handleSaveWhop(
   setEditWhoFor,
   setEditFaq,
   setEditLandingTexts,
+  setEditModules,
   waitlistEnabled,         // new parameter
   waitlistQuestions,       // new parameter
   editLongDescription,
@@ -30,7 +31,8 @@ export default async function handleSaveWhop(
   editSocials,
   editWhoFor,
   editFaq,
-  editLandingTexts
+  editLandingTexts,
+  editModules
 ) {
   // 1) Validate name and description
   if (!editName.trim() || !editDescription.trim()) {
@@ -71,6 +73,7 @@ export default async function handleSaveWhop(
     who_for:            editWhoFor,
     faq:                editFaq,
     landing_texts:      editLandingTexts,
+    modules:            editModules,
   };
 
   try {
@@ -142,6 +145,15 @@ export default async function handleSaveWhop(
         about_title: "",
         faq_title: "",
       });
+      setEditModules(
+        data.modules || {
+          chat: false,
+          earn: false,
+          discord: false,
+          course: false,
+          text: true,
+        }
+      );
 
       // Rebuild features state
       const newFeatures = data.features.map((f, idx) => ({
