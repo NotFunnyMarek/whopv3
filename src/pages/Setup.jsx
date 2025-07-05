@@ -52,10 +52,10 @@ export default function Setup() {
   );
   const [landingTexts, setLandingTexts] = useState(
     cookieData.landing_texts || {
-      reviews_title: "",
-      features_title: "",
-      about_title: "",
-      faq_title: "",
+      reviews_title: "See what other people are saying",
+      features_title: "Here\u2019s what you\u2019ll get",
+      about_title: "Learn about me",
+      faq_title: "Frequently asked questions",
     }
   );
 
