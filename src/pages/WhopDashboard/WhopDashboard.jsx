@@ -264,6 +264,7 @@ export default function WhopDashboard() {
       setEditFaq,
       setEditLandingTexts,
       setEditModules,
+      setEditCourseSteps,
       waitlistEnabled,
       waitlistQuestions,
       editLongDescription,
