@@ -1,6 +1,5 @@
+@import './design-system';
 // src/styles/home.scss
-@import './variables';
-@import './_theme.scss';
 
 .main-content {
   margin-left: var(--sidebar-width, 60px);

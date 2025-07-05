@@ -1,5 +1,4 @@
-@import './variables';
-@import './_theme.scss';
+@import './design-system';
 
 /* ======================
    Karty (Card) a Grid
@@ -74,12 +73,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform var(--transition), box-shadow var(--transition);
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
-  }
+  @include transition(transform, box-shadow);
+  @include lift-hover;
 
   /* HLAVIČKA */
   .card-header {
