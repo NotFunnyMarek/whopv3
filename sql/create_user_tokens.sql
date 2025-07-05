@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS user_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  user_agent_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX(token_hash),
+  INDEX(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

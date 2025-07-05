@@ -104,6 +104,23 @@ if ($user) {
 
 $_SESSION['user_id'] = $userId;
 
+// Persistent login token
+$tokenPlain = bin2hex(random_bytes(32));
+$tokenHash  = hash('sha256', $tokenPlain);
+$uaHash     = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
+$expiry     = date('Y-m-d H:i:s', time() + 60 * 60 * 24 * 30); // 30 days
+$tokenHashEsc = $conn->real_escape_string($tokenHash);
+$uaHashEsc    = $conn->real_escape_string($uaHash);
+$conn->query("INSERT INTO user_tokens (user_id, token_hash, user_agent_hash, expires_at) VALUES ($userId, '$tokenHashEsc', '$uaHashEsc', '$expiry')");
+setcookie('login_token', $tokenPlain, [
+    'expires'  => time() + 60 * 60 * 24 * 30,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => true,
+    'httponly' => true,
+    'samesite' => 'None',
+]);
+
 $conn->close();
 
 echo json_encode([
