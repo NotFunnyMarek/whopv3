@@ -10,7 +10,7 @@ export default async function handleCourseVideoUpload(
   const maxSize = 100 * 1024 * 1024; // 100 MB limit
   if (file.size > maxSize) {
     setEditCourseSteps(prev =>
-      prev.map(s =>
+      (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id ? { ...s, error: "Max file size is 100 MB.", isUploading: false } : s
       )
     );
@@ -18,7 +18,7 @@ export default async function handleCourseVideoUpload(
   }
   if (!file.type.startsWith("video/")) {
     setEditCourseSteps(prev =>
-      prev.map(s =>
+      (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id ? { ...s, error: "Please select a video file.", isUploading: false } : s
       )
     );
@@ -26,7 +26,7 @@ export default async function handleCourseVideoUpload(
   }
 
   setEditCourseSteps(prev =>
-    prev.map(s => (s.id === id ? { ...s, isUploading: true, error: "" } : s))
+    (Array.isArray(prev) ? prev : []).map(s => (s.id === id ? { ...s, isUploading: true, error: "" } : s))
   );
 
   const formData = new FormData();
@@ -46,7 +46,7 @@ export default async function handleCourseVideoUpload(
     if (!data.secure_url) throw new Error("Missing secure_url.");
 
     setEditCourseSteps(prev =>
-      prev.map(s =>
+      (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id
           ? { ...s, videoUrl: data.secure_url, isUploading: false, error: "" }
           : s
@@ -56,7 +56,7 @@ export default async function handleCourseVideoUpload(
   } catch (err) {
     console.error("Course video upload error:", err);
     setEditCourseSteps(prev =>
-      prev.map(s =>
+      (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id
           ? { ...s, videoUrl: "", isUploading: false, error: "Upload failed." }
           : s
