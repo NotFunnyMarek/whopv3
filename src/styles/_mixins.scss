@@ -1,0 +1,32 @@
+// src/styles/_mixins.scss
+// Reusable mixins for animations and responsive utilities
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin transition($properties...) {
+  transition: $properties var(--transition);
+}
+
+@mixin respond($breakpoint) {
+  @if $breakpoint == xs {
+    @media (max-width: 480px) { @content; }
+  } @else if $breakpoint == sm {
+    @media (max-width: 768px) { @content; }
+  } @else if $breakpoint == md {
+    @media (max-width: 1024px) { @content; }
+  } @else if $breakpoint == lg {
+    @media (min-width: 1025px) { @content; }
+  }
+}
+
+@mixin lift-hover {
+  @include transition(transform, box-shadow);
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+}

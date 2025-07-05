@@ -1,11 +1,10 @@
 // src/index.scss
 
-@import './styles/variables';
-@import './styles/theme';
+@import './styles/design-system';
 @import './styles/sidebar';
 @import './styles/bottombar';
 
-// Reset a globální styl
+// Global reset
 * {
   margin: 0;
   padding: 0;
@@ -13,10 +12,10 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   background-color: var(--bg-color);
   color: var(--text-color);
-  overflow: hidden; // aby nevznikly dva scrollbary
+  overflow: hidden; // prevent double scrollbars
 }
 
 .app-container {
