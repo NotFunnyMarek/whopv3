@@ -12,6 +12,8 @@ const Login = () => {
   const { showNotification } = useNotifications();
   const [twofaToken, setTwofaToken] = useState(null);
   const [idToken, setIdToken] = useState(null);
+  const [email, setEmail] = useState('');
+  const [method, setMethod] = useState(null); // 'google' or 'email'
   const [resendTimer, setResendTimer] = useState(0);
   const [code, setCode] = useState(Array(6).fill(''));
   const navigate = useNavigate();
@@ -40,12 +42,45 @@ const Login = () => {
 const handleGoogle = async (resp) => {
   showNotification({ type: 'info', message: 'Processing...' });
   setIdToken(resp.credential);
+  setMethod('google');
   try {
     const res = await fetch('https://app.byxbot.com/php/google_start.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ id_token: resp.credential }),
+    });
+    if (res.status === 404) {
+      navigate('/register');
+      return;
+    }
+    const data = await res.json();
+    if (res.ok && data.token) {
+      setTwofaToken(data.token);
+      setResendTimer(30);
+      showNotification({ type: 'info', message: 'Verification code sent.' });
+    } else {
+      showNotification({ type: 'error', message: data.message || 'Login error' });
+    }
+  } catch (err) {
+    showNotification({ type: 'error', message: err.message });
+  }
+};
+
+const handleEmail = async () => {
+  if (!email.trim()) {
+    showNotification({ type: 'error', message: 'Enter email' });
+    return;
+  }
+  showNotification({ type: 'info', message: 'Processing...' });
+  setIdToken(email.trim());
+  setMethod('email');
+  try {
+    const res = await fetch('https://app.byxbot.com/php/google_start.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email: email.trim() }),
     });
     if (res.status === 404) {
       navigate('/register');
@@ -72,7 +107,9 @@ const handleResend = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ id_token: idToken }),
+      body: JSON.stringify(
+        method === 'google' ? { id_token: idToken } : { email: idToken }
+      ),
     });
     const data = await res.json();
     if (res.ok && data.token) {
@@ -116,7 +153,20 @@ const handleResend = async () => {
       <div className="auth-card">
         <h2>Login</h2>
         {!twofaToken ? (
-          <div id="google-btn" className="google-btn"></div>
+          <>
+            <div className="auth-form">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button type="button" className="btn-primary" onClick={handleEmail}>
+                Send Code
+              </button>
+            </div>
+            <div id="google-btn" className="google-btn"></div>
+          </>
         ) : (
           <form onSubmit={handleSubmit} className="auth-form">
             <label>2FA Code</label>
