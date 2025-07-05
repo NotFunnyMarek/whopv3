@@ -53,6 +53,11 @@ try {
         $purchase = $st3->fetchColumn();
     }
     if (!$purchase) {
+        $st4 = $pdo->prepare("SELECT joined_at FROM whop_member_history WHERE user_id = :uid AND whop_id = :wid ORDER BY joined_at ASC LIMIT 1");
+        $st4->execute(['uid' => $user_id, 'wid' => $whop_id]);
+        $purchase = $st4->fetchColumn();
+    }
+    if (!$purchase) {
         http_response_code(403);
         echo json_encode(["status" => "error", "message" => "You must be a member to review."]);
         exit;

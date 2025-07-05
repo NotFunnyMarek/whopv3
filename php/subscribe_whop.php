@@ -256,6 +256,8 @@ try {
             'user_id' => $user_id,
             'whop_id' => $whopId
         ]);
+        $hist = $pdo->prepare("INSERT IGNORE INTO whop_member_history (user_id, whop_id, joined_at) VALUES (:user_id, :whop_id, UTC_TIMESTAMP())");
+        $hist->execute(['user_id' => $user_id, 'whop_id' => $whopId]);
     }
 
     // f) Insert payment record
