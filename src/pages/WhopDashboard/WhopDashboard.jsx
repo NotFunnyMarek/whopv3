@@ -65,6 +65,20 @@ export default function WhopDashboard() {
   // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
 
+  // Text-edit states
+  const [editLongDescription, setEditLongDescription] = useState("");
+  const [editAboutBio, setEditAboutBio] = useState("");
+  const [editWebsiteUrl, setEditWebsiteUrl] = useState("");
+  const [editSocials, setEditSocials] = useState({ instagram: "", discord: "" });
+  const [editWhoFor, setEditWhoFor] = useState([{ title: "", description: "" }]);
+  const [editFaq, setEditFaq] = useState([{ question: "", answer: "" }]);
+  const [editLandingTexts, setEditLandingTexts] = useState({
+    reviews_title: "",
+    features_title: "",
+    about_title: "",
+    faq_title: "",
+  });
+
   // Waitlist
   const [waitlistEnabled, setWaitlistEnabled] = useState(false);
   const [waitlistQuestions, setWaitlistQuestions] = useState(["", "", "", "", ""]);
@@ -104,7 +118,14 @@ export default function WhopDashboard() {
       setEditFeatures,
       fetchCampaignsBound,
       setWaitlistEnabled,
-      setWaitlistQuestions
+      setWaitlistQuestions,
+      setEditLongDescription,
+      setEditAboutBio,
+      setEditWebsiteUrl,
+      setEditSocials,
+      setEditWhoFor,
+      setEditFaq,
+      setEditLandingTexts
     );
   }, [initialSlug, location.pathname]);
 
@@ -212,8 +233,22 @@ export default function WhopDashboard() {
       setSlugError,
       fetchCampaignsBound,
       setWhopData,
+      setEditLongDescription,
+      setEditAboutBio,
+      setEditWebsiteUrl,
+      setEditSocials,
+      setEditWhoFor,
+      setEditFaq,
+      setEditLandingTexts,
       waitlistEnabled,
-      waitlistQuestions
+      waitlistQuestions,
+      editLongDescription,
+      editAboutBio,
+      editWebsiteUrl,
+      editSocials,
+      editWhoFor,
+      editFaq,
+      editLandingTexts
     );
   };
 
@@ -263,7 +298,14 @@ export default function WhopDashboard() {
         setEditFeatures,
         fetchCampaignsBound,
         setWaitlistEnabled,
-        setWaitlistQuestions
+        setWaitlistQuestions,
+        setEditLongDescription,
+        setEditAboutBio,
+        setEditWebsiteUrl,
+        setEditSocials,
+        setEditWhoFor,
+        setEditFaq,
+        setEditLandingTexts
       );
     } catch {
       // handleRequestWaitlist throws errors for conflict or server error
@@ -385,6 +427,20 @@ export default function WhopDashboard() {
       setWaitlistEnabled={setWaitlistEnabled}
       waitlistQuestions={waitlistQuestions}
       setWaitlistQuestions={setWaitlistQuestions}
+      editLongDescription={editLongDescription}
+      setEditLongDescription={setEditLongDescription}
+      editAboutBio={editAboutBio}
+      setEditAboutBio={setEditAboutBio}
+      editWebsiteUrl={editWebsiteUrl}
+      setEditWebsiteUrl={setEditWebsiteUrl}
+      editSocials={editSocials}
+      setEditSocials={setEditSocials}
+      editWhoFor={editWhoFor}
+      setEditWhoFor={setEditWhoFor}
+      editFaq={editFaq}
+      setEditFaq={setEditFaq}
+      editLandingTexts={editLandingTexts}
+      setEditLandingTexts={setEditLandingTexts}
     />
   );
 }

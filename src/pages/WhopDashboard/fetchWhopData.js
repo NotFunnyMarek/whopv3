@@ -12,7 +12,14 @@ export default async function fetchWhopData(
   setEditFeatures,
   fetchCampaigns,        // bound version
   setWaitlistEnabled,    // newly added
-  setWaitlistQuestions   // newly added
+  setWaitlistQuestions,  // newly added
+  setEditLongDescription,
+  setEditAboutBio,
+  setEditWebsiteUrl,
+  setEditSocials,
+  setEditWhoFor,
+  setEditFaq,
+  setEditLandingTexts
 ) {
   setLoading(true);
   setError("");
@@ -57,6 +64,30 @@ export default async function fetchWhopData(
           error: "",
         }))
       );
+
+      setEditLongDescription(data.long_description || "");
+      setEditAboutBio(data.about_bio || "");
+      setEditWebsiteUrl(data.website_url || "");
+      setEditSocials({
+        instagram: data.socials?.instagram || "",
+        discord: data.socials?.discord || "",
+      });
+      setEditWhoFor(
+        Array.isArray(data.who_for) && data.who_for.length
+          ? data.who_for
+          : [{ title: "", description: "" }]
+      );
+      setEditFaq(
+        Array.isArray(data.faq) && data.faq.length
+          ? data.faq
+          : [{ question: "", answer: "" }]
+      );
+      setEditLandingTexts(data.landing_texts || {
+        reviews_title: "",
+        features_title: "",
+        about_title: "",
+        faq_title: "",
+      });
 
       // ** Waitlist state **
       setWaitlistEnabled(Boolean(data.waitlist_enabled));

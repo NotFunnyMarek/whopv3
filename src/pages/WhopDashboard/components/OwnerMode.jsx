@@ -11,6 +11,7 @@ import FeaturesSection from "./FeaturesSection";
 import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
+import OwnerTextMenu from "./OwnerTextMenu";
 
 export default function OwnerMode({
   whopData,
@@ -51,6 +52,20 @@ export default function OwnerMode({
   handleBack,
   isCampaignModalOpen,
   fetchCampaigns,
+  editLongDescription,
+  setEditLongDescription,
+  editAboutBio,
+  setEditAboutBio,
+  editWebsiteUrl,
+  setEditWebsiteUrl,
+  editSocials,
+  setEditSocials,
+  editWhoFor,
+  setEditWhoFor,
+  editFaq,
+  setEditFaq,
+  editLandingTexts,
+  setEditLandingTexts,
 }) {
   if (!whopData) return null;
 
@@ -80,6 +95,25 @@ export default function OwnerMode({
         bannerError={bannerError}
         handleBannerUpload={handleBannerUpload}
       />
+
+      {isEditing && (
+        <OwnerTextMenu
+          editLongDescription={editLongDescription}
+          setEditLongDescription={setEditLongDescription}
+          editAboutBio={editAboutBio}
+          setEditAboutBio={setEditAboutBio}
+          editWebsiteUrl={editWebsiteUrl}
+          setEditWebsiteUrl={setEditWebsiteUrl}
+          editSocials={editSocials}
+          setEditSocials={setEditSocials}
+          editWhoFor={editWhoFor}
+          setEditWhoFor={setEditWhoFor}
+          editFaq={editFaq}
+          setEditFaq={setEditFaq}
+          editLandingTexts={editLandingTexts}
+          setEditLandingTexts={setEditLandingTexts}
+        />
+      )}
 
       <div className="whop-content">
         {/* Slug and price editing section */}

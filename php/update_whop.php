@@ -144,11 +144,18 @@ $wait_enabled   = isset($data['waitlist_enabled']) ? intval($data['waitlist_enab
 $wait_questions = $wait_enabled && isset($data['waitlist_questions']) && is_array($data['waitlist_questions'])
     ? json_encode(array_values(array_filter($data['waitlist_questions'], fn($q)=>trim($q)!=='')))
     : json_encode([]);
+$long_desc      = trim($data['long_description'] ?? '');
+$about_bio      = trim($data['about_bio'] ?? '');
+$website_url    = trim($data['website_url'] ?? '');
+$socials_json   = isset($data['socials']) ? json_encode($data['socials'], JSON_UNESCAPED_UNICODE) : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
+$who_for_json   = isset($data['who_for']) ? json_encode($data['who_for'], JSON_UNESCAPED_UNICODE) : json_encode([], JSON_UNESCAPED_UNICODE);
+$faq_json       = isset($data['faq']) ? json_encode($data['faq'], JSON_UNESCAPED_UNICODE) : json_encode([], JSON_UNESCAPED_UNICODE);
+$landing_json   = isset($data['landing_texts']) ? json_encode($data['landing_texts'], JSON_UNESCAPED_UNICODE) : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 
 // 12) Update the Whop record
 try {
     $updStmt = $pdo->prepare("
-        UPDATE whops 
+        UPDATE whops
            SET name               = :name,
                description        = :description,
                banner_url         = :banner_url,
@@ -157,8 +164,15 @@ try {
                is_recurring       = :is_recurring,
                billing_period     = :billing_period,
                waitlist_enabled   = :wait_enabled,
-               waitlist_questions = :wait_questions
-         WHERE id = :id
+               waitlist_questions = :wait_questions,
+               long_description   = :long_desc,
+               about_bio          = :about_bio,
+               website_url        = :website_url,
+               socials            = :socials,
+               who_for            = :who_for,
+               faq                = :faq,
+               landing_texts      = :landing_texts
+        WHERE id = :id
     ");
     $updStmt->execute([
         ':name'             => $data['name'],
@@ -170,6 +184,13 @@ try {
         ':billing_period'   => $billing_period,
         ':wait_enabled'     => $wait_enabled,
         ':wait_questions'   => $wait_questions,
+        ':long_desc'        => $long_desc,
+        ':about_bio'        => $about_bio,
+        ':website_url'      => $website_url,
+        ':socials'          => $socials_json,
+        ':who_for'          => $who_for_json,
+        ':faq'              => $faq_json,
+        ':landing_texts'    => $landing_json,
         ':id'               => $whopId
     ]);
 } catch (PDOException $e) {

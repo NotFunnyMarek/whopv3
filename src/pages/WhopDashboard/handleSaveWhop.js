@@ -15,8 +15,22 @@ export default async function handleSaveWhop(
   setSlugError,
   fetchCampaigns,
   setWhopData,
+  setEditLongDescription,
+  setEditAboutBio,
+  setEditWebsiteUrl,
+  setEditSocials,
+  setEditWhoFor,
+  setEditFaq,
+  setEditLandingTexts,
   waitlistEnabled,         // new parameter
-  waitlistQuestions        // new parameter
+  waitlistQuestions,       // new parameter
+  editLongDescription,
+  editAboutBio,
+  editWebsiteUrl,
+  editSocials,
+  editWhoFor,
+  editFaq,
+  editLandingTexts
 ) {
   // 1) Validate name and description
   if (!editName.trim() || !editDescription.trim()) {
@@ -50,6 +64,13 @@ export default async function handleSaveWhop(
     waitlist_questions: waitlistEnabled
                            ? waitlistQuestions.filter(q => q.trim() !== "")
                            : [],
+    long_description:   editLongDescription.trim(),
+    about_bio:          editAboutBio.trim(),
+    website_url:        editWebsiteUrl.trim(),
+    socials:            editSocials,
+    who_for:            editWhoFor,
+    faq:                editFaq,
+    landing_texts:      editLandingTexts,
   };
 
   try {
@@ -97,6 +118,30 @@ export default async function handleSaveWhop(
       setEditName(data.name);
       setEditDescription(data.description);
       setEditBannerUrl(data.banner_url || "");
+
+      setEditLongDescription(data.long_description || "");
+      setEditAboutBio(data.about_bio || "");
+      setEditWebsiteUrl(data.website_url || "");
+      setEditSocials({
+        instagram: data.socials?.instagram || "",
+        discord: data.socials?.discord || "",
+      });
+      setEditWhoFor(
+        Array.isArray(data.who_for) && data.who_for.length
+          ? data.who_for
+          : [{ title: "", description: "" }]
+      );
+      setEditFaq(
+        Array.isArray(data.faq) && data.faq.length
+          ? data.faq
+          : [{ question: "", answer: "" }]
+      );
+      setEditLandingTexts(data.landing_texts || {
+        reviews_title: "",
+        features_title: "",
+        about_title: "",
+        faq_title: "",
+      });
 
       // Rebuild features state
       const newFeatures = data.features.map((f, idx) => ({
