@@ -8,6 +8,7 @@ import OwnerHeader from "./OwnerHeader";
 import OwnerSlugPrice from "./OwnerSlugPrice";
 import OwnerActionButtons from "./OwnerActionButtons";
 import FeaturesSection from "./FeaturesSection";
+import CourseSection from "./CourseSection";
 import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
@@ -42,6 +43,10 @@ export default function OwnerMode({
   handleImageChange,
   removeFeature,
   addFeature,
+  editCourseSteps,
+  handleCourseChange,
+  removeStep,
+  addStep,
   campaigns,
   campaignsLoading,
   campaignsError,
@@ -160,6 +165,16 @@ export default function OwnerMode({
           removeFeature={removeFeature}
           addFeature={addFeature}
         />
+
+        {editModules.course && (
+          <CourseSection
+            isEditing={isEditing}
+            courseSteps={editCourseSteps}
+            handleCourseChange={handleCourseChange}
+            removeStep={removeStep}
+            addStep={addStep}
+          />
+        )}
 
         {/* Campaigns section (only for owners) */}
         {whopData.is_owner && (

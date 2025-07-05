@@ -13,6 +13,7 @@ export default async function fetchWhopData(
   fetchCampaigns,        // bound version
   setWaitlistEnabled,    // newly added
   setWaitlistQuestions,  // newly added
+  setEditCourseSteps,
   setEditLongDescription,
   setEditAboutBio,
   setEditWebsiteUrl,
@@ -64,6 +65,16 @@ export default async function fetchWhopData(
           isUploading: false,
           error: "",
         }))
+      );
+
+      setEditCourseSteps(
+        Array.isArray(data.course_steps) && data.course_steps.length
+          ? data.course_steps.map((s, i) => ({
+              id: i + 1,
+              title: s.title || "",
+              content: s.content || "",
+            }))
+          : [{ id: 1, title: "", content: "" }]
       );
 
       setEditLongDescription(data.long_description || "");

@@ -152,6 +152,7 @@ $who_for_json   = isset($data['who_for']) ? json_encode($data['who_for'], JSON_U
 $faq_json       = isset($data['faq']) ? json_encode($data['faq'], JSON_UNESCAPED_UNICODE) : json_encode([], JSON_UNESCAPED_UNICODE);
 $landing_json   = isset($data['landing_texts']) ? json_encode($data['landing_texts'], JSON_UNESCAPED_UNICODE) : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 $modules_json   = isset($data['modules']) ? json_encode($data['modules'], JSON_UNESCAPED_UNICODE) : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
+$course_json    = isset($data['course_steps']) ? json_encode($data['course_steps'], JSON_UNESCAPED_UNICODE) : json_encode([], JSON_UNESCAPED_UNICODE);
 
 // 12) Update the Whop record
 try {
@@ -173,7 +174,8 @@ try {
                who_for            = :who_for,
                faq                = :faq,
                landing_texts      = :landing_texts,
-               modules            = :modules
+               modules            = :modules,
+               course_steps       = :course_steps
         WHERE id = :id
     ");
     $updStmt->execute([
@@ -194,6 +196,7 @@ try {
         ':faq'              => $faq_json,
         ':landing_texts'    => $landing_json,
         ':modules'          => $modules_json,
+        ':course_steps'     => $course_json,
         ':id'               => $whopId
     ]);
 } catch (PDOException $e) {

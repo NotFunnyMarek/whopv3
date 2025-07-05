@@ -12,6 +12,7 @@ import handleLeave from "./handleLeave";
 import handleBannerUpload from "./handleBannerUpload";
 import handleFeatureImageUpload from "./handleFeatureImageUpload";
 import manageFeatures from "./manageFeatures";
+import manageCourse from "./manageCourse";
 import handleSlugSave from "./handleSlugSave";
 import handleSaveWhop from "./handleSaveWhop";
 import handleDeleteWhop from "./handleDeleteWhop";
@@ -64,6 +65,7 @@ export default function WhopDashboard() {
 
   // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
+  const [editCourseSteps, setEditCourseSteps] = useState([{ id: 1, title: "", content: "" }]);
   const [editModules, setEditModules] = useState({
     chat: false,
     earn: false,
@@ -123,6 +125,7 @@ export default function WhopDashboard() {
       setEditBannerUrl,
       setNewSlugValue,
       setEditFeatures,
+      setEditCourseSteps,
       fetchCampaignsBound,
       setWaitlistEnabled,
       setWaitlistQuestions,
@@ -133,7 +136,8 @@ export default function WhopDashboard() {
       setEditWhoFor,
       setEditFaq,
       setEditLandingTexts,
-      setEditModules
+      setEditModules,
+      setEditCourseSteps
     );
   }, [initialSlug, location.pathname]);
 
@@ -219,6 +223,11 @@ export default function WhopDashboard() {
     showNotification
   );
 
+  const { addStep, removeStep, handleCourseChange } = manageCourse(
+    editCourseSteps,
+    setEditCourseSteps
+  );
+
   // 8️⃣ Slug save
   const onSlugSave = async () => {
     await handleSlugSave(whopData, newSlugValue, showNotification, setSlugError, navigate);
@@ -258,7 +267,8 @@ export default function WhopDashboard() {
       editWhoFor,
       editFaq,
       editLandingTexts,
-      editModules
+      editModules,
+      editCourseSteps
     );
   };
 
@@ -306,6 +316,7 @@ export default function WhopDashboard() {
         setEditBannerUrl,
         setNewSlugValue,
         setEditFeatures,
+        setEditCourseSteps,
         fetchCampaignsBound,
         setWaitlistEnabled,
         setWaitlistQuestions,
@@ -423,6 +434,10 @@ export default function WhopDashboard() {
       handleImageChange={onFeatureImageUpload}
       removeFeature={removeFeature}
       addFeature={addFeature}
+      editCourseSteps={editCourseSteps}
+      handleCourseChange={handleCourseChange}
+      removeStep={removeStep}
+      addStep={addStep}
       campaigns={campaigns}
       campaignsLoading={campaignsLoading}
       campaignsError={campaignsError}
