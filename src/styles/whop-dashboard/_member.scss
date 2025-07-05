@@ -479,6 +479,41 @@
       background: var(--surface-color);
       cursor: pointer;
     }
+
+    .course-nav {
+      display: flex;
+      gap: var(--spacing-xs);
+      margin-bottom: var(--spacing-sm);
+
+      .course-nav-step {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--border-color);
+        background: var(--surface-color);
+        &.active {
+          background: var(--primary-color);
+          color: var(--surface-color);
+        }
+      }
+    }
+
+    .course-controls {
+      margin-top: var(--spacing-sm);
+      display: flex;
+      gap: var(--spacing-xs);
+
+      .course-control-btn {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--border-color);
+        background: var(--surface-color);
+      }
+    }
+
+    .course-restart-btn {
+      margin-top: var(--spacing-sm);
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border-color);
+      background: var(--surface-color);
+    }
   }
 }
 }

@@ -255,6 +255,14 @@ if ($method === 'GET') {
             $is_accepted_waitlist = ($r && $r['status'] === 'accepted') ? 1 : 0;
             $waitlist_answers     = $r['answers_json'] ? json_decode($r['answers_json'], true) : [];
 
+            // course progress for this user
+            $cp = $pdo->prepare(
+                "SELECT completed_steps FROM whop_course_progress WHERE user_id = :uid AND whop_id = :wid"
+            );
+            $cp->execute(['uid' => $user_id, 'wid' => $w['id']]);
+            $cpRow = $cp->fetch(PDO::FETCH_ASSOC);
+            $course_progress = $cpRow ? json_decode($cpRow['completed_steps'], true) : [];
+
             // respond with data
             echo json_encode([
                 "status" => "success",
@@ -277,6 +285,7 @@ if ($method === 'GET') {
                     "landing_texts"         => json_decode($w['landing_texts'], true) ?: new stdClass(),
                    "modules"               => json_decode($w['modules'], true) ?: new stdClass(),
                     "course_steps"          => json_decode($w['course_steps'], true) ?: [],
+                    "course_progress"       => $course_progress,
                     "website_url"            => $w['website_url'],
                     "socials"                => json_decode($w['socials'], true) ?: new stdClass(),
                     "who_for"                => json_decode($w['who_for'], true)   ?: [],
