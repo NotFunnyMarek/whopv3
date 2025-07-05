@@ -8,7 +8,7 @@ export default function manageCourse(editCourseSteps, setEditCourseSteps) {
         : 1;
     setEditCourseSteps((prev) => [
       ...(Array.isArray(prev) ? prev : []),
-      { id: newId, title: "", content: "", videoUrl: "", isUploading: false, error: "" },
+      { id: newId, title: "", content: "", fileUrl: "", fileType: "", isUploading: false, error: "" },
     ]);
   };
 

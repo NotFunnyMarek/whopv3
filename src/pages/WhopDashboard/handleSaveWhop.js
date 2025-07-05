@@ -79,7 +79,8 @@ export default async function handleSaveWhop(
     course_steps:       editCourseSteps.map(s => ({
                           title: s.title.trim(),
                           content: s.content.trim(),
-                          video_url: s.videoUrl || "",
+                          file_url: s.fileUrl || "",
+                          file_type: s.fileType || "",
                         })),
   };
 
@@ -179,7 +180,8 @@ export default async function handleSaveWhop(
               id: i + 1,
               title: s.title || "",
               content: s.content || "",
-              videoUrl: s.video_url || "",
+              fileUrl: s.file_url || s.video_url || "",
+              fileType: s.file_type || (s.video_url ? "video/mp4" : ""),
               isUploading: false,
               error: "",
             }))
@@ -188,7 +190,8 @@ export default async function handleSaveWhop(
                 id: 1,
                 title: "",
                 content: "",
-                videoUrl: "",
+                fileUrl: "",
+                fileType: "",
                 isUploading: false,
                 error: "",
               },

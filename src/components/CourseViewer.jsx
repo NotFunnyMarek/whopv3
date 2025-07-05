@@ -46,42 +46,52 @@ export default function CourseViewer({ steps = [], initialCompleted = [], whopId
 
   return (
     <div className="course-viewer">
-      <div className="course-progress-bar">
-        <div className="course-progress-fill" style={{ width: `${percent}%` }} />
-      </div>
-      <p className="course-progress-text">{percent}% complete</p>
-      <div className="course-nav">
-        {steps.map((_, i) => (
-          <button
-            key={i}
-            className={`course-nav-step ${i === current ? "active" : ""}`}
-            onClick={() => gotoStep(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
-      <div className="course-step">
+      <aside className="course-sidebar">
+        <div className="course-progress-bar">
+          <div className="course-progress-fill" style={{ width: `${percent}%` }} />
+        </div>
+        <p className="course-progress-text">{percent}% complete</p>
+        <ul className="course-steps-list">
+          {steps.map((s, i) => (
+            <li key={i} className={`course-sidebar-step ${i === current ? "active" : ""}`}> 
+              <button onClick={() => gotoStep(i)}>
+                <span className="step-index">{i + 1}</span>
+                <span className="step-title">{s.title}</span>
+                {completed.includes(i) && <span className="step-complete">✓</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
+      <div className="course-content">
         <h4 className="course-step-title">{step.title}</h4>
-        {step.video_url && (
-          <video src={step.video_url} controls className="course-video" />
-        )}
+        {step.file_url || step.video_url ? (
+          (step.file_type || "").startsWith("video/") || step.video_url ? (
+            <video src={step.file_url || step.video_url} controls className="course-video" />
+          ) : step.file_type === "application/pdf" ? (
+            <embed src={step.file_url} type="application/pdf" className="course-pdf" />
+          ) : (
+            <a href={step.file_url} target="_blank" rel="noopener noreferrer" download>
+              Download File
+            </a>
+          )
+        ) : null}
         <p className="course-step-content">{step.content}</p>
         <button type="button" className="course-complete-btn" onClick={() => toggleComplete(current)}>
           {completed.includes(current) ? "Completed" : "Mark Complete"}
         </button>
-      </div>
-      <div className="course-controls">
-        <button className="course-control-btn" onClick={() => gotoStep(current - 1)} disabled={current === 0}>
-          Back
+        <div className="course-controls">
+          <button className="course-control-btn" onClick={() => gotoStep(current - 1)} disabled={current === 0}>
+            Back
+          </button>
+          <button className="course-control-btn" onClick={() => gotoStep(current + 1)} disabled={current === total - 1}>
+            Next
+          </button>
+        </div>
+        <button className="course-restart-btn" onClick={restart}>
+          Restart Course
         </button>
-        <button className="course-control-btn" onClick={() => gotoStep(current + 1)} disabled={current === total - 1}>
-          Next
-        </button>
       </div>
-      <button className="course-restart-btn" onClick={restart}>
-        Restart Course
-      </button>
     </div>
   );
 }

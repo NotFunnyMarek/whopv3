@@ -73,11 +73,12 @@ export default async function fetchWhopData(
               id: i + 1,
               title: s.title || "",
               content: s.content || "",
-              videoUrl: s.video_url || "",
+              fileUrl: s.file_url || s.video_url || "",
+              fileType: s.file_type || (s.video_url ? "video/mp4" : ""),
               isUploading: false,
               error: "",
             }))
-          : [{ id: 1, title: "", content: "", videoUrl: "", isUploading: false, error: "" }]
+          : [{ id: 1, title: "", content: "", fileUrl: "", fileType: "", isUploading: false, error: "" }]
       );
 
       setEditLongDescription(data.long_description || "");

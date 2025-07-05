@@ -1,6 +1,6 @@
-// src/pages/WhopDashboard/handleCourseVideoUpload.js
+// src/pages/WhopDashboard/handleCourseFileUpload.js
 
-export default async function handleCourseVideoUpload(
+export default async function handleCourseFileUpload(
   id,
   file,
   setEditCourseSteps,
@@ -16,17 +16,11 @@ export default async function handleCourseVideoUpload(
     );
     return;
   }
-  if (!file.type.startsWith("video/")) {
-    setEditCourseSteps(prev =>
-      (Array.isArray(prev) ? prev : []).map(s =>
-        s.id === id ? { ...s, error: "Please select a video file.", isUploading: false } : s
-      )
-    );
-    return;
-  }
 
   setEditCourseSteps(prev =>
-    (Array.isArray(prev) ? prev : []).map(s => (s.id === id ? { ...s, isUploading: true, error: "" } : s))
+    (Array.isArray(prev) ? prev : []).map(s =>
+      s.id === id ? { ...s, isUploading: true, error: "" } : s
+    )
   );
 
   const formData = new FormData();
@@ -48,20 +42,20 @@ export default async function handleCourseVideoUpload(
     setEditCourseSteps(prev =>
       (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id
-          ? { ...s, videoUrl: data.secure_url, isUploading: false, error: "" }
+          ? { ...s, fileUrl: data.secure_url, fileType: file.type, isUploading: false, error: "" }
           : s
       )
     );
-    showNotification({ type: "success", message: "Video uploaded." });
+    showNotification({ type: "success", message: "File uploaded." });
   } catch (err) {
-    console.error("Course video upload error:", err);
+    console.error("Course file upload error:", err);
     setEditCourseSteps(prev =>
       (Array.isArray(prev) ? prev : []).map(s =>
         s.id === id
-          ? { ...s, videoUrl: "", isUploading: false, error: "Upload failed." }
+          ? { ...s, fileUrl: "", fileType: "", isUploading: false, error: "Upload failed." }
           : s
       )
     );
-    showNotification({ type: "error", message: "Failed to upload video." });
+    showNotification({ type: "error", message: "Failed to upload file." });
   }
 }
