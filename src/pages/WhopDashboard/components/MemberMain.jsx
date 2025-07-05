@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/MemberMain.jsx
 
-import React from "react";
+import React, { useState } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import ChatWindow from "../../../components/Chat/ChatWindow";
 import ReviewSection from "../../../components/ReviewSection";
@@ -13,6 +13,18 @@ export default function MemberMain({
   campaignsError,
   onSelectCampaign,
 }) {
+  const [completedSteps, setCompletedSteps] = useState([]);
+
+  const toggleStep = (idx) => {
+    setCompletedSteps((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    );
+  };
+
+  const totalSteps = whopData.course_steps ? whopData.course_steps.length : 0;
+  const percent = totalSteps
+    ? Math.round((completedSteps.length / totalSteps) * 100)
+    : 0;
   return (
     <div className="member-main">
       {/* HOME */}
@@ -186,11 +198,25 @@ export default function MemberMain({
       {activeTab === "Course" && whopData.modules?.course && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Course</h3>
+          <div className="course-progress-bar">
+            <div className="course-progress-fill" style={{ width: `${percent}%` }} />
+          </div>
+          <p className="course-progress-text">{percent}% complete</p>
           <ol className="course-step-list">
             {whopData.course_steps?.map((step, idx) => (
               <li key={idx} className="course-step">
                 <h4 className="course-step-title">{step.title}</h4>
+                {step.video_url && (
+                  <video src={step.video_url} controls className="course-video" />
+                )}
                 <p className="course-step-content">{step.content}</p>
+                <button
+                  type="button"
+                  className="course-complete-btn"
+                  onClick={() => toggleStep(idx)}
+                >
+                  {completedSteps.includes(idx) ? "Completed" : "Mark Complete"}
+                </button>
               </li>
             ))}
           </ol>

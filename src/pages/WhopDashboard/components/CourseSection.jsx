@@ -5,6 +5,7 @@ export default function CourseSection({
   isEditing,
   courseSteps,
   handleCourseChange,
+  handleVideoUpload,
   addStep,
   removeStep,
 }) {
@@ -42,6 +43,17 @@ export default function CourseSection({
                 value={step.content}
                 onChange={(e) => handleCourseChange(step.id, "content", e.target.value)}
               />
+              <input
+                type="file"
+                accept="video/*"
+                className="course-input"
+                onChange={(e) => handleVideoUpload(step.id, e.target.files[0])}
+              />
+              {step.isUploading && <div className="uploading-msg">Uploading...</div>}
+              {step.videoUrl && !step.isUploading && (
+                <video src={step.videoUrl} controls className="course-video-preview" />
+              )}
+              {step.error && <div className="course-error">{step.error}</div>}
             </div>
           ))}
           <button type="button" className="course-add-btn" onClick={addStep}>
@@ -53,6 +65,9 @@ export default function CourseSection({
           {steps.map((step, idx) => (
             <li key={idx} className="course-step">
               <h3 className="course-step-title">{step.title}</h3>
+              {step.videoUrl && (
+                <video src={step.videoUrl} controls className="course-video" />
+              )}
               <p className="course-step-content">{step.content}</p>
             </li>
           ))}

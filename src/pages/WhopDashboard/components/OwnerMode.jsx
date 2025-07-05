@@ -45,6 +45,7 @@ export default function OwnerMode({
   addFeature,
   editCourseSteps,
   handleCourseChange,
+  handleVideoUpload,
   removeStep,
   addStep,
   campaigns,
@@ -171,6 +172,7 @@ export default function OwnerMode({
             isEditing={isEditing}
             courseSteps={editCourseSteps}
             handleCourseChange={handleCourseChange}
+            handleVideoUpload={handleVideoUpload}
             removeStep={removeStep}
             addStep={addStep}
           />

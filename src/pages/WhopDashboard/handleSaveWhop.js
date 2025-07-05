@@ -79,6 +79,7 @@ export default async function handleSaveWhop(
     course_steps:       editCourseSteps.map(s => ({
                           title: s.title.trim(),
                           content: s.content.trim(),
+                          video_url: s.videoUrl || "",
                         })),
   };
 
@@ -178,8 +179,20 @@ export default async function handleSaveWhop(
               id: i + 1,
               title: s.title || "",
               content: s.content || "",
+              videoUrl: s.video_url || "",
+              isUploading: false,
+              error: "",
             }))
-          : [{ id: 1, title: "", content: "" }]
+          : [
+              {
+                id: 1,
+                title: "",
+                content: "",
+                videoUrl: "",
+                isUploading: false,
+                error: "",
+              },
+            ]
       );
 
       setError("");
