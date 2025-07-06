@@ -84,10 +84,14 @@ if (!password_verify($code, $record['code_hash'])) {
 $userId = (int)$record['user_id'];
 $conn->query("DELETE FROM two_factor_codes WHERE id=" . (int)$record['id']);
 
-$userRes = $conn->query("SELECT id, username, email, deposit_address FROM users4 WHERE id=$userId LIMIT 1");
+$userRes = $conn->query("SELECT id, username, email, deposit_address, is_verified FROM users4 WHERE id=$userId LIMIT 1");
 $user = $userRes ? $userRes->fetch_assoc() : null;
 
 if ($user) {
+    if ((int)($user['is_verified'] ?? 0) === 0) {
+        $conn->query("UPDATE users4 SET is_verified=1 WHERE id=$userId");
+        $user['is_verified'] = 1;
+    }
     if ($user['username'] === null || $user['username'] === '') {
         $newUsername = generateUniqueUsername($conn, $user['email']);
         $user['username'] = $newUsername;

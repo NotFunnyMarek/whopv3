@@ -37,7 +37,7 @@ if ($conn->connect_error) {
 }
 
 $emailEsc = $conn->real_escape_string($email);
-$res = $conn->query("SELECT id FROM users4 WHERE email='$emailEsc' LIMIT 1");
+$res = $conn->query("SELECT id FROM users4 WHERE email='$emailEsc' AND is_verified=1 LIMIT 1");
 $exists = $res && $res->num_rows > 0;
 $conn->close();
 

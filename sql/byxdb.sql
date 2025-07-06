@@ -45,7 +45,8 @@ CREATE TABLE `users4` (
   `deposit_secret` text DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
-  `accepted_terms` tinyint(1) NOT NULL DEFAULT 0
+  `accepted_terms` tinyint(1) NOT NULL DEFAULT 0,
+  `is_verified` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
