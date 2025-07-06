@@ -96,6 +96,13 @@ if ($res && $res->num_rows > 0) {
         $conn->close();
         exit;
     }
+    if ($mode !== 'register' && (int)$user['is_verified'] === 0) {
+        // prevent login if the account has not completed verification
+        http_response_code(404);
+        echo json_encode(['status' => 'not_verified']);
+        $conn->close();
+        exit;
+    }
     $userId = (int)$user['id'];
     $username = $user['username'];
 } elseif ($mode === 'register') {
