@@ -63,7 +63,7 @@ const handleGoogle = async (resp) => {
       body: JSON.stringify({ id_token: resp.credential }),
     });
     if (res.status === 404) {
-      navigate('/register');
+      showNotification({ type: 'error', message: 'Account not registered. Please create an account.' });
       return;
     }
     const data = await res.json();
@@ -95,7 +95,7 @@ const handleEmail = async () => {
       body: JSON.stringify({ email: email.trim() }),
     });
     if (res.status === 404) {
-      navigate('/register');
+      showNotification({ type: 'error', message: 'Account not registered. Please create an account.' });
       return;
     }
     const data = await res.json();
