@@ -1,5 +1,5 @@
 // File: /solana-monitor/withdraw.js
-// Musí platit, že v /solana-monitor/package.json máte "type": "module".
+// Musï¿½ platit, ï¿½e v /solana-monitor/package.json mï¿½te "type": "module".
 
 import fs from 'fs';
 import path from 'path';
@@ -16,12 +16,12 @@ import {
 } from '@solana/web3.js';
 
 async function main() {
-  // 1) Zpracování argumentù: [0] = cílová adresa, [1] = množství SOL
+  // 1) Zpracovï¿½nï¿½ argumentï¿½: [0] = cï¿½lovï¿½ adresa, [1] = mnoï¿½stvï¿½ SOL
   const args = process.argv.slice(2);
   if (args.length < 2) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Nedostateèný poèet argumentù. Použití: node withdraw.js <solAddress> <solAmount>'
+      message: 'Nedostateï¿½nï¿½ poï¿½et argumentï¿½. Pouï¿½itï¿½: node withdraw.js <solAddress> <solAmount>'
     }));
     process.exit(1);
   }
@@ -31,15 +31,15 @@ async function main() {
   if (isNaN(solAmount) || solAmount <= 0) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Neplatná hodnota solAmount'
+      message: 'Neplatnï¿½ hodnota solAmount'
     }));
     process.exit(1);
   }
 
-  // 2) __dirname pro ES modul + cesta ke klíèi v /solana-monitor
+  // 2) __dirname pro ES modul + cesta ke klï¿½ï¿½i v /solana-monitor
   const __filename = fileURLToPath(import.meta.url);
   const __dirname  = path.dirname(__filename);
-  // Teï se vždy hledá ve stejném adresáøi, kde je withdraw.js:
+  // Teï¿½ se vï¿½dy hledï¿½ ve stejnï¿½m adresï¿½ï¿½i, kde je withdraw.js:
   const keypairPath = path.join(__dirname, 'central-keypair.json');
 
   let secretKeyArray;
@@ -47,17 +47,17 @@ async function main() {
     const raw = fs.readFileSync(keypairPath, 'utf-8');
     secretKeyArray = JSON.parse(raw);
     if (!Array.isArray(secretKeyArray) || secretKeyArray.length !== 64) {
-      throw new Error('Soubor neobsahuje pole 64 èísel');
+      throw new Error('Soubor neobsahuje pole 64 ï¿½ï¿½sel');
     }
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Nelze naèíst central-keypair.json: ' + err.message
+      message: 'Nelze naï¿½ï¿½st central-keypair.json: ' + err.message
     }));
     process.exit(1);
   }
 
-  // 3) Vytvoøíme Keypair z naèteného pole
+  // 3) Vytvoï¿½ï¿½me Keypair z naï¿½tenï¿½ho pole
   let fromKeypair;
   try {
     const secretUint8 = new Uint8Array(secretKeyArray);
@@ -65,37 +65,37 @@ async function main() {
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Chyba pøi vytváøení Keypair: ' + err.message
+      message: 'Chyba pï¿½i vytvï¿½ï¿½enï¿½ Keypair: ' + err.message
     }));
     process.exit(1);
   }
 
-  // 4) Pøipojíme se k Solana Testnet
-  const connection = new Connection(clusterApiUrl('testnet'), 'confirmed');
+  // 4) Pï¿½ipojï¿½me se k Solana Testnet
+  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
-  // 5) Ovìøení cílové adresy
+  // 5) Ovï¿½ï¿½enï¿½ cï¿½lovï¿½ adresy
   let toPubkey;
   try {
     toPubkey = new PublicKey(toAddress);
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Neplatná Solana adresa: ' + err.message
+      message: 'Neplatnï¿½ Solana adresa: ' + err.message
     }));
     process.exit(1);
   }
 
-  // 6) Pøepoèet SOL na lamports
+  // 6) Pï¿½epoï¿½et SOL na lamports
   const lamports = Math.round(solAmount * LAMPORTS_PER_SOL);
   if (lamports <= 0) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Poèet lamports vyšel na nulu'
+      message: 'Poï¿½et lamports vyï¿½el na nulu'
     }));
     process.exit(1);
   }
 
-  // 7) Sestavíme a pošleme transakci
+  // 7) Sestavï¿½me a poï¿½leme transakci
   try {
     const transaction = new Transaction().add(
       SystemProgram.transfer({
