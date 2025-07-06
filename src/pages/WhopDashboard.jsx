@@ -590,7 +590,7 @@ export default function WhopDashboard() {
       features: validFeats.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
-        image_url: f.imageUrl
+        imageUrl: f.imageUrl
       }))
     };
 

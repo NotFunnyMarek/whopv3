@@ -61,7 +61,7 @@ export default async function handleSaveWhop(
     features:           validFeatures.map(f => ({
                           title:     f.title.trim(),
                           subtitle:  f.subtitle.trim(),
-                          image_url: f.imageUrl,
+                          imageUrl:  f.imageUrl,
                         })),
     // added for waitlist
     waitlist_enabled:   waitlistEnabled ? 1 : 0,
