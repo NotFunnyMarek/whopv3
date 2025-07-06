@@ -6,6 +6,7 @@ import { useNotifications } from '../components/NotificationProvider';
 import TwoFactorCodeInput from '../components/TwoFactorCodeInput';
 import '../styles/register.scss';
 import logobuynback from '../assets/buynback.png'
+import countries from '../utils/countries';
 
 const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
 
@@ -231,7 +232,7 @@ const Register = () => {
             <label>Country</label>
             <select value={country} onChange={(e) => setCountry(e.target.value)} required>
               <option value="">Select country</option>
-              {['United States', 'Canada', 'United Kingdom', 'Australia', 'Other'].map((c) => (
+              {countries.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
