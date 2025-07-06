@@ -75,7 +75,16 @@ $whichRet = 0;
 if ($whichRet === 0 && !empty($whichOut[0])) {
     $nodePath = trim($whichOut[0]);
 }
-$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
+
+// tady dáme správnou cestu:
+$scriptPath = '/solana-monitor/setup_deposit_addresses.js';
+if (!file_exists($scriptPath)) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'setup_deposit_addresses.js not found at ' . $scriptPath]);
+    $conn->close();
+    exit;
+}
+
 $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
 exec($cmd . " 2>&1", $outputLines, $returnVal);
 
