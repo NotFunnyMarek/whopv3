@@ -42,7 +42,10 @@ CREATE TABLE `users4` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `balance` decimal(16,8) NOT NULL DEFAULT 0.00000000,
   `deposit_address` varchar(44) DEFAULT NULL,
-  `deposit_secret` text DEFAULT NULL
+  `deposit_secret` text DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `accepted_terms` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

@@ -17,6 +17,10 @@ const Register = () => {
   const [method, setMethod] = useState(null); // 'google' or 'email'
   const [resendTimer, setResendTimer] = useState(0);
   const [code, setCode] = useState(Array(6).fill(''));
+  const [step, setStep] = useState('start'); // start -> info -> code
+  const [dob, setDob] = useState('');
+  const [country, setCountry] = useState('');
+  const [agree, setAgree] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,6 +70,7 @@ const Register = () => {
       if (res.ok && data.token) {
         setTwofaToken(data.token);
         setResendTimer(30);
+        setStep('info');
         showNotification({ type: 'info', message: 'Verification code sent.' });
       } else {
         showNotification({ type: 'error', message: data.message || 'Error' });
@@ -94,6 +99,7 @@ const Register = () => {
       if (res.ok && data.token) {
         setTwofaToken(data.token);
         setResendTimer(30);
+        setStep('info');
         showNotification({ type: 'info', message: 'Verification code sent.' });
       } else {
         showNotification({ type: 'error', message: data.message || 'Error' });
@@ -122,6 +128,40 @@ const Register = () => {
         setTwofaToken(data.token);
         setResendTimer(30);
         showNotification({ type: 'info', message: 'Verification code sent.' });
+      } else {
+        showNotification({ type: 'error', message: data.message || 'Error' });
+      }
+    } catch (err) {
+      showNotification({ type: 'error', message: err.message });
+    }
+  };
+
+  const handleInfoSubmit = async (e) => {
+    e.preventDefault();
+    if (!dob || !country || !agree) {
+      showNotification({ type: 'error', message: 'Please complete all fields' });
+      return;
+    }
+    const age = (Date.now() - new Date(dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    if (age < 13) {
+      showNotification({ type: 'error', message: 'You must be at least 13 years old' });
+      return;
+    }
+    try {
+      const res = await fetch('https://app.byxbot.com/php/update_registration.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          token: twofaToken,
+          date_of_birth: dob,
+          country,
+          accepted_terms: true,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        setStep('code');
       } else {
         showNotification({ type: 'error', message: data.message || 'Error' });
       }
@@ -163,7 +203,7 @@ const Register = () => {
     className="auth-logo"
   />
         <h2>Sign up to Buy&Back</h2>
-        {!twofaToken ? (
+        {step === 'start' ? (
           <>
             <div className="auth-form">
               <input
@@ -178,6 +218,46 @@ const Register = () => {
             </div>
             <div id="google-btn" className="google-btn"></div>
           </>
+        ) : step === 'info' ? (
+          <form onSubmit={handleInfoSubmit} className="auth-form">
+            <label>Date of Birth</label>
+            <input
+              type="date"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              required
+            />
+            <label>Country</label>
+            <select value={country} onChange={(e) => setCountry(e.target.value)} required>
+              <option value="">Select country</option>
+              {['United States', 'Canada', 'United Kingdom', 'Australia', 'Other'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <label className="checkbox-container">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+                required
+              />
+              <span>
+                I agree to the{' '}
+                <a href="/tos" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </a>
+              </span>
+            </label>
+            <button type="submit" className="btn-primary">
+              Continue
+            </button>
+          </form>
         ) : (
           <form onSubmit={handleSubmit} className="auth-form">
             <label>2FA Code</label>
