@@ -233,7 +233,15 @@ export default function LandingPage({
           <div className="features-grid">
             {features.map((f, i) => (
               <div key={i} className="card feature glass">
-                <FaCheckCircle className="feature-icon" />
+                {f.image_url ? (
+                  <img
+                    src={f.image_url}
+                    alt={f.title}
+                    className="feature-image"
+                  />
+                ) : (
+                  <FaCheckCircle className="feature-icon" />
+                )}
                 <h3 className="feature-title">{f.title}</h3>
                 <p className="feature-desc">{f.subtitle}</p>
               </div>
