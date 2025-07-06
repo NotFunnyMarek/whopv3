@@ -29,6 +29,11 @@ export default function LandingPage({
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ text: "", rating: 5 });
 
+  function formatUrl(url) {
+    if (!url) return "";
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  }
+
   // Delay entrance animation
   useEffect(() => {
     setTimeout(() => setLoaded(true), 300);
@@ -132,7 +137,7 @@ export default function LandingPage({
                   : <><FaUserPlus /> Join</>}
             </button>
             {website_url && (
-              <a href={website_url} target="_blank" rel="noreferrer" className="btn outline">
+              <a href={formatUrl(website_url)} target="_blank" rel="noreferrer" className="btn outline">
                 <FaGlobe /> Website
               </a>
             )}
@@ -141,9 +146,9 @@ export default function LandingPage({
             <FaUsers /> {members_count} members
           </div>
           <div className="hero-socials">
-            {website_url && <a href={website_url}><FaGlobe /></a>}
-            {socials.instagram && <a href={socials.instagram}><FaInstagram /></a>}
-            {socials.discord && <a href={socials.discord}><FaDiscord /></a>}
+            {website_url && <a href={formatUrl(website_url)}><FaGlobe /></a>}
+            {socials.instagram && <a href={formatUrl(socials.instagram)}><FaInstagram /></a>}
+            {socials.discord && <a href={formatUrl(socials.discord)}><FaDiscord /></a>}
           </div>
         </div>
       </div>
@@ -260,9 +265,9 @@ export default function LandingPage({
               @{slug} • Joined {new Date(created_at).toLocaleDateString()}
             </p>
             <div className="about-socials">
-              {website_url && <a href={website_url}><FaGlobe /></a>}
-              {socials.instagram && <a href={socials.instagram}><FaInstagram /></a>}
-              {socials.discord && <a href={socials.discord}><FaDiscord /></a>}
+              {website_url && <a href={formatUrl(website_url)}><FaGlobe /></a>}
+              {socials.instagram && <a href={formatUrl(socials.instagram)}><FaInstagram /></a>}
+              {socials.discord && <a href={formatUrl(socials.discord)}><FaDiscord /></a>}
             </div>
             <p className="about-bio">{about_bio}</p>
           </div>

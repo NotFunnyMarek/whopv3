@@ -40,6 +40,11 @@ const Section = ({ children, className }) => {
   );
 };
 
+function formatUrl(url) {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 export default function LandingPage({ data = {} }) {
   const {
     heroImage = "https://via.placeholder.com/600x300",
@@ -132,11 +137,31 @@ export default function LandingPage({ data = {} }) {
             <h3>{about.name}</h3>
             <p className="joined">{about.joined}</p>
             <div className="socials">
-              {about.socials?.instagram && <FaInstagram />}
-              {about.socials?.tiktok && <FaTiktok />}
-              {about.socials?.website && <FaGlobe />}
-              {about.socials?.twitter && <FaTwitter />}
-              {about.socials?.youtube && <FaYoutube />}
+              {about.socials?.instagram && (
+                <a href={formatUrl(about.socials.instagram)}>
+                  <FaInstagram />
+                </a>
+              )}
+              {about.socials?.tiktok && (
+                <a href={formatUrl(about.socials.tiktok)}>
+                  <FaTiktok />
+                </a>
+              )}
+              {about.socials?.website && (
+                <a href={formatUrl(about.socials.website)}>
+                  <FaGlobe />
+                </a>
+              )}
+              {about.socials?.twitter && (
+                <a href={formatUrl(about.socials.twitter)}>
+                  <FaTwitter />
+                </a>
+              )}
+              {about.socials?.youtube && (
+                <a href={formatUrl(about.socials.youtube)}>
+                  <FaYoutube />
+                </a>
+              )}
             </div>
             <p className="bio">{about.bio}</p>
           </div>
