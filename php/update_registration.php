@@ -1,5 +1,5 @@
 <?php
-// update_registration.php - save additional registration info
+// update_registration.php - save additional registration info + generate deposit address
 
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Credentials: true");
@@ -60,12 +60,39 @@ $userId = (int)$res->fetch_assoc()['user_id'];
 $dobEsc = $conn->real_escape_string(date('Y-m-d', $ts));
 $countryEsc = $conn->real_escape_string($country);
 $sql = "UPDATE users4 SET date_of_birth='$dobEsc', country='$countryEsc', accepted_terms=1 WHERE id=$userId";
-if ($conn->query($sql) === TRUE) {
-    echo json_encode(['status' => 'success']);
-} else {
+if (!$conn->query($sql)) {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Update failed: ' . $conn->error]);
+    $conn->close();
+    exit;
+}
+
+// === Spusť setup_deposit_addresses.js ===
+$nodePath   = '/usr/bin/node';
+$whichOut = [];
+$whichRet = 0;
+@exec('which node', $whichOut, $whichRet);
+if ($whichRet === 0 && !empty($whichOut[0])) {
+    $nodePath = trim($whichOut[0]);
+}
+$scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
+$cmd = escapeshellcmd("$nodePath $scriptPath $userId");
+exec($cmd . " 2>&1", $outputLines, $returnVal);
+
+if ($returnVal !== 0) {
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Error generating deposit address: ' . implode("\n", $outputLines)
+    ]);
+    $conn->close();
+    exit;
 }
 
 $conn->close();
 
+echo json_encode([
+    'status' => 'success',
+    'message' => 'User info and deposit address updated',
+    'user_id' => $userId
+]);
