@@ -245,7 +245,7 @@ const Register = () => {
                 onChange={(e) => setAgree(e.target.checked)}
                 required
               />
-              <span>
+              <span className='tosc'>
                 I agree to the{' '}
                 <a href="/tos" target="_blank" rel="noreferrer">
                   Terms of Service
