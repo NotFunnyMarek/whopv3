@@ -130,6 +130,22 @@ if ($res && $res->num_rows > 0) {
     $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
     $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
     exec($cmd . " 2>&1", $outputLines, $returnVal);
+    if ($returnVal === 0) {
+        $resCheck = $conn->query("SELECT deposit_address FROM users4 WHERE id = $userId LIMIT 1");
+        if (!$resCheck || $resCheck->num_rows === 0 || !$resCheck->fetch_assoc()['deposit_address']) {
+            $conn->query("DELETE FROM users4 WHERE id = $userId");
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Deposit address not generated']);
+            $conn->close();
+            exit;
+        }
+    } else {
+        $conn->query("DELETE FROM users4 WHERE id = $userId");
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => 'Error generating deposit address: ' . implode("\n", $outputLines)]);
+        $conn->close();
+        exit;
+    }
 } else {
     // login attempt with unregistered email
     http_response_code(404);

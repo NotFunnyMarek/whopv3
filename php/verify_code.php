@@ -109,6 +109,20 @@ if ($user) {
         $scriptPath = __DIR__ . '/../solana-monitor/setup_deposit_addresses.js';
         $cmd = escapeshellcmd("$nodePath $scriptPath $userId");
         exec($cmd . " 2>&1", $out, $ret);
+        if ($ret === 0) {
+            $resCheck = $conn->query("SELECT deposit_address FROM users4 WHERE id = $userId LIMIT 1");
+            if (!$resCheck || $resCheck->num_rows === 0 || !$resCheck->fetch_assoc()['deposit_address']) {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'Deposit address not generated']);
+                $conn->close();
+                exit;
+            }
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'Error generating deposit address: ' . implode("\n", $out)]);
+            $conn->close();
+            exit;
+        }
     }
 }
 

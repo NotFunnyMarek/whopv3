@@ -51,16 +51,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $res = $conn->query($sql);
     if ($res && $res->num_rows > 0) {
         $row = $res->fetch_assoc();
-        // If deposit_address is NULL or empty, return empty string
         $deposit_address = $row["deposit_address"] ?: '';
         $balance = number_format(floatval($row["balance"]), 8, '.', '');
-        echo json_encode([
-            "status" => "success",
-            "data"   => [
-                "deposit_address" => $deposit_address,
-                "balance"         => $balance
-            ]
-        ]);
+        if ($deposit_address === '') {
+            http_response_code(500);
+            echo json_encode([
+                "status"  => "error",
+                "message" => "Deposit address not generated"
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "success",
+                "data"   => [
+                    "deposit_address" => $deposit_address,
+                    "balance"         => $balance
+                ]
+            ]);
+        }
     } else {
         http_response_code(500);
         echo json_encode([
