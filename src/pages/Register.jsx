@@ -56,28 +56,9 @@ const Register = () => {
   }, [resendTimer]);
 
   const handleGoogle = async (resp) => {
-    showNotification({ type: 'info', message: 'Processing...' });
     setIdToken(resp.credential);
     setMethod('google');
-    try {
-      const res = await fetch('https://app.byxbot.com/php/google_start.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ id_token: resp.credential, mode: 'register' }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setTwofaToken(data.token);
-        setResendTimer(30);
-        setStep('info');
-        showNotification({ type: 'info', message: 'Verification code sent.' });
-      } else {
-        showNotification({ type: 'error', message: data.message || 'Error' });
-      }
-    } catch (err) {
-      showNotification({ type: 'error', message: err.message });
-    }
+    setStep('info');
   };
 
   const handleEmail = async () => {
@@ -99,22 +80,7 @@ const Register = () => {
         showNotification({ type: 'error', message: 'Email already registered, please login' });
         return;
       }
-
-      const res = await fetch('https://app.byxbot.com/php/google_start.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim(), mode: 'register' }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        setTwofaToken(data.token);
-        setResendTimer(30);
-        setStep('info');
-        showNotification({ type: 'info', message: 'Verification code sent.' });
-      } else {
-        showNotification({ type: 'error', message: data.message || 'Error' });
-      }
+      setStep('info');
     } catch (err) {
       showNotification({ type: 'error', message: err.message });
     }
@@ -159,12 +125,36 @@ const Register = () => {
       return;
     }
     try {
+      let token = twofaToken;
+      if (!token) {
+        const start = await fetch('https://app.byxbot.com/php/google_start.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(
+            method === 'google'
+              ? { id_token: idToken, mode: 'register' }
+              : { email: idToken, mode: 'register' }
+          ),
+        });
+        const startData = await start.json();
+        if (start.ok && startData.token) {
+          setTwofaToken(startData.token);
+          setResendTimer(30);
+          token = startData.token;
+          showNotification({ type: 'info', message: 'Verification code sent.' });
+        } else {
+          showNotification({ type: 'error', message: startData.message || 'Error' });
+          return;
+        }
+      }
+
       const res = await fetch('https://app.byxbot.com/php/update_registration.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          token: twofaToken,
+          token,
           date_of_birth: dob,
           country,
           accepted_terms: true,
