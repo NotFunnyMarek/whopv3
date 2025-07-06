@@ -89,6 +89,17 @@ const Register = () => {
     setIdToken(email.trim());
     setMethod('email');
     try {
+      const check = await fetch('https://app.byxbot.com/php/check_email.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const checkData = await check.json();
+      if (check.ok && checkData.exists) {
+        showNotification({ type: 'error', message: 'Email already registered, please login' });
+        return;
+      }
+
       const res = await fetch('https://app.byxbot.com/php/google_start.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
