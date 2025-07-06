@@ -120,6 +120,13 @@
 .feature-card {
   text-align: center;
 }
+.feature-card .feature-image {
+  width: 100%;
+  height: 10rem;
+  object-fit: cover;
+  border-radius: var(--radius-base);
+  margin-bottom: var(--spacing-sm);
+}
 .feature-card .icon {
   font-size: 2rem;
   color: var(--primary-color);
