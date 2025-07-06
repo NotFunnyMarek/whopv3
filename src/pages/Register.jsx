@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../components/NotificationProvider';
 import TwoFactorCodeInput from '../components/TwoFactorCodeInput';
 import '../styles/register.scss';
+import logobuynback from '../assets/buynback.png'
 
 const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.googleusercontent.com'; // replace with real client ID
 
@@ -156,18 +157,23 @@ const Register = () => {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>Register</h2>
+        <img
+    src={logobuynback}
+    alt="Logo"
+    className="auth-logo"
+  />
+        <h2>Sign up to Buy&Back</h2>
         {!twofaToken ? (
           <>
             <div className="auth-form">
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="join@buynback.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <button type="button" className="btn-primary" onClick={handleEmail}>
-                Send Code
+                Continue
               </button>
             </div>
             <div id="google-btn" className="google-btn"></div>

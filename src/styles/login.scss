@@ -12,16 +12,16 @@
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
+  background: #f5f5f5;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 0px 24px rgba(0, 0, 0, 0.08);
   padding: var(--spacing-xl) var(--spacing-lg);
   color: var(--text-color);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
   text-align: center;
+  border: none;
 }
 
 .auth-form {
@@ -30,40 +30,49 @@
   gap: var(--spacing-md);
 }
 
-.auth-form label {
-  font-size: 0.875rem;
-  text-align: left;
-}
-
 .auth-form input {
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-base);
-  border: 1px solid var(--border-color);
-  background: var(--surface-color);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
 }
 
 .auth-form .btn-primary {
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-base);
-  background: var(--primary-color);
-  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
   font-weight: 600;
   border: none;
+  font-size: 14px;
   cursor: pointer;
-}
+  transition: background 0.2s;
 
-.auth-form .btn-resend {
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-base);
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-
-  &:disabled {
-    color: var(--muted-color);
-    cursor: not-allowed;
+  &:hover {
+    background: #1d4ed8;
   }
 }
+
+.google-btn {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.google-btn > div {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center;
+}
+
+.auth-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 20px;
+  margin-bottom: -20px;
+}
+
 
 .switch-link {
   text-align: center;
@@ -79,14 +88,14 @@
 .twofa-input {
   display: flex;
   justify-content: center;
-  gap: var(--spacing-xs);
+  gap: 8px;
 }
 .twofa-input input {
   width: 40px;
   height: 40px;
   text-align: center;
   font-size: 1.25rem;
-  border-radius: var(--radius-base);
-  border: 1px solid var(--border-color);
-  background: var(--surface-color);
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
 }
