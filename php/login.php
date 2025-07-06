@@ -42,7 +42,7 @@ if (empty($username) || empty($password)) {
 
 // Find the user by username or email
 $sql = "
-  SELECT id, username, email, password_hash
+  SELECT id, username, email, password_hash, is_verified
   FROM users4
   WHERE username = '$username'
      OR email = '$username'
@@ -63,6 +63,13 @@ $hash = $user['password_hash'];
 if (!password_verify($password, $hash)) {
     http_response_code(401);
     echo json_encode(["status" => "error", "message" => "Invalid login credentials"]);
+    $conn->close();
+    exit;
+}
+
+if ((int)$user['is_verified'] !== 1) {
+    http_response_code(403);
+    echo json_encode(["status" => "error", "message" => "Account not verified"]);
     $conn->close();
     exit;
 }

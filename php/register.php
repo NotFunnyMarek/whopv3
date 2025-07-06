@@ -99,9 +99,9 @@ if ($resUsername && $resUsername->num_rows > 0) {
 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 $insertSql = "
   INSERT INTO users4
-    (username, email, password_hash, balance)
+    (username, email, password_hash, balance, is_verified)
   VALUES
-    ('$username', '$email', '$hashedPassword', 0.00000000)
+    ('$username', '$email', '$hashedPassword', 0.00000000, 1)
 ";
 if ($conn->query($insertSql) !== TRUE) {
     http_response_code(500);

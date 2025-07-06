@@ -87,15 +87,15 @@ if ($conn->connect_error) {
 }
 
 $emailEsc = $conn->real_escape_string($email);
-$res = $conn->query("SELECT id, username FROM users4 WHERE email='$emailEsc' LIMIT 1");
+$res = $conn->query("SELECT id, username, is_verified FROM users4 WHERE email='$emailEsc' LIMIT 1");
 if ($res && $res->num_rows > 0) {
-    if ($mode === 'register') {
+    $user = $res->fetch_assoc();
+    if ($mode === 'register' && (int)$user['is_verified'] === 1) {
         http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Email already registered, please login']);
         $conn->close();
         exit;
     }
-    $user = $res->fetch_assoc();
     $userId = (int)$user['id'];
     $username = $user['username'];
 } elseif ($mode === 'register') {
@@ -104,7 +104,7 @@ if ($res && $res->num_rows > 0) {
     $usernameEsc = $conn->real_escape_string($username);
     $dummyPass = bin2hex(random_bytes(16));
     $dummyHash = $conn->real_escape_string(password_hash($dummyPass, PASSWORD_BCRYPT));
-    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance) VALUES ('$usernameEsc', '$emailEsc', '$dummyHash', 0)";
+    $insertSql = "INSERT INTO users4 (username, email, password_hash, balance, is_verified) VALUES ('$usernameEsc', '$emailEsc', '$dummyHash', 0, 0)";
     if ($conn->query($insertSql) !== TRUE) {
         http_response_code(500);
         echo json_encode(['status' => 'error', 'message' => 'Error creating user: ' . $conn->error]);
