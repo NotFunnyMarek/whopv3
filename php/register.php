@@ -141,6 +141,30 @@ if ($returnVal !== 0) {
     exit;
 }
 
+// Double-check that the deposit address was actually created
+$resCheck = $conn->query("SELECT deposit_address FROM users4 WHERE id = $newUserId LIMIT 1");
+if (!$resCheck || $resCheck->num_rows === 0) {
+    $conn->query("DELETE FROM users4 WHERE id = $newUserId");
+    http_response_code(500);
+    echo json_encode([
+        "status"  => "error",
+        "message" => "Deposit address not generated"
+    ]);
+    $conn->close();
+    exit;
+}
+$rowCheck = $resCheck->fetch_assoc();
+if (!$rowCheck['deposit_address']) {
+    $conn->query("DELETE FROM users4 WHERE id = $newUserId");
+    http_response_code(500);
+    echo json_encode([
+        "status"  => "error",
+        "message" => "Deposit address not generated"
+    ]);
+    $conn->close();
+    exit;
+}
+
 // 10) All good — return success
 http_response_code(201);
 echo json_encode([
