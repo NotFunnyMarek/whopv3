@@ -7,7 +7,10 @@ export default function DiscordAccessSetup() {
       <ol>
         <li>Invite the bot to your Discord server using the link from your dashboard.</li>
         <li>Run the `/setup` command in your server.</li>
-        <li>The bot will DM you a six digit code. Run `/setup <code>` to finish.</li>
+        <li>
+          The bot will DM you a six digit code. Run
+          <code>/setup &lt;code&gt;</code> to finish.
+        </li>
       </ol>
       <p>Once completed, this page will show your connected server.</p>
     </div>
