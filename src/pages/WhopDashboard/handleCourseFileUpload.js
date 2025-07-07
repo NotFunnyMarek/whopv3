@@ -29,7 +29,7 @@ export default async function handleCourseFileUpload(
 
   try {
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/dv6igcvz8/upload`,
+      `https://api.cloudinary.com/v1_1/dv6igcvz8/auto/upload`,
       {
         method: "POST",
         body: formData,
