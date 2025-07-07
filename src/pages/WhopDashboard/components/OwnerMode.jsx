@@ -157,15 +157,17 @@ export default function OwnerMode({
         />
 
         {/* Features section */}
-        <FeaturesSection
-          whopData={whopData}
-          isEditing={isEditing}
-          editFeatures={editFeatures}
-          handleFeatChange={handleFeatChange}
-          handleImageChange={handleImageChange}
-          removeFeature={removeFeature}
-          addFeature={addFeature}
-        />
+        {editModules.text && (
+          <FeaturesSection
+            whopData={whopData}
+            isEditing={isEditing}
+            editFeatures={editFeatures}
+            handleFeatChange={handleFeatChange}
+            handleImageChange={handleImageChange}
+            removeFeature={removeFeature}
+            addFeature={addFeature}
+          />
+        )}
 
         {editModules.course && (
           <CourseSection
