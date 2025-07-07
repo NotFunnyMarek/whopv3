@@ -1,0 +1,94 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .waitlist-modal {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    width: 90%;
+    max-width: 480px;
+    position: relative;
+    box-shadow: var(--shadow);
+
+    .modal-close-btn {
+      position: absolute;
+      top: var(--spacing-sm);
+      right: var(--spacing-sm);
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--muted-color);
+      transition: color var(--transition);
+      &:hover {
+        color: var(--error-color);
+      }
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--text-color);
+    }
+
+    .waitlist-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+        color: var(--text-color);
+
+        input {
+          margin-top: var(--spacing-xs);
+          padding: var(--spacing-xs);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-base);
+          font-size: 1rem;
+        }
+      }
+
+      .error-text {
+        color: var(--error-color);
+        font-size: 0.875rem;
+      }
+
+      .btn-submit-modal {
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm);
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+        }
+        &:disabled {
+          background: var(--border-color);
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay .waitlist-modal {
+    padding: var(--spacing-md);
+  }
+}

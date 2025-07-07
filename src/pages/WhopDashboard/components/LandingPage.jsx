@@ -1,6 +1,7 @@
 // src/pages/WhopDashboard/components/LandingPage.jsx
 
 import React, { useState, useEffect } from "react";
+import WaitlistModal from "./WaitlistModal";
 import {
   FaUsers,
   FaUserPlus,
@@ -23,8 +24,9 @@ export default function LandingPage({
   showNotification,
 }) {
   const [loaded, setLoaded] = useState(false);
-  const [answers, setAnswers] = useState([]);
   const [requested, setRequested] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [submittingWaitlist, setSubmittingWaitlist] = useState(false);
   const [faqOpen, setFaqOpen] = useState({});
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ text: "", rating: 5 });
@@ -39,13 +41,12 @@ export default function LandingPage({
     setTimeout(() => setLoaded(true), 300);
   }, []);
 
-  // Initialize waitlist answers + requested
+  // Initialize waitlist requested state
   useEffect(() => {
     if (!whopData) return;
     setRequested(
       Boolean(whopData.is_pending_waitlist || whopData.is_accepted_waitlist)
     );
-    setAnswers((whopData.waitlist_questions || []).map(() => ""));
   }, [whopData]);
 
   // Load reviews when whop changes
@@ -95,17 +96,29 @@ export default function LandingPage({
   const featuresTitle = landing_texts.features_title || "Here's what you'll get";
   const aboutTitle = landing_texts.about_title || "Learn about me";
   const faqTitle = landing_texts.faq_title || "Frequently asked questions";
-  async function handleWaitlistClick() {
+  function handleWaitlistClick() {
     if (price > 0 && user_balance < price) {
       showNotification({ type: "error", message: "Insufficient balance." });
       return;
     }
+    if (whopData.waitlist_questions && whopData.waitlist_questions.length > 0) {
+      setShowWaitlistModal(true);
+    } else {
+      submitWaitlist([]);
+    }
+  }
+
+  async function submitWaitlist(ans) {
+    setSubmittingWaitlist(true);
     try {
-      await handleRequestWaitlist(id, answers);
+      await handleRequestWaitlist(id, ans);
       showNotification({ type: "success", message: "Request submitted." });
       setRequested(true);
+      setShowWaitlistModal(false);
     } catch (e) {
       showNotification({ type: "error", message: e.message || "Error." });
+    } finally {
+      setSubmittingWaitlist(false);
     }
   }
 
@@ -348,6 +361,14 @@ export default function LandingPage({
           </div>
         </div>
       </section>
+      {showWaitlistModal && (
+        <WaitlistModal
+          questions={whopData.waitlist_questions || []}
+          onSubmit={submitWaitlist}
+          onClose={() => setShowWaitlistModal(false)}
+          submitting={submittingWaitlist}
+        />
+      )}
     </div>
   );
 }
