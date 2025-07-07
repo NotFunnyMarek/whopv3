@@ -55,6 +55,7 @@ export default function Setup() {
       chat: false,
       earn: false,
       discord: false,
+      discord_access: false,
       course: false,
       text: true,
     }
@@ -363,11 +364,12 @@ export default function Setup() {
         <div className="setup-section">
           <h2>Enable Modules</h2>
           {[
-            ["chat", "Chat"],
-            ["earn", "Earn"],
-            ["discord", "Discord Access"],
-            ["course", "Course"],
-            ["text", "Text Features"],
+          ["chat", "Chat"],
+          ["earn", "Earn"],
+          ["discord", "Discord"],
+          ["discord_access", "Discord Access"],
+          ["course", "Course"],
+          ["text", "Text Features"],
           ].map(([key, label]) => (
             <label key={key} className="setup-checkbox-label">
               <input

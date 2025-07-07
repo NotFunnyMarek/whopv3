@@ -8,7 +8,8 @@ export default function OwnerModules({ editModules, setEditModules, isEditing })
   const labels = {
     chat: "Chat",
     earn: "Earn",
-    discord: "Discord Access",
+    discord: "Discord",
+    discord_access: "Discord Access",
     course: "Course",
     text: "Text Features",
   };
