@@ -20,7 +20,7 @@ export default function DiscordSetupSection({ isEditing }) {
   }, []);
 
   const inviteUrl =
-    "https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scope=bot+applications.commands";
+    `https://discord.com/oauth2/authorize?client_id=${process.env.REACT_APP_DISCORD_CLIENT_ID}&permissions=8&scope=bot+applications.commands`;
 
   return (
     <div className="discord-setup-section">
