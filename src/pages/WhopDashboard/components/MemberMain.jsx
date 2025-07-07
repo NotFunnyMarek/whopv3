@@ -184,6 +184,17 @@ export default function MemberMain({
         </div>
       )}
 
+      {/* DISCORD */}
+      {activeTab === "Discord" && whopData.modules?.discord_access && (
+        <div className="member-tab-content">
+          <h3 className="member-subtitle">Discord Access</h3>
+          <p className="member-text">
+            Link your Discord account to join the server.
+          </p>
+          <a className="primary-btn" href="/discord-access">Get Access</a>
+        </div>
+      )}
+
       {/* COURSE */}
       {activeTab === "Course" && whopData.modules?.course && (
         <div className="member-tab-content">

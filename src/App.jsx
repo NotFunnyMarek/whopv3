@@ -23,6 +23,8 @@ const Profile              = lazy(() => import("./pages/Profile"));
 const Balances             = lazy(() => import("./pages/Balances"));
 const Memberships          = lazy(() => import("./pages/Memberships"));
 const Payments             = lazy(() => import("./pages/Payments"));
+const DiscordAccess        = lazy(() => import("./pages/DiscordAccess"));
+const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 
 const App = () => {
   return (
@@ -236,6 +238,38 @@ const App = () => {
                   <Sidebar />
                   <main className="main-content">
                     <Payments />
+                  </main>
+                  <BottomBar />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Discord Access */}
+          <Route
+            path="/discord-access"
+            element={
+              <ProtectedRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <main className="main-content">
+                    <DiscordAccess />
+                  </main>
+                  <BottomBar />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Discord Access Setup */}
+          <Route
+            path="/dashboard/discord-setup"
+            element={
+              <ProtectedRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <main className="main-content">
+                    <DiscordAccessSetup />
                   </main>
                   <BottomBar />
                 </div>
