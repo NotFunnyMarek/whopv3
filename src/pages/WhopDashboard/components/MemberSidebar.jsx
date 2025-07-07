@@ -7,6 +7,7 @@ import {
   FaComments,
   FaDollarSign,
   FaTools,
+  FaDiscord,
   FaSignOutAlt
 } from "react-icons/fa";
 import "../../../styles/whop-dashboard/_member.scss";
@@ -58,6 +59,14 @@ export default function MemberSidebar({
             onClick={() => setActiveTab("Earn")}
           >
             <FaDollarSign /> Earn
+          </button>
+        )}
+        {whopData.modules?.discord_access && (
+          <button
+            className={`nav-button ${activeTab === "Discord" ? "active" : ""}`}
+            onClick={() => setActiveTab("Discord")}
+          >
+            <FaDiscord /> Discord
           </button>
         )}
         {whopData.modules?.course && (

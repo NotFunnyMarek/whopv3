@@ -68,3 +68,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Discord Access Bot
+
+The `discord-bot` folder contains a minimal bot that links a Discord server with the platform. Install dependencies and configure environment variables using `.env` or `.env.example`.
+
+Run the bot with:
+
+```bash
+cd discord-bot
+npm install
+node bot.js
+```
+
+Invite the bot to your server and execute `/setup` to receive a verification code.
