@@ -82,3 +82,15 @@ node bot.js
 ```
 
 Invite the bot to your server and execute `/setup` to receive a verification code.
+
+## Client Environment Variables
+
+The React frontend uses `REACT_APP_DISCORD_CLIENT_ID` to generate Discord
+authorization links. Create an `.env` file in the project root containing:
+
+```
+REACT_APP_DISCORD_CLIENT_ID=your_application_id
+```
+
+Restart the development server after adding the file so the variable is picked
+up.

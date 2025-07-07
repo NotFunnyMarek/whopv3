@@ -7,7 +7,8 @@ export default function DiscordAccess() {
   const handleConnect = async () => {
     try {
       showNotification({ type: "info", message: "Redirecting to Discord..." });
-      window.location.href = "https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=identify+guilds.join";
+      const clientId = process.env.REACT_APP_DISCORD_CLIENT_ID;
+      window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&scope=identify+guilds.join`;
     } catch (err) {
       showNotification({ type: "error", message: "Failed to start Discord OAuth" });
     }
