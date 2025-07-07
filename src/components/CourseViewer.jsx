@@ -69,7 +69,12 @@ export default function CourseViewer({ steps = [], initialCompleted = [], whopId
           (step.file_type || "").startsWith("video/") || step.video_url ? (
             <video src={step.file_url || step.video_url} controls className="course-video" />
           ) : step.file_type === "application/pdf" ? (
-            <embed src={step.file_url} type="application/pdf" className="course-pdf" />
+            <iframe
+              src={step.file_url}
+              title="Course PDF"
+              className="course-pdf"
+              frameBorder="0"
+            />
           ) : (
             <a href={step.file_url} target="_blank" rel="noopener noreferrer" download>
               Download File
