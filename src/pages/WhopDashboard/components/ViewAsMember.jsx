@@ -25,7 +25,8 @@ export default function ViewAsMember({
   setActiveTab,
   memberLoading,
   handleLeave,
-  onBack
+  onBack,
+  setWhopData
 }) {
   return (
     <>
@@ -51,6 +52,7 @@ export default function ViewAsMember({
         campaigns={campaigns}
         campaignsLoading={campaignsLoading}
         campaignsError={campaignsError}
+        setWhopData={setWhopData}
       />
     </>
   );

@@ -13,6 +13,7 @@ export default function MemberMain({
   campaignsLoading,
   campaignsError,
   onSelectCampaign,
+  setWhopData,
 }) {
   return (
     <div className="member-main">
@@ -191,6 +192,10 @@ export default function MemberMain({
             steps={whopData.course_steps || []}
             initialCompleted={whopData.course_progress || []}
             whopId={whopData.id}
+            onProgressChange={(arr) =>
+              typeof setWhopData === "function" &&
+              setWhopData((prev) => ({ ...prev, course_progress: arr }))
+            }
           />
         </div>
       )}

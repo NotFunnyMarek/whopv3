@@ -14,6 +14,7 @@ export default function MemberMode({
   setActiveTab,
   memberLoading,
   handleLeave,
+  setWhopData,
 }) {
   // State for the selected campaign (when the user clicks in the "Earn" tab)
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -63,6 +64,7 @@ export default function MemberMode({
         campaignsLoading={campaignsLoading}
         campaignsError={campaignsError}
         onSelectCampaign={setSelectedCampaign}
+        setWhopData={setWhopData}
       />
     </div>
   );
