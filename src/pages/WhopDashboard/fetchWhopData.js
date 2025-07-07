@@ -67,13 +67,19 @@ export default async function fetchWhopData(
         }))
       );
 
+      const toAbsolute = url => {
+        if (!url) return "";
+        if (/^https?:\/\//i.test(url)) return url;
+        return `https://app.byxbot.com/${url.replace(/^\/*/, "")}`;
+      };
+
       setEditCourseSteps(
         Array.isArray(data.course_steps) && data.course_steps.length
           ? data.course_steps.map((s, i) => ({
               id: i + 1,
               title: s.title || "",
               content: s.content || "",
-              fileUrl: s.file_url || s.video_url || "",
+              fileUrl: toAbsolute(s.file_url || s.video_url || ""),
               fileType: s.file_type || (s.video_url ? "video/mp4" : ""),
               isUploading: false,
               error: "",
