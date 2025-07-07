@@ -116,15 +116,19 @@ export default function BannerSetup() {
   const handleContinue = async () => {
     if (!bannerUrl) return;
 
+    const features = Array.isArray(prevWhopData.features)
+      ? prevWhopData.features.map((f) => ({
+          title: f.title,
+          subtitle: f.subtitle,
+          imageUrl: f.imageUrl,
+        }))
+      : [];
+
     const whopPayload = {
       name: prevWhopData.name,
       description: prevWhopData.description,
       slug: prevWhopData.slug,
-      features: prevWhopData.features.map((f) => ({
-        title: f.title,
-        subtitle: f.subtitle,
-        imageUrl: f.imageUrl,
-      })),
+      features,
       logoUrl: prevWhopData.logoUrl || "",
       bannerUrl,
       price: prevWhopData.price || 0.0,
