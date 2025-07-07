@@ -53,7 +53,12 @@ export default function CourseSection({
                 step.fileType.startsWith("video/") ? (
                   <video src={step.fileUrl} controls className="course-video-preview" />
                 ) : step.fileType === "application/pdf" ? (
-                  <embed src={step.fileUrl} type="application/pdf" className="course-pdf-preview" />
+                  <iframe
+                    src={step.fileUrl}
+                    title={`Course Step ${idx + 1} PDF`}
+                    className="course-pdf-preview"
+                    frameBorder="0"
+                  />
                 ) : (
                   <a href={step.fileUrl} target="_blank" rel="noopener noreferrer" download>
                     Download File
@@ -76,7 +81,12 @@ export default function CourseSection({
                 step.fileType.startsWith("video/") ? (
                   <video src={step.fileUrl} controls className="course-video" />
                 ) : step.fileType === "application/pdf" ? (
-                  <embed src={step.fileUrl} type="application/pdf" className="course-pdf" />
+                  <iframe
+                    src={step.fileUrl}
+                    title={`Course Step ${idx + 1} PDF`}
+                    className="course-pdf"
+                    frameBorder="0"
+                  />
                 ) : (
                   <a href={step.fileUrl} target="_blank" rel="noopener noreferrer" download>
                     Download File
