@@ -158,6 +158,7 @@ export default async function handleSaveWhop(
           chat: false,
           earn: false,
           discord: false,
+          discord_access: false,
           course: false,
           text: true,
         }

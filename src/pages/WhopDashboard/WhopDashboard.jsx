@@ -73,6 +73,7 @@ export default function WhopDashboard() {
     chat: false,
     earn: false,
     discord: false,
+    discord_access: false,
     course: false,
     text: true,
   });

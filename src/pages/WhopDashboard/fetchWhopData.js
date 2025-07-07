@@ -115,6 +115,7 @@ export default async function fetchWhopData(
           chat: false,
           earn: false,
           discord: false,
+          discord_access: false,
           course: false,
           text: true,
         }
