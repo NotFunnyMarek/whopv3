@@ -54,7 +54,6 @@ export default function Setup() {
     cookieData.modules || {
       chat: false,
       earn: false,
-      discord: false,
       discord_access: false,
       course: false,
       text: true,
@@ -366,7 +365,6 @@ export default function Setup() {
           {[
           ["chat", "Chat"],
           ["earn", "Earn"],
-          ["discord", "Discord"],
           ["discord_access", "Discord Access"],
           ["course", "Course"],
           ["text", "Text Features"],

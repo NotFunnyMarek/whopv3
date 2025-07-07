@@ -72,7 +72,6 @@ export default function WhopDashboard() {
   const [editModules, setEditModules] = useState({
     chat: false,
     earn: false,
-    discord: false,
     discord_access: false,
     course: false,
     text: true,

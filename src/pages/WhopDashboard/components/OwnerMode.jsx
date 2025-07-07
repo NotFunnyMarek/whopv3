@@ -9,6 +9,7 @@ import OwnerSlugPrice from "./OwnerSlugPrice";
 import OwnerActionButtons from "./OwnerActionButtons";
 import FeaturesSection from "./FeaturesSection";
 import CourseSection from "./CourseSection";
+import DiscordSetupSection from "./DiscordSetupSection";
 import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
@@ -167,6 +168,10 @@ export default function OwnerMode({
             removeFeature={removeFeature}
             addFeature={addFeature}
           />
+        )}
+
+        {editModules.discord_access && (
+          <DiscordSetupSection isEditing={isEditing} />
         )}
 
         {editModules.course && (

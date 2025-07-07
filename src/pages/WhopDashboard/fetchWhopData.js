@@ -114,7 +114,6 @@ export default async function fetchWhopData(
         data.modules || {
           chat: false,
           earn: false,
-          discord: false,
           discord_access: false,
           course: false,
           text: true,
