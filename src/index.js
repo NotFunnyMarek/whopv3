@@ -4,6 +4,7 @@ import App from './App';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './components/NotificationProvider';
 
+import './index.scss';
 import './styles/App.scss';
 import './styles/sidebar.scss';
 import './styles/bottombar.scss';
