@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "../styles/whop-dashboard/_member.scss";
 
-export default function CourseViewer({ steps = [], initialCompleted = [], whopId }) {
+export default function CourseViewer({
+  steps = [],
+  initialCompleted = [],
+  whopId,
+  onProgressChange,
+}) {
   const [current, setCurrent] = useState(0);
   const [completed, setCompleted] = useState(initialCompleted);
 
@@ -18,6 +23,11 @@ export default function CourseViewer({ steps = [], initialCompleted = [], whopId
 
   async function save(newCompleted) {
     setCompleted(newCompleted);
+    if (typeof onProgressChange === "function") {
+      try {
+        onProgressChange(newCompleted);
+      } catch {}
+    }
     try {
       await fetch("https://app.byxbot.com/php/save_course_progress.php", {
         method: "POST",

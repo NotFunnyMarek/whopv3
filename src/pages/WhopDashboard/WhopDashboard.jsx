@@ -376,6 +376,7 @@ export default function WhopDashboard() {
         setActiveTab={setActiveTab}
         memberLoading={memberLoading}
         handleLeave={onLeave}
+        setWhopData={setWhopData}
         onBack={() => setViewAsMemberMode(false)}
       />
     );
@@ -393,6 +394,7 @@ export default function WhopDashboard() {
         setActiveTab={setActiveTab}
         memberLoading={memberLoading}
         handleLeave={onLeave}
+        setWhopData={setWhopData}
       />
     );
   }
