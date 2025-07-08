@@ -62,19 +62,23 @@ if ($method === 'POST') {
     }
     if ($action === 'request_code') {
         $code = random_int(100000, 999999);
-        $_SESSION['discord_setup_code'] = $code;
+        $stmt = $pdo->prepare('REPLACE INTO discord_setup_codes (code, whop_id, created_at) VALUES (:code, :wid, NOW())');
+        $stmt->execute(['code' => $code, 'wid' => $whopId]);
         echo json_encode(['status' => 'success', 'code' => $code]);
         exit;
     }
     if ($action === 'confirm') {
         $guildId = $input['guild_id'] ?? '';
         $code    = $input['code'] ?? '';
-        if ($code != ($_SESSION['discord_setup_code'] ?? '')) {
+        $stmt = $pdo->prepare('SELECT whop_id FROM discord_setup_codes WHERE code = :code LIMIT 1');
+        $stmt->execute(['code' => $code]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row || intval($row['whop_id']) !== $whopId) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Invalid code']);
             exit;
         }
-        unset($_SESSION['discord_setup_code']);
+        $pdo->prepare('DELETE FROM discord_setup_codes WHERE code = :code')->execute(['code' => $code]);
         $stmt = $pdo->prepare('REPLACE INTO discord_servers (whop_id, guild_id, owner_discord_id) VALUES (:wid, :gid, :owner)');
         $stmt->execute([
             'wid'   => $whopId,

@@ -6,11 +6,6 @@ import 'dotenv/config';
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID || null;
-const WHOP_ID = parseInt(process.env.WHOP_ID || '0', 10);
-if (!WHOP_ID) {
-  console.error('WHOP_ID environment variable not set');
-  process.exit(1);
-}
 
 const DB_CONFIG = {
   host: process.env.DB_HOST || 'localhost',
@@ -36,7 +31,7 @@ const setupCommand = new SlashCommandBuilder()
   .setName('setup')
   .setDescription('Link this Discord server with Whop')
   .addStringOption(opt =>
-    opt.setName('code').setDescription('6 digit code').setRequired(false)
+    opt.setName('code').setDescription('Setup code from dashboard').setRequired(true)
   );
 
 async function registerCommands() {
@@ -49,31 +44,14 @@ async function registerCommands() {
   console.log('Commands registered');
 }
 
-const pendingCodes = new Map(); // userId -> code
-
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand() || interaction.commandName !== 'setup') return;
   const codeArg = interaction.options.getString('code');
 
   if (!codeArg) {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    pendingCodes.set(interaction.user.id, code);
-    try {
-      await interaction.user.send(`Your verification code: **${code}**`);
-      await interaction.reply({ content: 'Check your DMs and run /setup again with the code.', ephemeral: true });
-    } catch (e) {
-      await interaction.reply({ content: 'I cannot DM you. Please enable DMs and try again.', ephemeral: true });
-    }
+    await interaction.reply({ content: 'Provide the setup code from your dashboard.', ephemeral: true });
     return;
   }
-
-  const expected = pendingCodes.get(interaction.user.id);
-  if (!expected || expected !== codeArg) {
-    await interaction.reply({ content: 'Invalid or expired code.', ephemeral: true });
-    return;
-  }
-
-  pendingCodes.delete(interaction.user.id);
 
   const guildId = interaction.guildId;
   if (!guildId) {
@@ -81,16 +59,29 @@ client.on('interactionCreate', async interaction => {
     return;
   }
 
+  let conn;
   try {
-    const conn = await mysql.createConnection(DB_CONFIG);
+    conn = await mysql.createConnection(DB_CONFIG);
+    const [[row]] = await conn.execute(
+      'SELECT whop_id FROM discord_setup_codes WHERE code=? LIMIT 1',
+      [codeArg]
+    );
+    if (!row) {
+      await interaction.reply({ content: 'Invalid setup code.', ephemeral: true });
+      await conn.end();
+      return;
+    }
+    const whopId = row.whop_id;
     await conn.execute(
       'REPLACE INTO discord_servers (whop_id, guild_id, owner_discord_id) VALUES (?, ?, ?)',
-      [WHOP_ID, guildId, interaction.user.id]
+      [whopId, guildId, interaction.user.id]
     );
+    await conn.execute('DELETE FROM discord_setup_codes WHERE code=?', [codeArg]);
     await conn.end();
     await interaction.reply({ content: 'Server linked successfully!', ephemeral: true });
   } catch (err) {
     console.error('DB error', err);
+    if (conn) await conn.end();
     await interaction.reply({ content: 'Database error.', ephemeral: true });
   }
 });
@@ -109,6 +100,13 @@ setInterval(async () => {
   try {
     conn = await mysql.createConnection(DB_CONFIG);
     for (const guild of client.guilds.cache.values()) {
+      const [[srvRow]] = await conn.execute(
+        'SELECT whop_id FROM discord_servers WHERE guild_id=? LIMIT 1',
+        [guild.id]
+      );
+      const whopId = srvRow ? srvRow.whop_id : null;
+      if (!whopId) continue;
+
       const members = await guild.members.fetch().catch(() => null);
       if (!members) continue;
       for (const member of members.values()) {
@@ -122,12 +120,12 @@ setInterval(async () => {
         let hasSub = false;
         if (accRow && accRow.user_id) {
           const [[paidRow]] = await conn.execute(
-            "SELECT id FROM memberships WHERE user_id=? AND status='active' LIMIT 1",
-            [accRow.user_id]
+            "SELECT id FROM memberships WHERE user_id=? AND whop_id=? AND status='active' LIMIT 1",
+            [accRow.user_id, whopId]
           );
           const [[freeRow]] = await conn.execute(
-            'SELECT id FROM whop_members WHERE user_id=? LIMIT 1',
-            [accRow.user_id]
+            'SELECT id FROM whop_members WHERE user_id=? AND whop_id=? LIMIT 1',
+            [accRow.user_id, whopId]
           );
           hasSub = Boolean(paidRow || freeRow);
         }
