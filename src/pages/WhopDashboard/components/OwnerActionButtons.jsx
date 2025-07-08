@@ -46,7 +46,7 @@ export default function OwnerActionButtons({
           {whopData.modules?.discord_access && (
             <button
               className="whop-discord-btn"
-              onClick={() => setShowDiscordSetup(!showDiscordSetup)}
+              onClick={() => setShowDiscordSetup(true)}
             >
               <FaDiscord /> Discord Setup
             </button>
@@ -79,7 +79,7 @@ export default function OwnerActionButtons({
           {whopData.modules?.discord_access && (
             <button
               className="whop-discord-btn"
-              onClick={() => setShowDiscordSetup(!showDiscordSetup)}
+              onClick={() => setShowDiscordSetup(true)}
             >
               <FaDiscord /> Discord Setup
             </button>
