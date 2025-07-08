@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNotifications } from "../components/NotificationProvider";
 
 export default function DiscordAccess() {
   const { showNotification } = useNotifications();
   const DISCORD_CLIENT_ID = "1391881188901388348";
+  const [joined, setJoined] = useState(false);
+  const [guildId, setGuildId] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -12,8 +14,27 @@ export default function DiscordAccess() {
       showNotification({ type: "error", message: error });
       return;
     }
-    if (params.get("code")) {
-      showNotification({ type: "success", message: "Discord authorization successful." });
+    const code = params.get("code");
+    if (code) {
+      fetch("https://app.byxbot.com/php/discord_oauth.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, redirect_uri: window.location.origin + "/discord-access" })
+      })
+        .then(res => res.json())
+        .then(json => {
+          if (json.status === "success") {
+            setJoined(true);
+            setGuildId(json.guild_id || "");
+            showNotification({ type: "success", message: "Discord account linked." });
+          } else {
+            showNotification({ type: "error", message: json.message || "Failed to link Discord" });
+          }
+        })
+        .catch(() => {
+          showNotification({ type: "error", message: "Failed to link Discord" });
+        });
     }
   }, [showNotification]);
 
@@ -33,9 +54,20 @@ export default function DiscordAccess() {
     <div className="discord-access-page">
       <h2>Discord Access</h2>
       <p>Connect your Discord account to join the server.</p>
-      <button className="primary-btn" onClick={handleConnect}>
-        Get Access
-      </button>
+      {joined ? (
+        <a
+          className="primary-btn"
+          href={guildId ? `https://discord.com/channels/${guildId}` : "https://discord.com/channels/@me"}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open Discord
+        </a>
+      ) : (
+        <button className="primary-btn" onClick={handleConnect}>
+          Get Access
+        </button>
+      )}
     </div>
   );
 }

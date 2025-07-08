@@ -105,3 +105,13 @@ http://localhost:3000/discord-access
 ```
 
 Once configured, clicking **Get Access** will redirect to Discord and then back to `/discord-access` with a `code` query parameter.
+
+The backend requires these environment variables so the OAuth flow can
+complete and automatically add the member to your server:
+
+```
+DISCORD_CLIENT_SECRET=<your-secret>
+DISCORD_BOT_TOKEN=<bot-token>
+```
+
+Ensure they are available to the PHP scripts handling Discord access.
