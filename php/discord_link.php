@@ -66,8 +66,13 @@ if ($method === 'POST') {
 }
 
 if ($method === 'GET') {
-    $stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE owner_discord_id=:owner LIMIT 1');
-    $stmt->execute(['owner' => $_SESSION['discord_id'] ?? '']);
+    $discordId = $_SESSION['discord_id'] ?? null;
+    if ($discordId) {
+        $stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE owner_discord_id = :owner LIMIT 1');
+        $stmt->execute(['owner' => $discordId]);
+    } else {
+        $stmt = $pdo->query('SELECT guild_id FROM discord_servers ORDER BY created_at DESC LIMIT 1');
+    }
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     echo json_encode(['status' => 'success', 'data' => $row]);
     exit;
