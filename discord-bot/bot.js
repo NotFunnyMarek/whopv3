@@ -103,32 +103,44 @@ setInterval(async () => {
   let conn;
   try {
     conn = await mysql.createConnection(DB_CONFIG);
-    const [rows] = await conn.execute('SELECT guild_id, discord_id FROM discord_members');
-    for (const row of rows) {
-      const guild = await client.guilds.fetch(row.guild_id).catch(() => null);
-      if (!guild) continue;
-      const member = await guild.members.fetch(row.discord_id).catch(() => null);
-      if (!member) continue;
-      const [[accRow]] = await conn.execute(
-        "SELECT user_id FROM linked_accounts WHERE platform='discord' AND account_url=? LIMIT 1",
-        [`https://discord.com/users/${row.discord_id}`]
-      );
-      let hasSub = false;
-      if (accRow && accRow.user_id) {
-        const [[paidRow]] = await conn.execute(
-          "SELECT id FROM memberships WHERE user_id=? AND status='active' LIMIT 1",
-          [accRow.user_id]
+    for (const guild of client.guilds.cache.values()) {
+      const members = await guild.members.fetch().catch(() => null);
+      if (!members) continue;
+      for (const member of members.values()) {
+        if (member.user.bot) continue;
+
+        const [[accRow]] = await conn.execute(
+          "SELECT user_id FROM linked_accounts WHERE platform='discord' AND account_url=? LIMIT 1",
+          [`https://discord.com/users/${member.id}`]
         );
-        const [[freeRow]] = await conn.execute(
-          'SELECT id FROM whop_members WHERE user_id=? LIMIT 1',
-          [accRow.user_id]
+
+        let hasSub = false;
+        if (accRow && accRow.user_id) {
+          const [[paidRow]] = await conn.execute(
+            "SELECT id FROM memberships WHERE user_id=? AND status='active' LIMIT 1",
+            [accRow.user_id]
+          );
+          const [[freeRow]] = await conn.execute(
+            'SELECT id FROM whop_members WHERE user_id=? LIMIT 1',
+            [accRow.user_id]
+          );
+          hasSub = Boolean(paidRow || freeRow);
+        }
+
+        logAction(
+          `User ${member.id} in ${guild.id} subscription ${hasSub ? 'active' : 'inactive'}`
         );
-        hasSub = Boolean(paidRow || freeRow);
-      }
-      if (!hasSub) {
-        await member.kick('Inactive membership').catch(() => null);
-        await conn.execute('DELETE FROM discord_members WHERE guild_id=? AND discord_id=?', [row.guild_id, row.discord_id]).catch(() => null);
-        logAction(`Kicked ${row.discord_id} from ${row.guild_id}`);
+
+        if (!hasSub) {
+          await member.kick('Inactive membership').catch(() => null);
+          await conn
+            .execute('DELETE FROM discord_members WHERE guild_id=? AND discord_id=?', [
+              guild.id,
+              member.id,
+            ])
+            .catch(() => null);
+          logAction(`Kicked ${member.id} from ${guild.id}`);
+        }
       }
     }
   } catch (err) {
