@@ -55,7 +55,7 @@ if ($method === 'POST') {
     if ($input['action'] === 'create') {
         $platform = $input['platform'] ?? '';
         $url      = trim($input['account_url'] ?? '');
-        if (!in_array($platform, ['instagram','tiktok','youtube']) || !filter_var($url, FILTER_VALIDATE_URL)) {
+        if (!in_array($platform, ['instagram','tiktok','youtube','discord']) || !filter_var($url, FILTER_VALIDATE_URL)) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Invalid platform or URL']);
             exit;
