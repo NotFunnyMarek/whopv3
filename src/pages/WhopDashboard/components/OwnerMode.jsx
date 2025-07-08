@@ -171,7 +171,7 @@ export default function OwnerMode({
         )}
 
         {editModules.discord_access && (
-          <DiscordSetupSection isEditing={isEditing} />
+          <DiscordSetupSection isEditing={isEditing} whopId={whopData.id} />
         )}
 
         {editModules.course && (

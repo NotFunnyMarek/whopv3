@@ -9,6 +9,7 @@ export default function DiscordAccess() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const whopId = params.get("whop_id");
     const error = params.get("error");
     if (error) {
       showNotification({ type: "error", message: error });
@@ -20,7 +21,7 @@ export default function DiscordAccess() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, redirect_uri: window.location.origin + "/discord-access" })
+        body: JSON.stringify({ code, whop_id: Number(whopId), redirect_uri: window.location.origin + "/discord-access?whop_id=" + whopId })
       })
         .then(res => res.json())
         .then(json => {
@@ -41,7 +42,9 @@ export default function DiscordAccess() {
   const handleConnect = async () => {
     try {
       showNotification({ type: "info", message: "Redirecting to Discord..." });
-      const redirect = encodeURIComponent(window.location.origin + '/discord-access');
+      const params = new URLSearchParams(window.location.search);
+      const whopId = params.get("whop_id");
+      const redirect = encodeURIComponent(window.location.origin + '/discord-access?whop_id=' + whopId);
       window.location.href =
         `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}` +
         `&response_type=code&scope=identify+guilds.join&redirect_uri=${redirect}`;

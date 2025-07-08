@@ -43,9 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $input = json_decode(file_get_contents('php://input'), true);
 $code = $input['code'] ?? '';
 $redirect = $input['redirect_uri'] ?? '';
-if (!$code) {
+$whopId = isset($input['whop_id']) ? intval($input['whop_id']) : 0;
+if (!$code || $whopId <= 0) {
     http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Missing code"]);
+    echo json_encode(["status" => "error", "message" => "Missing code or whop_id"]);
     exit;
 }
 if (!$redirect) {
@@ -114,7 +115,8 @@ if (!$discordId) {
     exit;
 }
 
-$stmt = $pdo->query('SELECT guild_id FROM discord_servers ORDER BY created_at DESC LIMIT 1');
+$stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
+$stmt->execute(['wid' => $whopId]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $guildId = $row['guild_id'] ?? '';
 if (!$guildId) {

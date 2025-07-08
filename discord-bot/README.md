@@ -16,8 +16,10 @@ DB_HOST=localhost
 DB_USER=dbadmin
 DB_PASS=3otwj3zR6EI
 DB_NAME=byx
+WHOP_ID=1
 ```
 `GUILD_ID` can be omitted to register slash commands globally.
+`WHOP_ID` should match the ID of the Whop this server belongs to.
 3. Run the bot:
 ```bash
 node bot.js

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 
-export default function DiscordSetupSection({ isEditing }) {
+export default function DiscordSetupSection({ isEditing, whopId }) {
   const [guildId, setGuildId] = useState("");
   const [loading, setLoading] = useState(true);
   const DISCORD_CLIENT_ID = "1391881188901388348";
 
   useEffect(() => {
-    fetch("https://app.byxbot.com/php/discord_link.php", {
+    fetch(`https://app.byxbot.com/php/discord_link.php?whop_id=${whopId}`, {
       method: "GET",
       credentials: "include",
     })
@@ -18,7 +18,19 @@ export default function DiscordSetupSection({ isEditing }) {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [whopId]);
+
+  const handleDisconnect = async () => {
+    try {
+      await fetch("https://app.byxbot.com/php/discord_link.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unlink", whop_id: whopId })
+      });
+      setGuildId("");
+    } catch {}
+  };
 
   const inviteUrl =
     `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=8&scope=bot+applications.commands`;
@@ -29,7 +41,14 @@ export default function DiscordSetupSection({ isEditing }) {
       {loading ? (
         <p>Loading...</p>
       ) : guildId ? (
-        <p>Connected server ID: {guildId}</p>
+        <div>
+          <p>Connected server ID: {guildId}</p>
+          {isEditing && (
+            <button className="primary-btn" onClick={handleDisconnect}>
+              Disconnect
+            </button>
+          )}
+        </div>
       ) : isEditing ? (
         <ol>
           <li>
