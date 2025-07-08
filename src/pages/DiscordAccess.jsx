@@ -9,7 +9,7 @@ export default function DiscordAccess() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const whopId = params.get("whop_id");
+    const whopId = params.get("whop_id") || params.get("state");
     const error = params.get("error");
     if (error) {
       showNotification({ type: "error", message: error });
@@ -21,7 +21,7 @@ export default function DiscordAccess() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, whop_id: Number(whopId), redirect_uri: window.location.origin + "/discord-access?whop_id=" + whopId })
+        body: JSON.stringify({ code, whop_id: Number(whopId), redirect_uri: window.location.origin + "/discord-access" })
       })
         .then(res => res.json())
         .then(json => {
@@ -42,12 +42,13 @@ export default function DiscordAccess() {
   const handleConnect = async () => {
     try {
       showNotification({ type: "info", message: "Redirecting to Discord..." });
-      const params = new URLSearchParams(window.location.search);
-      const whopId = params.get("whop_id");
-      const redirect = encodeURIComponent(window.location.origin + '/discord-access?whop_id=' + whopId);
-      window.location.href =
-        `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}` +
-        `&response_type=code&scope=identify+guilds.join&redirect_uri=${redirect}`;
+    const params = new URLSearchParams(window.location.search);
+    const whopId = params.get("whop_id");
+    const redirect = encodeURIComponent(window.location.origin + '/discord-access');
+    window.location.href =
+      `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}` +
+      `&response_type=code&scope=identify+guilds.join&redirect_uri=${redirect}` +
+      `&state=${whopId}`;
     } catch (err) {
       showNotification({ type: "error", message: "Failed to start Discord OAuth" });
     }
