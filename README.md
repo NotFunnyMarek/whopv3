@@ -71,7 +71,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 ## Discord Access Bot
 
-The `discord-bot` folder contains a minimal bot that links a Discord server with the platform. Install dependencies and configure environment variables using `.env` or `.env.example`.
+The `discord-bot` folder contains a minimal bot that links a Discord server with the platform. Install dependencies and configure environment variables using a `.env` file.
 
 Run the bot with:
 
@@ -83,14 +83,7 @@ node bot.js
 
 Invite the bot to your server and execute `/setup` to receive a verification code.
 
-## Client Environment Variables
+## Client Configuration
 
-The React frontend uses `REACT_APP_DISCORD_CLIENT_ID` to generate Discord
-authorization links. Create an `.env` file in the project root containing:
-
-```
-REACT_APP_DISCORD_CLIENT_ID=your_application_id
-```
-
-Restart the development server after adding the file so the variable is picked
-up.
+The React frontend now contains the Discord application ID directly in the source
+code. No additional environment variables are required to run the client.
