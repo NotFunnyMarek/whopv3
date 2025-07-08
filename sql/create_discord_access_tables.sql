@@ -14,3 +14,10 @@ CREATE TABLE IF NOT EXISTS discord_members (
   joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (guild_id, discord_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Temporary codes for linking servers
+CREATE TABLE IF NOT EXISTS discord_setup_codes (
+  code VARCHAR(6) NOT NULL PRIMARY KEY,
+  whop_id INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
