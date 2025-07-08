@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/MemberMain.jsx
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../../styles/whop-dashboard/_member.scss";
 import ChatWindow from "../../../components/Chat/ChatWindow";
 import ReviewSection from "../../../components/ReviewSection";
@@ -15,6 +15,36 @@ export default function MemberMain({
   onSelectCampaign,
   setWhopData,
 }) {
+  const [discordLinked, setDiscordLinked] = useState(false);
+  const [guildId, setGuildId] = useState("");
+
+  useEffect(() => {
+    async function fetchStatus() {
+      try {
+        const res = await fetch("https://app.byxbot.com/php/link_account.php", {
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (json.status === "success" && Array.isArray(json.data)) {
+          const found = json.data.find(
+            (acc) => acc.platform === "discord" && acc.is_verified
+          );
+          setDiscordLinked(Boolean(found));
+        }
+      } catch {}
+
+      try {
+        const res = await fetch("https://app.byxbot.com/php/discord_link.php", {
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (json.status === "success" && json.data?.guild_id) {
+          setGuildId(json.data.guild_id);
+        }
+      } catch {}
+    }
+    fetchStatus();
+  }, []);
   return (
     <div className="member-main">
       {/* HOME */}
@@ -189,9 +219,26 @@ export default function MemberMain({
         <div className="member-tab-content">
           <h3 className="member-subtitle">Discord Access</h3>
           <p className="member-text">
-            Link your Discord account to join the server.
+            {discordLinked
+              ? "Discord access active."
+              : "Link your Discord account to join the server."}
           </p>
-          <a className="primary-btn" href="/discord-access">Get Access</a>
+          {discordLinked ? (
+            <a
+              className="primary-btn"
+              href={
+                guildId
+                  ? `https://discord.com/channels/${guildId}`
+                  : "https://discord.com/channels/@me"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Join Server
+            </a>
+          ) : (
+            <a className="primary-btn" href="/discord-access">Get Access</a>
+          )}
         </div>
       )}
 
