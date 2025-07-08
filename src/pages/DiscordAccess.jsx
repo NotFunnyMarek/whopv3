@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNotifications } from "../components/NotificationProvider";
 
 export default function DiscordAccess() {
   const { showNotification } = useNotifications();
   const DISCORD_CLIENT_ID = "1391881188901388348";
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+    if (error) {
+      showNotification({ type: "error", message: error });
+      return;
+    }
+    if (params.get("code")) {
+      showNotification({ type: "success", message: "Discord authorization successful." });
+    }
+  }, [showNotification]);
 
   const handleConnect = async () => {
     try {

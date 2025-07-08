@@ -87,3 +87,21 @@ Invite the bot to your server and execute `/setup` to receive a verification cod
 
 The React frontend now contains the Discord application ID directly in the source
 code. No additional environment variables are required to run the client.
+
+## Discord OAuth Setup
+
+The Discord OAuth flow expects the following redirect URL:
+
+```
+https://<your-domain>/discord-access
+```
+
+Add this exact URL to the **Redirects** list in your Discord application's OAuth2 settings. If the URL is missing, Discord will display an `Invalid OAuth2 redirect_uri` error.
+
+For local development you may also include:
+
+```
+http://localhost:3000/discord-access
+```
+
+Once configured, clicking **Get Access** will redirect to Discord and then back to `/discord-access` with a `code` query parameter.
