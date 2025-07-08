@@ -104,7 +104,7 @@ For local development you may also include:
 http://localhost:3000/discord-access
 ```
 
-Once configured, clicking **Get Access** will redirect to Discord and then back to `/discord-access` with a `code` query parameter.
+Once configured, clicking **Get Access** will redirect to Discord and then back to `/discord-access` with a `code` query parameter. The page must also include a `whop_id` query parameter identifying the target Whop.
 
 The backend requires these environment variables so the OAuth flow can
 complete and automatically add the member to your server:

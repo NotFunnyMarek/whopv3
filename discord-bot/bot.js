@@ -6,6 +6,11 @@ import 'dotenv/config';
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID || null;
+const WHOP_ID = parseInt(process.env.WHOP_ID || '0', 10);
+if (!WHOP_ID) {
+  console.error('WHOP_ID environment variable not set');
+  process.exit(1);
+}
 
 const DB_CONFIG = {
   host: process.env.DB_HOST || 'localhost',
@@ -79,8 +84,8 @@ client.on('interactionCreate', async interaction => {
   try {
     const conn = await mysql.createConnection(DB_CONFIG);
     await conn.execute(
-      'REPLACE INTO discord_servers (guild_id, owner_discord_id) VALUES (?, ?)',
-      [guildId, interaction.user.id]
+      'REPLACE INTO discord_servers (whop_id, guild_id, owner_discord_id) VALUES (?, ?, ?)',
+      [WHOP_ID, guildId, interaction.user.id]
     );
     await conn.end();
     await interaction.reply({ content: 'Server linked successfully!', ephemeral: true });

@@ -34,9 +34,12 @@ export default function MemberMain({
       } catch {}
 
       try {
-        const res = await fetch("https://app.byxbot.com/php/discord_link.php", {
-          credentials: "include",
-        });
+        const res = await fetch(
+          `https://app.byxbot.com/php/discord_link.php?whop_id=${whopData.id}`,
+          {
+            credentials: "include",
+          }
+        );
         const json = await res.json();
         if (json.status === "success" && json.data?.guild_id) {
           setGuildId(json.data.guild_id);
@@ -237,7 +240,12 @@ export default function MemberMain({
               Join Server
             </a>
           ) : (
-            <a className="primary-btn" href="/discord-access">Get Access</a>
+            <a
+              className="primary-btn"
+              href={`/discord-access?whop_id=${whopData.id}`}
+            >
+              Get Access
+            </a>
           )}
         </div>
       )}
