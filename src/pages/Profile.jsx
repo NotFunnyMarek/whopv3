@@ -332,8 +332,8 @@ export default function Profile() {
                         fetch('https://app.byxbot.com/php/link_account.php', {
                           method: 'DELETE',
                           credentials: 'include',
-                          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                          body: `id=${acc.id}`
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id: acc.id })
                         }).then(() => onLinkModalClose(true));
                       }}
                     >Disconnect</button>

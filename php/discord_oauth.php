@@ -115,10 +115,11 @@ if (!$discordId) {
     exit;
 }
 
-$stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
+$stmt = $pdo->prepare('SELECT guild_id, join_role_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
 $stmt->execute(['wid' => $whopId]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $guildId = $row['guild_id'] ?? '';
+$joinRoleId = $row['join_role_id'] ?? '';
 if (!$guildId) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "No Discord server configured"]);
@@ -142,6 +143,17 @@ if ($joinHttp !== 201 && $joinHttp !== 204) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Failed to join server"]);
     exit;
+}
+
+if ($joinRoleId) {
+    $ch = curl_init("https://discord.com/api/guilds/$guildId/members/$discordId/roles/$joinRoleId");
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_HTTPHEADER => ['Authorization: Bot ' . $botToken]
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
 }
 
 $stmt = $pdo->prepare('INSERT IGNORE INTO discord_members (guild_id, discord_id) VALUES (:gid, :did)');

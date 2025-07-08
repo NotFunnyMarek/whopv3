@@ -5,6 +5,11 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
   const [loading, setLoading] = useState(true);
   const [setupCode, setSetupCode] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [joinRole, setJoinRole] = useState("");
+  const [expireAction, setExpireAction] = useState("kick");
+  const [expireRole, setExpireRole] = useState("");
+  const [discordVerified, setDiscordVerified] = useState(false);
   const DISCORD_CLIENT_ID = "1391881188901388348";
 
   useEffect(() => {
@@ -16,11 +21,41 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
       .then(json => {
         if (json.status === "success" && json.data && json.data.guild_id) {
           setGuildId(json.data.guild_id);
+          setJoinRole(json.data.join_role_id || "");
+          setExpireAction(json.data.expire_action || "kick");
+          setExpireRole(json.data.expire_role_id || "");
         }
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetch("https://app.byxbot.com/php/link_account.php", { credentials: "include" })
+      .then(res => res.json())
+      .then(json => {
+        if (json.status === "success" && Array.isArray(json.data)) {
+          const found = json.data.find(
+            a => a.platform === "discord" && a.is_verified
+          );
+          setDiscordVerified(Boolean(found));
+        }
+      })
+      .catch(() => {});
   }, [whopId]);
+
+  useEffect(() => {
+    if (guildId && isEditing && discordVerified) {
+      fetch(`https://app.byxbot.com/php/discord_roles.php?whop_id=${whopId}`, {
+        credentials: "include",
+      })
+        .then(res => res.json())
+        .then(json => {
+          if (json.status === "success" && Array.isArray(json.roles)) {
+            setRoles(json.roles);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [guildId, isEditing, discordVerified, whopId]);
 
   const handleDisconnect = async () => {
     try {
@@ -54,6 +89,23 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
     }
   };
 
+  const handleSaveSettings = async () => {
+    try {
+      await fetch("https://app.byxbot.com/php/discord_link.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save_settings",
+          whop_id: whopId,
+          join_role_id: joinRole || null,
+          expire_action: expireAction,
+          expire_role_id: expireRole || null,
+        }),
+      });
+    } catch {}
+  };
+
   const inviteUrl =
     `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=8&scope=bot+applications.commands`;
 
@@ -65,10 +117,44 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
       ) : guildId ? (
         <div>
           <p>Connected server ID: {guildId}</p>
-          {isEditing && (
-            <button className="primary-btn" onClick={handleDisconnect}>
-              Disconnect
-            </button>
+          {isEditing && discordVerified && roles.length > 0 && (
+            <div className="discord-settings-form">
+              <label>
+                Join Action:
+                <select value={joinRole ? "role" : "none"} onChange={e => setJoinRole(e.target.value === "role" ? roles[0]?.id || "" : "")}>
+                  <option value="none">Join Only</option>
+                  <option value="role">Give Role</option>
+                </select>
+              </label>
+              {joinRole && (
+                <select value={joinRole} onChange={e => setJoinRole(e.target.value)}>
+                  {roles.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              )}
+              <label>
+                On Expiration:
+                <select value={expireAction} onChange={e => setExpireAction(e.target.value)}>
+                  <option value="kick">Kick</option>
+                  <option value="remove_role">Remove Role</option>
+                  <option value="remove_all">Remove All Roles</option>
+                </select>
+              </label>
+              {expireAction === "remove_role" && (
+                <select value={expireRole} onChange={e => setExpireRole(e.target.value)}>
+                  <option value="">Select role</option>
+                  {roles.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              )}
+              <button className="primary-btn" onClick={handleSaveSettings}>Save Settings</button>
+              <button className="primary-btn" onClick={handleDisconnect}>Disconnect</button>
+            </div>
+          )}
+          {isEditing && (!discordVerified || roles.length === 0) && (
+            <button className="primary-btn" onClick={handleDisconnect}>Disconnect</button>
           )}
         </div>
       ) : isEditing ? (

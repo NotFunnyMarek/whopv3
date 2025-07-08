@@ -101,10 +101,12 @@ setInterval(async () => {
     conn = await mysql.createConnection(DB_CONFIG);
     for (const guild of client.guilds.cache.values()) {
       const [[srvRow]] = await conn.execute(
-        'SELECT whop_id FROM discord_servers WHERE guild_id=? LIMIT 1',
+        'SELECT whop_id, expire_action, expire_role_id FROM discord_servers WHERE guild_id=? LIMIT 1',
         [guild.id]
       );
       const whopId = srvRow ? srvRow.whop_id : null;
+      const expireAction = srvRow ? srvRow.expire_action : 'kick';
+      const expireRoleId = srvRow ? srvRow.expire_role_id : null;
       if (!whopId) continue;
 
       const members = await guild.members.fetch().catch(() => null);
@@ -135,14 +137,25 @@ setInterval(async () => {
         );
 
         if (!hasSub) {
-          await member.kick('Inactive membership').catch(() => null);
+          if (expireAction === 'remove_role' && expireRoleId) {
+            await member.roles
+              .remove(expireRoleId)
+              .catch(() => null);
+          } else if (expireAction === 'remove_all') {
+            await member.roles
+              .set([])
+              .catch(() => null);
+          } else {
+            await member.kick('Inactive membership').catch(() => null);
+            logAction(`Kicked ${member.id} from ${guild.id}`);
+          }
+
           await conn
             .execute('DELETE FROM discord_members WHERE guild_id=? AND discord_id=?', [
               guild.id,
               member.id,
             ])
             .catch(() => null);
-          logAction(`Kicked ${member.id} from ${guild.id}`);
         }
       }
     }
