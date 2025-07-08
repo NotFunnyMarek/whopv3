@@ -114,8 +114,8 @@ export default function LinkAccountModal({ mode, onClose }) {
       await fetch(PHP_LINK_URL, {
         method: 'DELETE',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `id=${record.id}`
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: record.id })
       });
       showNotification({ type: 'info', message: 'Account disconnected.' });
       onClose(true);

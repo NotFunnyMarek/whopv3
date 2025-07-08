@@ -88,6 +88,20 @@ if ($method === 'POST') {
         echo json_encode(['status' => 'success']);
         exit;
     }
+    if ($action === 'save_settings') {
+        $joinRole    = $input['join_role_id'] ?? null;
+        $expireAct   = $input['expire_action'] ?? 'kick';
+        $expireRole  = $input['expire_role_id'] ?? null;
+        $stmt = $pdo->prepare('UPDATE discord_servers SET join_role_id=:jr, expire_action=:ea, expire_role_id=:er WHERE whop_id=:wid');
+        $stmt->execute([
+            'jr'  => $joinRole,
+            'ea'  => $expireAct,
+            'er'  => $expireRole,
+            'wid' => $whopId
+        ]);
+        echo json_encode(['status' => 'success']);
+        exit;
+    }
     if ($action === 'unlink') {
         $stmt = $pdo->prepare('DELETE FROM discord_servers WHERE whop_id = :wid');
         $stmt->execute(['wid' => $whopId]);
@@ -107,10 +121,13 @@ if ($method === 'GET') {
         exit;
     }
 
-    $stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
+    $stmt = $pdo->prepare('SELECT guild_id, join_role_id, expire_action, expire_role_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
     $stmt->execute(['wid' => $whopId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $guildId = $row['guild_id'] ?? '';
+    $guildId      = $row['guild_id'] ?? '';
+    $joinRoleId   = $row['join_role_id'] ?? null;
+    $expireAction = $row['expire_action'] ?? null;
+    $expireRoleId = $row['expire_role_id'] ?? null;
 
     $isMember = false;
     if ($guildId) {
@@ -125,7 +142,13 @@ if ($method === 'GET') {
         }
     }
 
-    echo json_encode(['status' => 'success', 'data' => ['guild_id' => $guildId, 'is_member' => $isMember]]);
+    echo json_encode(['status' => 'success', 'data' => [
+        'guild_id'      => $guildId,
+        'is_member'     => $isMember,
+        'join_role_id'  => $joinRoleId,
+        'expire_action' => $expireAction,
+        'expire_role_id'=> $expireRoleId
+    ]]);
     exit;
 }
 
