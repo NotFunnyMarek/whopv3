@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Partials, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import mysql from 'mysql2/promise';
+import fs from 'fs/promises';
 import 'dotenv/config';
 
 const TOKEN = process.env.DISCORD_TOKEN;
@@ -13,6 +14,11 @@ const DB_CONFIG = {
   database: process.env.DB_NAME || 'byx',
   charset: 'utf8mb4',
 };
+
+function logAction(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  return fs.appendFile('bot.log', line).catch(() => {});
+}
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
@@ -92,7 +98,7 @@ registerCommands()
   .then(() => client.login(TOKEN))
   .catch(console.error);
 
-// Periodic membership check every 12 hours
+// Periodic membership check every 5 minutes
 setInterval(async () => {
   let conn;
   try {
@@ -103,17 +109,32 @@ setInterval(async () => {
       if (!guild) continue;
       const member = await guild.members.fetch(row.discord_id).catch(() => null);
       if (!member) continue;
-      const [[statusRow]] = await conn.execute(
-        'SELECT active FROM whop_members WHERE discord_id=?',
-        [row.discord_id]
+      const [[accRow]] = await conn.execute(
+        "SELECT user_id FROM linked_accounts WHERE platform='discord' AND account_url=? LIMIT 1",
+        [`https://discord.com/users/${row.discord_id}`]
       );
-      if (!statusRow || !statusRow.active) {
+      let hasSub = false;
+      if (accRow && accRow.user_id) {
+        const [[paidRow]] = await conn.execute(
+          "SELECT id FROM memberships WHERE user_id=? AND status='active' LIMIT 1",
+          [accRow.user_id]
+        );
+        const [[freeRow]] = await conn.execute(
+          'SELECT id FROM whop_members WHERE user_id=? LIMIT 1',
+          [accRow.user_id]
+        );
+        hasSub = Boolean(paidRow || freeRow);
+      }
+      if (!hasSub) {
         await member.kick('Inactive membership').catch(() => null);
+        await conn.execute('DELETE FROM discord_members WHERE guild_id=? AND discord_id=?', [row.guild_id, row.discord_id]).catch(() => null);
+        logAction(`Kicked ${row.discord_id} from ${row.guild_id}`);
       }
     }
   } catch (err) {
     console.error('Periodic check failed', err);
+    logAction(`Error during check: ${err.message}`);
   } finally {
     if (conn) await conn.end();
   }
-}, 12 * 60 * 60 * 1000);
+}, 5 * 60 * 1000);

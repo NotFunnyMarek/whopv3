@@ -57,11 +57,15 @@ export default function DiscordAccess() {
       {joined ? (
         <a
           className="primary-btn"
-          href={guildId ? `https://discord.com/channels/${guildId}` : "https://discord.com/channels/@me"}
+          href={
+            guildId
+              ? `https://discord.com/channels/${guildId}`
+              : "https://discord.com/channels/@me"
+          }
           target="_blank"
           rel="noopener noreferrer"
         >
-          Open Discord
+          Open Discord Server
         </a>
       ) : (
         <button className="primary-btn" onClick={handleConnect}>
