@@ -235,13 +235,7 @@ export default function MemberMain({
           {discordLinked && discordMember ? (
             <a
               className="primary-btn"
-              href={
-                guildId
-                  ? `https://discord.com/channels/${guildId}`
-                  : "https://discord.com/channels/@me"
-              }
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/discord-access?whop_id=${whopData.id}`}
             >
               Join Server
             </a>
