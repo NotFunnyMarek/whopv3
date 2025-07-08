@@ -76,6 +76,8 @@ export default function OwnerMode({
   setEditLandingTexts,
   editModules,
   setEditModules,
+  showDiscordSetup,
+  setShowDiscordSetup,
 }) {
   if (!whopData) return null;
 
@@ -148,6 +150,8 @@ export default function OwnerMode({
           handleDelete={handleDelete}
           setViewAsMemberMode={setViewAsMemberMode}
           setIsCampaignModalOpen={setIsCampaignModalOpen}
+          showDiscordSetup={showDiscordSetup}
+          setShowDiscordSetup={setShowDiscordSetup}
         />
 
         {/* Modules section */}
@@ -170,7 +174,7 @@ export default function OwnerMode({
           />
         )}
 
-        {editModules.discord_access && (
+        {editModules.discord_access && showDiscordSetup && (
           <DiscordSetupSection isEditing={isEditing} whopId={whopData.id} />
         )}
 

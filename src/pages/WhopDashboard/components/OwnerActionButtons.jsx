@@ -8,6 +8,7 @@ import {
   FaUsers,
   FaPlus,
   FaTachometerAlt,
+  FaDiscord,
 } from "react-icons/fa";
 import "../../../styles/whop-dashboard/_owner.scss";
 
@@ -19,6 +20,8 @@ export default function OwnerActionButtons({
   setViewAsMemberMode,
   setIsCampaignModalOpen,
   whopData, // needed for Whop ID
+  showDiscordSetup,
+  setShowDiscordSetup,
 }) {
   const openDashboard = () => {
     // redirect to /dashboard with whop_id parameter
@@ -40,6 +43,14 @@ export default function OwnerActionButtons({
           >
             Cancel
           </button>
+          {whopData.modules?.discord_access && (
+            <button
+              className="whop-discord-btn"
+              onClick={() => setShowDiscordSetup(!showDiscordSetup)}
+            >
+              <FaDiscord /> Discord Setup
+            </button>
+          )}
         </>
       ) : (
         <>
@@ -65,6 +76,14 @@ export default function OwnerActionButtons({
           <button className="whop-dashboard-btn" onClick={openDashboard}>
             <FaTachometerAlt /> Dashboard
           </button>
+          {whopData.modules?.discord_access && (
+            <button
+              className="whop-discord-btn"
+              onClick={() => setShowDiscordSetup(!showDiscordSetup)}
+            >
+              <FaDiscord /> Discord Setup
+            </button>
+          )}
         </>
       )}
     </div>

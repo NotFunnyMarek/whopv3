@@ -53,6 +53,7 @@ export default function WhopDashboard() {
 
   // Owner-edit states
   const [isEditing, setIsEditing] = useState(false);
+  const [showDiscordSetup, setShowDiscordSetup] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editBannerUrl, setEditBannerUrl] = useState("");
@@ -478,6 +479,8 @@ export default function WhopDashboard() {
       setEditLandingTexts={setEditLandingTexts}
       editModules={editModules}
       setEditModules={setEditModules}
+      showDiscordSetup={showDiscordSetup}
+      setShowDiscordSetup={setShowDiscordSetup}
     />
   );
 }
