@@ -16,6 +16,7 @@ export default function MemberMain({
   setWhopData,
 }) {
   const [discordLinked, setDiscordLinked] = useState(false);
+  const [discordMember, setDiscordMember] = useState(false);
   const [guildId, setGuildId] = useState("");
 
   useEffect(() => {
@@ -41,8 +42,13 @@ export default function MemberMain({
           }
         );
         const json = await res.json();
-        if (json.status === "success" && json.data?.guild_id) {
-          setGuildId(json.data.guild_id);
+        if (json.status === "success") {
+          if (json.data?.guild_id) {
+            setGuildId(json.data.guild_id);
+          }
+          if (typeof json.data?.is_member === "boolean") {
+            setDiscordMember(json.data.is_member);
+          }
         }
       } catch {}
     }
@@ -222,11 +228,11 @@ export default function MemberMain({
         <div className="member-tab-content">
           <h3 className="member-subtitle">Discord Access</h3>
           <p className="member-text">
-            {discordLinked
+            {discordLinked && discordMember
               ? "Discord access active."
               : "Link your Discord account to join the server."}
           </p>
-          {discordLinked ? (
+          {discordLinked && discordMember ? (
             <a
               className="primary-btn"
               href={
