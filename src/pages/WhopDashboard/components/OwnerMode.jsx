@@ -10,6 +10,7 @@ import OwnerActionButtons from "./OwnerActionButtons";
 import FeaturesSection from "./FeaturesSection";
 import CourseSection from "./CourseSection";
 import DiscordSetupSection from "./DiscordSetupSection";
+import DiscordSetupModal from "./DiscordSetupModal";
 import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
@@ -174,8 +175,12 @@ export default function OwnerMode({
           />
         )}
 
-        {editModules.discord_access && showDiscordSetup && (
-          <DiscordSetupSection isEditing={isEditing} whopId={whopData.id} />
+        {editModules.discord_access && (
+          <DiscordSetupModal
+            isOpen={showDiscordSetup}
+            onClose={() => setShowDiscordSetup(false)}
+            whopId={whopData.id}
+          />
         )}
 
         {editModules.course && (
