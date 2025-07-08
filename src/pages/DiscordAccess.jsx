@@ -42,13 +42,20 @@ export default function DiscordAccess() {
   const handleConnect = async () => {
     try {
       showNotification({ type: "info", message: "Redirecting to Discord..." });
-    const params = new URLSearchParams(window.location.search);
-    const whopId = params.get("whop_id");
-    const redirect = encodeURIComponent(window.location.origin + '/discord-access');
-    window.location.href =
-      `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}` +
-      `&response_type=code&scope=identify+guilds.join&redirect_uri=${redirect}` +
-      `&state=${whopId}`;
+      const params = new URLSearchParams(window.location.search);
+      // whop_id may be passed via the query string or preserved in the state
+      const whopId = params.get("whop_id") || params.get("state");
+      if (!whopId) {
+        showNotification({ type: "error", message: "Missing whop ID" });
+        return;
+      }
+      const redirect = encodeURIComponent(
+        window.location.origin + "/discord-access"
+      );
+      window.location.href =
+        `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}` +
+        `&response_type=code&scope=identify+guilds.join&redirect_uri=${redirect}` +
+        `&state=${whopId}`;
     } catch (err) {
       showNotification({ type: "error", message: "Failed to start Discord OAuth" });
     }
