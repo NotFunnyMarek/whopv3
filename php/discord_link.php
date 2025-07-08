@@ -106,10 +106,26 @@ if ($method === 'GET') {
         echo json_encode(['status' => 'error', 'message' => 'Missing whop_id']);
         exit;
     }
+
     $stmt = $pdo->prepare('SELECT guild_id FROM discord_servers WHERE whop_id = :wid LIMIT 1');
     $stmt->execute(['wid' => $whopId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    echo json_encode(['status' => 'success', 'data' => $row]);
+    $guildId = $row['guild_id'] ?? '';
+
+    $isMember = false;
+    if ($guildId) {
+        $accStmt = $pdo->prepare("SELECT account_url FROM linked_accounts WHERE user_id=:uid AND platform='discord' AND is_verified=1 LIMIT 1");
+        $accStmt->execute(['uid' => $user_id]);
+        $accRow = $accStmt->fetch(PDO::FETCH_ASSOC);
+        if ($accRow && preg_match('/(\\d+)$/', $accRow['account_url'], $m)) {
+            $discordId = $m[1];
+            $memStmt = $pdo->prepare('SELECT 1 FROM discord_members WHERE guild_id=:gid AND discord_id=:did LIMIT 1');
+            $memStmt->execute(['gid' => $guildId, 'did' => $discordId]);
+            $isMember = (bool)$memStmt->fetchColumn();
+        }
+    }
+
+    echo json_encode(['status' => 'success', 'data' => ['guild_id' => $guildId, 'is_member' => $isMember]]);
     exit;
 }
 
