@@ -81,7 +81,8 @@ npm install
 node bot.js
 ```
 
-Invite the bot to your server and execute `/setup` to receive a verification code.
+Invite the bot to your server, generate a setup code in your dashboard, and run
+`/setup <code>` in the server to link it.
 
 ## Client Configuration
 

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 export default function DiscordSetupSection({ isEditing, whopId }) {
   const [guildId, setGuildId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [setupCode, setSetupCode] = useState("");
+  const [codeLoading, setCodeLoading] = useState(false);
   const DISCORD_CLIENT_ID = "1391881188901388348";
 
   useEffect(() => {
@@ -32,6 +34,26 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
     } catch {}
   };
 
+  const requestCode = async () => {
+    setCodeLoading(true);
+    setSetupCode("");
+    try {
+      const res = await fetch("https://app.byxbot.com/php/discord_link.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request_code", whop_id: whopId })
+      });
+      const json = await res.json();
+      if (json.status === "success" && json.code) {
+        setSetupCode(json.code);
+      }
+    } catch {
+    } finally {
+      setCodeLoading(false);
+    }
+  };
+
   const inviteUrl =
     `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=8&scope=bot+applications.commands`;
 
@@ -52,17 +74,29 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
       ) : isEditing ? (
         <ol>
           <li>
-            Invite the bot to your Discord server using
-            {" "}
+            Invite the bot to your Discord server using{' '}
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
               this link
             </a>
-            .
+            . After approving, return here.
           </li>
-          <li>Run the <code>/setup</code> command in your server.</li>
           <li>
-            The bot will DM you a six digit code. Run
-            <code> /setup &lt;code&gt;</code> to finish.
+            {setupCode ? (
+              <>
+                Run <code>/setup {setupCode}</code> in your server to finish.
+              </>
+            ) : (
+              <>
+                <button
+                  className="primary-btn"
+                  onClick={requestCode}
+                  disabled={codeLoading}
+                >
+                  {codeLoading ? 'Generating...' : 'Generate Setup Code'}
+                </button>
+                <div className="setup-hint">Use the code with /setup</div>
+              </>
+            )}
           </li>
         </ol>
       ) : (
