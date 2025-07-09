@@ -839,3 +839,45 @@
     color: var(--error-color);
   }
 }
+
+.discord-setup-section {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+
+  .discord-connected-message {
+    color: var(--success-color);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+
+    svg {
+      margin-right: var(--spacing-xs);
+    }
+  }
+
+  .discord-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+      font-size: 0.9rem;
+      color: var(--text-color);
+    }
+
+    select {
+      padding: var(--spacing-xs);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      background: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    button {
+      margin-top: var(--spacing-sm);
+    }
+  }
+}
