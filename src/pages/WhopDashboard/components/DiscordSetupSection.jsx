@@ -10,7 +10,6 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
   const [joinRole, setJoinRole] = useState("");
   const [expireAction, setExpireAction] = useState("kick");
   const [expireRole, setExpireRole] = useState("");
-  const [discordVerified, setDiscordVerified] = useState(false);
   const DISCORD_CLIENT_ID = "1391881188901388348";
 
   useEffect(() => {
@@ -30,21 +29,10 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
       })
       .catch(() => setLoading(false));
 
-    fetch("https://app.byxbot.com/php/link_account.php", { credentials: "include" })
-      .then(res => res.json())
-      .then(json => {
-        if (json.status === "success" && Array.isArray(json.data)) {
-          const found = json.data.find(
-            a => a.platform === "discord" && a.is_verified
-          );
-          setDiscordVerified(Boolean(found));
-        }
-      })
-      .catch(() => {});
   }, [whopId]);
 
   useEffect(() => {
-    if (guildId && isEditing && discordVerified) {
+    if (guildId && isEditing) {
       fetch(`https://app.byxbot.com/php/discord_roles.php?whop_id=${whopId}`, {
         credentials: "include",
       })
@@ -56,7 +44,7 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
         })
         .catch(() => {});
     }
-  }, [guildId, isEditing, discordVerified, whopId]);
+  }, [guildId, isEditing, whopId]);
 
   const handleDisconnect = async () => {
     try {
@@ -120,7 +108,7 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
           <p className="discord-connected-message">
             <FaCheckCircle /> Discord Connected: {guildId}
           </p>
-          {isEditing && discordVerified && roles.length > 0 && (
+          {isEditing && (
             <div className="discord-settings-form">
               <label>
                 Join Action:
@@ -155,9 +143,6 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
               <button className="primary-btn" onClick={handleSaveSettings}>Save Settings</button>
               <button className="primary-btn" onClick={handleDisconnect}>Disconnect</button>
             </div>
-          )}
-          {isEditing && (!discordVerified || roles.length === 0) && (
-            <button className="primary-btn" onClick={handleDisconnect}>Disconnect</button>
           )}
         </div>
       ) : isEditing ? (
