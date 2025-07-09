@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaCheckCircle } from "react-icons/fa";
 
 export default function DiscordSetupSection({ isEditing, whopId }) {
   const [guildId, setGuildId] = useState("");
@@ -116,7 +117,9 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
         <p>Loading...</p>
       ) : guildId ? (
         <div>
-          <p>Connected server ID: {guildId}</p>
+          <p className="discord-connected-message">
+            <FaCheckCircle /> Discord Connected: {guildId}
+          </p>
           {isEditing && discordVerified && roles.length > 0 && (
             <div className="discord-settings-form">
               <label>
