@@ -45,6 +45,7 @@ try {
     }
 
     $sel = $pdo->prepare("SELECT id, code, payout_percent, clicks, signups FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
+
     $sel->execute(['uid' => $user_id, 'wid' => $whop_id]);
     $row = $sel->fetch(PDO::FETCH_ASSOC);
     if ($row) {
@@ -67,6 +68,7 @@ try {
         "clicks" => $clicks,
         "signups" => $signups
     ]);
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
