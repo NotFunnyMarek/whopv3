@@ -125,9 +125,4 @@ A simple affiliate system is available through the PHP API:
 2. Share links using `affiliate_redirect.php?code=<CODE>&whop_id=<ID>` which tracks clicks and stores a cookie.
 3. When a user purchases a membership via `join_membership.php` while the cookie is present, the affiliate receives their payout and the owner receives the remainder.
 
-Owners can manage links via:
-
-* `php/get_affiliate_links.php?whop_id=<ID>` – list all links for a Whop.
-* `php/update_affiliate_link.php` – POST `{link_id, payout_percent}` or `{link_id, delete: true}` to modify or remove.
-
 The SQL schema for this table is available in `sql/create_affiliate_links.sql`.
