@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/session_init.php';
+require_once __DIR__ . '/config.php';
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
     http_response_code(401);
@@ -66,7 +67,7 @@ try {
     exit;
 }
 
-$botToken = getenv('DISCORD_BOT_TOKEN') ?: '';
+$botToken = getenv('DISCORD_BOT_TOKEN') ?: (defined('DISCORD_BOT_TOKEN') ? DISCORD_BOT_TOKEN : '');
 if (!$botToken) {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Bot token missing']);

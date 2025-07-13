@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/session_init.php';
+require_once __DIR__ . '/config.php';
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
     http_response_code(401);
@@ -54,9 +55,9 @@ if (!$redirect) {
     $redirect = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/discord-access';
 }
 
-$clientId     = getenv('DISCORD_CLIENT_ID') ?: '1391881188901388348';
-$clientSecret = getenv('DISCORD_CLIENT_SECRET') ?: '';
-$botToken     = getenv('DISCORD_BOT_TOKEN') ?: '';
+$clientId     = getenv('DISCORD_CLIENT_ID') ?: (defined('DISCORD_CLIENT_ID') ? DISCORD_CLIENT_ID : '1391881188901388348');
+$clientSecret = getenv('DISCORD_CLIENT_SECRET') ?: (defined('DISCORD_CLIENT_SECRET') ? DISCORD_CLIENT_SECRET : '5VHe23BNTpQsJV4IP8QsV04NSQR0ClgV');
+$botToken     = getenv('DISCORD_BOT_TOKEN') ?: (defined('DISCORD_BOT_TOKEN') ? DISCORD_BOT_TOKEN : '');
 if (!$clientSecret || !$botToken) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Discord credentials not configured"]);
