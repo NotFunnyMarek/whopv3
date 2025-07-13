@@ -160,9 +160,26 @@ try {
     $upd1 = $pdo->prepare("UPDATE users4 SET balance = balance - :price WHERE id = :uid");
     $upd1->execute(['price' => $price, 'uid' => $user_id]);
 
+    $affiliate_amount = 0;
+    if (!empty($_COOKIE['affiliate_code'])) {
+        $affStmt = $pdo->prepare(
+            "SELECT id, user_id, payout_percent FROM affiliate_links WHERE code=:c AND whop_id=:wid LIMIT 1"
+        );
+        $affStmt->execute(['c' => $_COOKIE['affiliate_code'], 'wid' => $whop_id]);
+        $affRow = $affStmt->fetch(PDO::FETCH_ASSOC);
+        if ($affRow) {
+            $affiliate_amount = $price * (floatval($affRow['payout_percent']) / 100.0);
+            $affUpd = $pdo->prepare("UPDATE users4 SET balance = balance + :amt WHERE id = :aid");
+            $affUpd->execute(['amt' => $affiliate_amount, 'aid' => (int)$affRow['user_id']]);
+            $affInc = $pdo->prepare("UPDATE affiliate_links SET signups = signups + 1 WHERE id = :id");
+            $affInc->execute(['id' => (int)$affRow['id']]);
+        }
+    }
+
     // 8b) Credit Whop owner
+    $owner_amount = $price - $affiliate_amount;
     $upd2 = $pdo->prepare("UPDATE users4 SET balance = balance + :price WHERE id = :owner_id");
-    $upd2->execute(['price' => $price, 'owner_id' => $owner_id]);
+    $upd2->execute(['price' => $owner_amount, 'owner_id' => $owner_id]);
 
     // 8c) Compute start_time, end_time, next_payment_date
     $now = new DateTime("now", new DateTimeZone("UTC"));
