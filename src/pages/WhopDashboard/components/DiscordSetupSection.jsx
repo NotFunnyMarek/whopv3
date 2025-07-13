@@ -10,6 +10,7 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
   const [joinRole, setJoinRole] = useState("");
   const [expireAction, setExpireAction] = useState("kick");
   const [expireRole, setExpireRole] = useState("");
+  const [saveStatus, setSaveStatus] = useState("idle");
   const DISCORD_CLIENT_ID = "1391881188901388348";
 
   useEffect(() => {
@@ -79,8 +80,9 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
   };
 
   const handleSaveSettings = async () => {
+    setSaveStatus("saving");
     try {
-      await fetch("https://app.byxbot.com/php/discord_link.php", {
+      const res = await fetch("https://app.byxbot.com/php/discord_link.php", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -92,7 +94,16 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
           expire_role_id: expireRole || null,
         }),
       });
-    } catch {}
+      const json = await res.json();
+      if (json.status === "success") {
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } else {
+        setSaveStatus("error");
+      }
+    } catch {
+      setSaveStatus("error");
+    }
   };
 
   const inviteUrl =
@@ -140,7 +151,9 @@ export default function DiscordSetupSection({ isEditing, whopId }) {
                   ))}
                 </select>
               )}
-              <button className="primary-btn" onClick={handleSaveSettings}>Save Settings</button>
+              <button className="primary-btn" onClick={handleSaveSettings} disabled={saveStatus==='saving'}>
+                {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Save Settings'}
+              </button>
               <button className="primary-btn" onClick={handleDisconnect}>Disconnect</button>
             </div>
           )}

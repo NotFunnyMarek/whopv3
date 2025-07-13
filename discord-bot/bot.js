@@ -101,10 +101,11 @@ setInterval(async () => {
     conn = await mysql.createConnection(DB_CONFIG);
     for (const guild of client.guilds.cache.values()) {
       const [[srvRow]] = await conn.execute(
-        'SELECT whop_id, expire_action, expire_role_id FROM discord_servers WHERE guild_id=? LIMIT 1',
+        'SELECT whop_id, join_role_id, expire_action, expire_role_id FROM discord_servers WHERE guild_id=? LIMIT 1',
         [guild.id]
       );
       const whopId = srvRow ? srvRow.whop_id : null;
+      const joinRoleId = srvRow ? srvRow.join_role_id : null;
       const expireAction = srvRow ? srvRow.expire_action : 'kick';
       const expireRoleId = srvRow ? srvRow.expire_role_id : null;
       if (!whopId) continue;
@@ -156,6 +157,8 @@ setInterval(async () => {
               member.id,
             ])
             .catch(() => null);
+        } else if (joinRoleId && !member.roles.cache.has(joinRoleId)) {
+          await member.roles.add(joinRoleId).catch(() => null);
         }
       }
     }
