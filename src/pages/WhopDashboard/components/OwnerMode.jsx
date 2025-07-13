@@ -13,6 +13,7 @@ import DiscordSetupSection from "./DiscordSetupSection";
 import DiscordSetupModal from "./DiscordSetupModal";
 import CampaignsSection from "./CampaignsSection";
 import MembersSection from "./MembersSection";
+import AffiliateSection from "./AffiliateSection";
 import CampaignModal from "./CampaignModal";
 import OwnerTextMenu from "./OwnerTextMenu";
 import OwnerModules from "./OwnerModules";
@@ -58,6 +59,11 @@ export default function OwnerMode({
   membersLoading,
   membersError,
   handleCancelMember,
+  affiliateLinks,
+  affiliateLoading,
+  affiliateError,
+  handleAffiliateChange,
+  handleAffiliateDelete,
   handleBack,
   isCampaignModalOpen,
   fetchCampaigns,
@@ -212,6 +218,15 @@ export default function OwnerMode({
             membersError={membersError}
             membershipsList={membershipsList}
             handleCancelMember={handleCancelMember}
+          />
+        )}
+        {whopData.is_owner && editModules.affiliate && (
+          <AffiliateSection
+            links={affiliateLinks}
+            loading={affiliateLoading}
+            error={affiliateError}
+            onChangePercent={handleAffiliateChange}
+            onDelete={handleAffiliateDelete}
           />
         )}
       </div>
