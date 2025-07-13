@@ -44,17 +44,31 @@ try {
         exit;
     }
 
-    $sel = $pdo->prepare("SELECT code FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
+
+    $sel = $pdo->prepare("SELECT id, code, payout_percent, clicks, signups FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
     $sel->execute(['uid' => $user_id, 'wid' => $whop_id]);
     $row = $sel->fetch(PDO::FETCH_ASSOC);
     if ($row) {
         $code = $row['code'];
+        $payout = (float)$row['payout_percent'];
+        $clicks = (int)$row['clicks'];
+        $signups = (int)$row['signups'];
     } else {
         $code = bin2hex(random_bytes(8));
+        $payout = 30.0;
+        $clicks = 0;
+        $signups = 0;
         $ins = $pdo->prepare("INSERT INTO affiliate_links (user_id, whop_id, code) VALUES (:uid, :wid, :code)");
         $ins->execute(['uid' => $user_id, 'wid' => $whop_id, 'code' => $code]);
     }
-    echo json_encode(["status" => "success", "code" => $code]);
+    echo json_encode([
+        "status" => "success",
+        "code" => $code,
+        "payout_percent" => $payout,
+        "clicks" => $clicks,
+        "signups" => $signups
+    ]);
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

@@ -5,6 +5,7 @@ import "../../../styles/whop-dashboard/_member.scss";
 import ChatWindow from "../../../components/Chat/ChatWindow";
 import ReviewSection from "../../../components/ReviewSection";
 import CourseViewer from "../../../components/CourseViewer";
+import fetchAffiliateCode from "../fetchAffiliateCode";
 
 export default function MemberMain({
   whopData,
@@ -18,6 +19,19 @@ export default function MemberMain({
   const [discordLinked, setDiscordLinked] = useState(false);
   const [discordMember, setDiscordMember] = useState(false);
   const [guildId, setGuildId] = useState("");
+  const [affiliateData, setAffiliateData] = useState(null);
+  const [affiliateError, setAffiliateError] = useState("");
+
+  const loadAffiliate = async () => {
+    await fetchAffiliateCode(whopData.id, setAffiliateData, setAffiliateError);
+  };
+
+  useEffect(() => {
+    if (activeTab !== "Affiliate") {
+      setAffiliateData(null);
+      setAffiliateError("");
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     async function fetchStatus() {
@@ -219,6 +233,30 @@ export default function MemberMain({
                 );
               })}
             </ul>
+          )}
+        </div>
+      )}
+
+      {/* AFFILIATE */}
+      {activeTab === "Affiliate" && whopData.modules?.affiliate && (
+        <div className="member-tab-content">
+          <h3 className="member-subtitle">Affiliate Link</h3>
+          {affiliateError ? (
+            <p className="member-error">{affiliateError}</p>
+          ) : affiliateData ? (
+            <div className="affiliate-info">
+              <p>
+                Your link:
+                <code>{`${window.location.origin}/php/affiliate_redirect.php?code=${affiliateData.code}&whop_id=${whopData.id}`}</code>
+              </p>
+              <p>Clicks: {affiliateData.clicks}</p>
+              <p>Signups: {affiliateData.signups}</p>
+              <p>Payout: {affiliateData.payout_percent}%</p>
+            </div>
+          ) : (
+            <button className="primary-btn" onClick={loadAffiliate}>
+              Generate Link
+            </button>
           )}
         </div>
       )}
