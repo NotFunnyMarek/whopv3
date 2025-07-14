@@ -22,6 +22,8 @@ import handleExpireCampaign from "./handleExpireCampaign";
 import fetchMembers from "./fetchMembers";
 import handleCancelMember from "./handleCancelMember";
 import handleRequestWaitlist from "./handleRequestWaitlist";
+import fetchAffiliateLinks from "./fetchAffiliateLinks";
+import handleUpdateAffiliateLink from "./handleUpdateAffiliateLink";
 
 import LoadingOverlay from "./components/LoadingOverlay";
 import ErrorView from "./components/ErrorView";
@@ -302,9 +304,29 @@ export default function WhopDashboard() {
     }
   }, [whopData]);
 
+  // 1️⃣4️⃣ Fetch affiliate links (owner)
+  const [affiliateLinks, setAffiliateLinks] = useState([]);
+  const [affiliateLoading, setAffiliateLoading] = useState(false);
+  const [affiliateError, setAffiliateError] = useState("");
+  const fetchAffiliates = (wid) =>
+    fetchAffiliateLinks(wid, setAffiliateLoading, setAffiliateError, setAffiliateLinks);
+  useEffect(() => {
+    if (whopData?.is_owner && whopData.modules?.affiliate) {
+      fetchAffiliates(whopData.id);
+    }
+  }, [whopData]);
+
   // 1️⃣4️⃣ Cancel one paid member
   const onCancelMember = async (uid) => {
     await handleCancelMember(uid, whopData, showConfirm, showNotification, fetchMembers);
+  };
+
+  // 1️⃣5️⃣ Update or delete affiliate link
+  const onAffiliateChange = async (id, payout) => {
+    await handleUpdateAffiliateLink(id, payout, false, showNotification, fetchAffiliates, whopData.id);
+  };
+  const onAffiliateDelete = async (id) => {
+    await handleUpdateAffiliateLink(id, 0, true, showNotification, fetchAffiliates, whopData.id);
   };
 
   // ⭐ Request waitlist
@@ -456,6 +478,11 @@ export default function WhopDashboard() {
       membersLoading={membersLoading}
       membersError={membersError}
       handleCancelMember={onCancelMember}
+      affiliateLinks={affiliateLinks}
+      affiliateLoading={affiliateLoading}
+      affiliateError={affiliateError}
+      handleAffiliateChange={onAffiliateChange}
+      handleAffiliateDelete={onAffiliateDelete}
       handleBack={onBack}
       isCampaignModalOpen={isCampaignModalOpen}
       fetchCampaigns={fetchCampaignsBound}
