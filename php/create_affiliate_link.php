@@ -39,9 +39,13 @@ try {
     $mem = $pdo->prepare("SELECT 1 FROM whop_members WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
     $mem->execute(['uid' => $user_id, 'wid' => $whop_id]);
     if (!$mem->fetch()) {
-        http_response_code(403);
-        echo json_encode(["status" => "error", "message" => "Not a member"]);
-        exit;
+        $mem2 = $pdo->prepare("SELECT 1 FROM memberships WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
+        $mem2->execute(['uid' => $user_id, 'wid' => $whop_id]);
+        if (!$mem2->fetch()) {
+            http_response_code(403);
+            echo json_encode(["status" => "error", "message" => "Not a member"]);
+            exit;
+        }
     }
 
     $sel = $pdo->prepare("SELECT id, code, payout_percent, clicks, signups FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
