@@ -34,6 +34,12 @@ export default function MemberMain({
   }, [activeTab]);
 
   useEffect(() => {
+    if (activeTab === "Affiliate" && !affiliateData && !affiliateError) {
+      loadAffiliate();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
     async function fetchStatus() {
       try {
         const res = await fetch("https://app.byxbot.com/php/link_account.php", {
@@ -247,7 +253,7 @@ export default function MemberMain({
             <div className="affiliate-info">
               <p>
                 Your link:
-                <code>{`${window.location.origin}/php/affiliate_redirect.php?code=${affiliateData.code}&whop_id=${whopData.id}`}</code>
+                <code>{`${window.location.origin}/?af=${affiliateData.code}`}</code>
               </p>
               <p>Clicks: {affiliateData.clicks}</p>
               <p>Signups: {affiliateData.signups}</p>
