@@ -22,9 +22,9 @@ export default async function handleUpdateAffiliateLink(
     if (!res.ok || json.status !== "success") {
       throw new Error(json.message || `HTTP ${res.status}`);
     }
-    showNotification("Saved");
+    showNotification({ type: "success", message: "Saved" });
     await fetchLinks(whopId);
   } catch (err) {
-    showNotification("Error: " + err.message, "error");
+    showNotification({ type: "error", message: "Error: " + err.message });
   }
 }

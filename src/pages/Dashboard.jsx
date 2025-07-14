@@ -11,6 +11,9 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import AffiliateSection from "./WhopDashboard/components/AffiliateSection";
+import fetchAffiliateLinks from "./WhopDashboard/fetchAffiliateLinks";
+import handleUpdateAffiliateLink from "./WhopDashboard/handleUpdateAffiliateLink";
 import "../styles/dashboard.scss";
 
 export default function Dashboard() {
@@ -28,6 +31,11 @@ export default function Dashboard() {
   const [moderators, setModerators] = useState([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
+
+  // Affiliate links
+  const [affiliateLinks, setAffiliateLinks] = useState([]);
+  const [affiliateLoading, setAffiliateLoading] = useState(false);
+  const [affiliateError, setAffiliateError] = useState("");
 
   const [chartData, setChartData] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -391,6 +399,38 @@ export default function Dashboard() {
     } finally {
       setLoadingAction(false);
     }
+  };
+
+  // 13) Affiliate links
+  const fetchAffiliates = (wid) =>
+    fetchAffiliateLinks(wid, setAffiliateLoading, setAffiliateError, setAffiliateLinks);
+
+  useEffect(() => {
+    if (whopId && role === "owner") {
+      fetchAffiliates(whopId);
+    }
+  }, [whopId, role]);
+
+  const handleAffiliateChange = async (id, payout) => {
+    await handleUpdateAffiliateLink(
+      id,
+      payout,
+      false,
+      showNotification,
+      fetchAffiliates,
+      whopId
+    );
+  };
+
+  const handleAffiliateDelete = async (id) => {
+    await handleUpdateAffiliateLink(
+      id,
+      0,
+      true,
+      showNotification,
+      fetchAffiliates,
+      whopId
+    );
   };
 
   // payment filtering and pagination
@@ -757,6 +797,16 @@ export default function Dashboard() {
           </table>
         )}
       </div>
+
+      {role === "owner" && (
+        <AffiliateSection
+          links={affiliateLinks}
+          loading={affiliateLoading}
+          error={affiliateError}
+          onChangePercent={handleAffiliateChange}
+          onDelete={handleAffiliateDelete}
+        />
+      )}
 
       <div className="table-section">
         <h2>Team (Moderators)</h2>
