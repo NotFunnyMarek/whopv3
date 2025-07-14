@@ -1,11 +1,10 @@
 <?php
 // php/affiliate_redirect.php
-// Usage: affiliate_redirect.php?code=ABC&whop_id=1
+// Usage: affiliate_redirect.php?code=ABC
 
 require_once __DIR__ . '/config_login.php';
-$code    = isset($_GET['code']) ? $_GET['code'] : '';
-$whop_id = isset($_GET['whop_id']) ? (int)$_GET['whop_id'] : 0;
-if ($code === '' || $whop_id <= 0) {
+$code = isset($_GET['code']) ? $_GET['code'] : '';
+if ($code === '') {
     http_response_code(400);
     echo "Invalid affiliate link";
     exit;
@@ -18,8 +17,8 @@ try {
         $db_password,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
-    $upd = $pdo->prepare("UPDATE affiliate_links SET clicks = clicks + 1 WHERE code=:code AND whop_id=:wid");
-    $upd->execute(['code' => $code, 'wid' => $whop_id]);
+    $upd = $pdo->prepare("UPDATE affiliate_links SET clicks = clicks + 1 WHERE code=:code");
+    $upd->execute(['code' => $code]);
 } catch (Exception $e) {
     // ignore
 }
