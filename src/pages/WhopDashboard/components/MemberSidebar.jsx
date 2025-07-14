@@ -61,6 +61,14 @@ export default function MemberSidebar({
             <FaDollarSign /> Earn
           </button>
         )}
+        {whopData.modules?.affiliate && (
+          <button
+            className={`nav-button ${activeTab === "Affiliate" ? "active" : ""}`}
+            onClick={() => setActiveTab("Affiliate")}
+          >
+            <FaDollarSign /> Affiliate
+          </button>
+        )}
         {whopData.modules?.discord_access && (
           <button
             className={`nav-button ${activeTab === "Discord" ? "active" : ""}`}
