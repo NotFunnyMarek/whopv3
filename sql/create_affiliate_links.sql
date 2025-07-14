@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS affiliate_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    whop_id INT NOT NULL,
+    code VARCHAR(64) NOT NULL UNIQUE,
+    payout_percent DECIMAL(5,2) NOT NULL DEFAULT 30.00,
+    clicks INT NOT NULL DEFAULT 0,
+    signups INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users4(id),
+    FOREIGN KEY (whop_id) REFERENCES whops(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
