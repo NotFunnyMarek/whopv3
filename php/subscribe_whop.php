@@ -197,18 +197,42 @@ try {
         'user_id' => $user_id
     ]);
 
-    // b) Credit owner
+    // b) Handle affiliate payout if cookie is set
+    $affiliate_amount = 0.0;
+    if (!empty($_COOKIE['affiliate_code'])) {
+        $affStmt = $pdo->prepare(
+            'SELECT id, user_id, payout_percent FROM affiliate_links WHERE code=:c AND whop_id=:wid LIMIT 1'
+        );
+        $affStmt->execute([
+            'c'   => $_COOKIE['affiliate_code'],
+            'wid' => $whopId
+        ]);
+        $affRow = $affStmt->fetch(PDO::FETCH_ASSOC);
+        if ($affRow) {
+            $affiliate_amount = $price * (floatval($affRow['payout_percent']) / 100.0);
+            $affUpd = $pdo->prepare('UPDATE users4 SET balance = balance + :amt WHERE id = :aid');
+            $affUpd->execute([
+                'amt' => $affiliate_amount,
+                'aid' => (int)$affRow['user_id']
+            ]);
+            $affInc = $pdo->prepare('UPDATE affiliate_links SET signups = signups + 1 WHERE id = :id');
+            $affInc->execute(['id' => (int)$affRow['id']]);
+        }
+    }
+
+    // c) Credit owner with remaining amount
+    $owner_amount = $price - $affiliate_amount;
     $updOwnerStmt = $pdo->prepare("
-      UPDATE users4 
-         SET balance = balance + :price 
-       WHERE id = :owner_id
+        UPDATE users4
+           SET balance = balance + :price
+         WHERE id = :owner_id
     ");
     $updOwnerStmt->execute([
-        'price'    => $price,
+        'price'    => $owner_amount,
         'owner_id' => $owner_id
     ]);
 
-    // c) Calculate start_at and next_payment_at if recurring
+    // d) Calculate start_at and next_payment_at if recurring
     $now = new DateTime('now', new DateTimeZone('UTC'));
     $startAt = $now->format('Y-m-d H:i:s');
     if ($is_recurring === 1) {
@@ -228,7 +252,7 @@ try {
         $nextPaymentAt = null;
     }
 
-    // d) Insert into memberships
+    // e) Insert into memberships
     $insertStmt = $pdo->prepare("
       INSERT INTO memberships
         (user_id, whop_id, price, currency, is_recurring, billing_period, start_at, next_payment_at, status)
@@ -246,7 +270,7 @@ try {
         'next_payment_at' => $nextPaymentAt
     ]);
 
-    // e) If free Whop, add to whop_members
+    // f) If free Whop, add to whop_members
     if ($price <= 0.00) {
         $jmStmt = $pdo->prepare("
           INSERT IGNORE INTO whop_members (user_id, whop_id, joined_at)
@@ -260,7 +284,7 @@ try {
         $hist->execute(['user_id' => $user_id, 'whop_id' => $whopId]);
     }
 
-    // f) Insert payment record
+    // g) Insert payment record
     $payStmt = $pdo->prepare("
       INSERT INTO payments (user_id, whop_id, amount, currency, payment_date, type)
       VALUES (:user_id, :whop_id, :amount, :currency, :payment_date, :type)
