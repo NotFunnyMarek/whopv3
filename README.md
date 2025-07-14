@@ -129,5 +129,3 @@ Owners can manage links via:
 
 * `php/get_affiliate_links.php?whop_id=<ID>` – list all links for a Whop.
 * `php/update_affiliate_link.php` – POST `{link_id, payout_percent}` or `{link_id, delete: true}` to modify or remove.
-
-The SQL schema for this table is available in `sql/create_affiliate_links.sql`.
