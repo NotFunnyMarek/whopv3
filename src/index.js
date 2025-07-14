@@ -8,6 +8,7 @@ import './index.scss';
 import './styles/App.scss';
 import './styles/sidebar.scss';
 import './styles/bottombar.scss';
+import './styles/login-prompt-bar.scss';
 import './styles/login.scss';
 import './styles/register.scss';
 import './styles/profile.scss';

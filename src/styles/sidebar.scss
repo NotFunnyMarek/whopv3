@@ -107,3 +107,7 @@
 .main-content {
   margin-left: var(--sidebar-width, 60px);
 }
+
+.main-content.no-sidebar {
+  margin-left: 0;
+}

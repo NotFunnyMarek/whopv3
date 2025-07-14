@@ -4,6 +4,7 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import BottomBar from "./components/BottomBar";
+import LoginPromptBar from "./components/LoginPromptBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Loading from "./components/Loading";
 
@@ -27,6 +28,7 @@ const DiscordAccess        = lazy(() => import("./pages/DiscordAccess"));
 const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 
 const App = () => {
+  const loggedIn = Boolean(localStorage.getItem('authToken'));
   return (
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
@@ -121,15 +123,13 @@ const App = () => {
           <Route
             path="/c/:slug"
             element={
-              <ProtectedRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <main className="main-content">
-                    <WhopDashboard />
-                  </main>
-                  <BottomBar />
-                </div>
-              </ProtectedRoute>
+              <div className="app-container">
+                {loggedIn && <Sidebar />}
+                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}> 
+                  <WhopDashboard />
+                </main>
+                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
+              </div>
             }
           />
 
@@ -169,15 +169,13 @@ const App = () => {
           <Route
             path="/"
             element={
-              <ProtectedRoute>
-                <div className="app-container">
-                  <Sidebar />
-                  <main className="main-content">
-                    <Home />
-                  </main>
-                  <BottomBar />
-                </div>
-              </ProtectedRoute>
+              <div className="app-container">
+                {loggedIn && <Sidebar />}
+                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}> 
+                  <Home />
+                </main>
+                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
+              </div>
             }
           />
 
