@@ -116,3 +116,18 @@ DISCORD_BOT_TOKEN=<bot-token>
 ```
 
 Ensure they are available to the PHP scripts handling Discord access.
+
+## Affiliate links (experimental)
+
+A simple affiliate system is available through the PHP API:
+
+1. Use `php/create_affiliate_link.php` with `whop_id` to create or obtain your link. The endpoint returns a unique code.
+2. Share links using `affiliate_redirect.php?code=<CODE>&whop_id=<ID>` which tracks clicks and stores a cookie.
+3. When a user purchases a membership via `join_membership.php` while the cookie is present, the affiliate receives their payout and the owner receives the remainder.
+
+Owners can manage links via:
+
+* `php/get_affiliate_links.php?whop_id=<ID>` – list all links for a Whop.
+* `php/update_affiliate_link.php` – POST `{link_id, payout_percent}` or `{link_id, delete: true}` to modify or remove.
+
+The SQL schema for this table is available in `sql/create_affiliate_links.sql`.
