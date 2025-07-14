@@ -231,3 +231,77 @@ button.btn-unban:hover {
 .btn-invite {
     margin-left: 10px;
 }
+
+.whop-affiliate-section {
+  width: 100%;
+  margin-top: var(--spacing-lg);
+
+  .affiliate-section-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .members-loading,
+  .members-error,
+  .members-empty {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--muted-color);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .members-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    color: var(--text-color);
+
+    thead {
+      background: var(--border-color);
+      th {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+    }
+
+    tbody {
+      tr {
+        background: var(--surface-color);
+        &:nth-child(even) {
+          background: var(--border-color-hover);
+        }
+        &:hover {
+          background: var(--border-color);
+        }
+        td {
+          padding: var(--spacing-xs) var(--spacing-sm);
+          border-bottom: 1px solid var(--border-color);
+          vertical-align: middle;
+
+          .member-cancel-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            background: var(--error-color);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background var(--transition), transform var(--transition);
+
+            &:hover {
+              background: var(--error-hover);
+              transform: translateY(-1px);
+            }
+          }
+        }
+      }
+    }
+  }
+}
