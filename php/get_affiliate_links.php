@@ -46,10 +46,23 @@ try {
     }
 
     $stmt = $pdo->prepare(
-        "SELECT al.id, al.user_id, u.username, al.code, al.payout_percent, al.clicks, al.signups
+        "SELECT 
+            al.id,
+            al.user_id,
+            u.username,
+            al.code,
+            al.payout_percent,
+            al.clicks,
+            al.signups,
+            COALESCE(SUM(p.amount), 0) AS earned
          FROM affiliate_links al
          JOIN users4 u ON al.user_id = u.id
+         LEFT JOIN payments p
+           ON p.user_id = al.user_id
+          AND p.whop_id = al.whop_id
+          AND p.type = 'payout'
          WHERE al.whop_id = :wid
+         GROUP BY al.id, al.user_id, u.username, al.code, al.payout_percent, al.clicks, al.signups
          ORDER BY al.id DESC"
     );
     $stmt->execute(['wid' => $whop_id]);
