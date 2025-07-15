@@ -175,7 +175,9 @@ try {
                faq                = :faq,
                landing_texts      = :landing_texts,
                modules            = :modules,
-               course_steps       = :course_steps
+               course_steps       = :course_steps,
+               affiliate_default_percent = :affiliate_default_percent,
+               affiliate_recurring       = :affiliate_recurring
         WHERE id = :id
     ");
     $updStmt->execute([
@@ -195,9 +197,11 @@ try {
         ':who_for'          => $who_for_json,
         ':faq'              => $faq_json,
         ':landing_texts'    => $landing_json,
-        ':modules'          => $modules_json,
-        ':course_steps'     => $course_json,
-        ':id'               => $whopId
+        ':modules'                 => $modules_json,
+        ':course_steps'            => $course_json,
+        ':affiliate_default_percent' => isset($data['affiliate_default_percent']) ? floatval($data['affiliate_default_percent']) : 0,
+        ':affiliate_recurring'       => isset($data['affiliate_recurring']) ? intval($data['affiliate_recurring']) : 0,
+        ':id'                        => $whopId
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
