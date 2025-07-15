@@ -173,6 +173,17 @@ try {
             $affUpd->execute(['amt' => $affiliate_amount, 'aid' => (int)$affRow['user_id']]);
             $affInc = $pdo->prepare("UPDATE affiliate_links SET signups = signups + 1 WHERE id = :id");
             $affInc->execute(['id' => (int)$affRow['id']]);
+
+            $affPay = $pdo->prepare(
+                "INSERT INTO payments (user_id, whop_id, amount, currency, payment_date, type)
+                 VALUES (:uid, :wid, :amt, :curr, UTC_TIMESTAMP(), 'payout')"
+            );
+            $affPay->execute([
+                'uid'  => (int)$affRow['user_id'],
+                'wid'  => $whop_id,
+                'amt'  => $affiliate_amount,
+                'curr' => $currency
+            ]);
         }
     }
 

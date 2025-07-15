@@ -48,15 +48,13 @@ export default function Balances() {
       });
   }, [showNotification]);
 
-  // Load deposit/withdrawal or earnings history whenever tab changes
+  // Load deposit or withdrawal history whenever tab changes
   useEffect(() => {
     setLoadingHistory(true);
     const url =
       activeTab === 'deposits'
         ? 'https://app.byxbot.com/php/deposit_history.php'
-        : activeTab === 'withdrawals'
-        ? 'https://app.byxbot.com/php/withdraw_history.php'
-        : 'https://app.byxbot.com/php/affiliate_earnings.php';
+        : 'https://app.byxbot.com/php/withdraw_history.php';
 
     fetch(url, {
       method: 'GET',
@@ -137,12 +135,6 @@ export default function Balances() {
         >
           Withdrawals
         </button>
-        <button
-          className={`tab-btn ${activeTab === 'earnings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('earnings')}
-        >
-          Earnings
-        </button>
       </div>
 
       <div className="balances-history">
@@ -161,7 +153,7 @@ export default function Balances() {
                     <th>USD Equivalent</th>
                     <th>Transaction Hash</th>
                   </>
-                ) : activeTab === 'withdrawals' ? (
+                ) : (
                   <>
                     <th>Date</th>
                     <th>USD Amount</th>
@@ -169,13 +161,6 @@ export default function Balances() {
                     <th>Destination Address</th>
                     <th>Status</th>
                     <th>Transaction Hash</th>
-                  </>
-                ) : (
-                  <>
-                    <th>Date</th>
-                    <th>Whop</th>
-                    <th>Amount</th>
-                    <th>Currency</th>
                   </>
                 )}
               </tr>
@@ -190,7 +175,7 @@ export default function Balances() {
                       <td>${item.usd_amount.toFixed(2)}</td>
                       <td className="mono">{item.tx_signature || '-'}</td>
                     </>
-                  ) : activeTab === 'withdrawals' ? (
+                  ) : (
                     <>
                       <td>${item.usd_amount.toFixed(2)}</td>
                       <td>{item.sol_amount.toFixed(8)}</td>
@@ -205,12 +190,6 @@ export default function Balances() {
                         )}
                       </td>
                       <td className="mono">{item.tx_signature || '-'}</td>
-                    </>
-                  ) : (
-                    <>
-                      <td>{item.whop_name}</td>
-                      <td className="positive">+{parseFloat(item.amount).toFixed(2)}</td>
-                      <td>{item.currency}</td>
                     </>
                   )}
                 </tr>
