@@ -201,6 +201,7 @@ export default function LandingPage({
             </div>
           ))}
         </div>
+        {whopData.can_review ? (
         <div className="review-form">
           <div className="rating-select">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -242,6 +243,7 @@ export default function LandingPage({
             Submit Review
           </button>
         </div>
+        ) : null}
       </section>
 
       {/* FEATURES SECTION - dynamic */}

@@ -45,7 +45,10 @@ export default async function handleJoinFree(
     });
     const json = await res.json();
 
-    if (!res.ok) {
+    if (res.status === 401) {
+      showNotification({ type: "error", message: "Please log in to continue." });
+      navigate("/login");
+    } else if (!res.ok) {
       // If joining failed, show error notification
       showNotification({
         type: "error",

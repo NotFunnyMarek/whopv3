@@ -236,6 +236,7 @@ if ($method === 'GET') {
             $is_pending_waitlist = 0;
             $is_accepted_waitlist = 0;
             $waitlist_answers = [];
+            $had_membership = 0;
             if ($logged_in) {
                 $b = $pdo->prepare("SELECT balance FROM users4 WHERE id = :uid LIMIT 1");
                 $b->execute(['uid' => $user_id]);
@@ -251,7 +252,15 @@ if ($method === 'GET') {
                 $is_pending_waitlist  = ($r && $r['status'] === 'pending')  ? 1 : 0;
                 $is_accepted_waitlist = ($r && $r['status'] === 'accepted') ? 1 : 0;
                 $waitlist_answers     = $r['answers_json'] ? json_decode($r['answers_json'], true) : [];
+
+                $hist = $pdo->prepare(
+                    "SELECT 1 FROM whop_member_history WHERE user_id = :uid AND whop_id = :wid LIMIT 1"
+                );
+                $hist->execute(['uid' => $user_id, 'wid' => $w['id']]);
+                $had_membership = $hist->fetch() ? 1 : 0;
             }
+
+            $can_review = (!$is_owner && ($is_free || $is_paid || $had_membership)) ? 1 : 0;
 
             // course progress for this user
             $cp = $pdo->prepare(
@@ -298,7 +307,8 @@ if ($method === 'GET') {
                     "user_balance"           => $user_balance,
                     "is_pending_waitlist"    => $is_pending_waitlist,
                     "is_accepted_waitlist"   => $is_accepted_waitlist,
-                    "waitlist_answers"       => $waitlist_answers
+                    "waitlist_answers"       => $waitlist_answers,
+                    "can_review"            => $can_review
                 ]
             ]);
             exit;

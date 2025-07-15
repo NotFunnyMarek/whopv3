@@ -321,7 +321,7 @@ export default function WhopDashboard() {
   const onRequestWaitlist = async (wid, answers) => {
     setMemberLoading(true);
     try {
-      await handleRequestWaitlist(wid, answers, showNotification);
+      await handleRequestWaitlist(wid, answers, showNotification, navigate);
       // on success, refresh whopData
       fetchWhopData(
         whopData.slug,
