@@ -170,19 +170,29 @@ foreach ($freeMembers as $m) {
 // 8) List of payments
 // ════════════════════════════════════════════════
 try {
-    $stmtPay = $pdo->prepare("
-        SELECT 
+    $stmtPay = $pdo->prepare(
+        "SELECT
           p.id AS payment_id,
           p.user_id,
           u.username,
           u.email,
-          p.amount,
+          CASE
+            WHEN p.type IN ('one_time','recurring') THEN p.amount - COALESCE(ap.total_payout,0)
+            ELSE p.amount
+          END AS amount,
           p.currency,
           p.payment_date,
           p.type
         FROM payments AS p
         JOIN users4 AS u ON p.user_id = u.id
+        LEFT JOIN (
+            SELECT whop_id, payment_date, SUM(amount) AS total_payout
+            FROM payments
+            WHERE type = 'payout'
+            GROUP BY whop_id, payment_date
+        ) AS ap ON ap.whop_id = p.whop_id AND ap.payment_date = p.payment_date
         WHERE p.whop_id = :whop_id
+          AND p.type <> 'payout'
         ORDER BY p.payment_date DESC
     ");
     $stmtPay->execute(['whop_id' => $whopId]);
@@ -198,9 +208,22 @@ try {
 // ════════════════════════════════════════════════
 try {
     $stmtSum = $pdo->prepare("
-        SELECT COALESCE(SUM(amount),0) AS total 
-        FROM payments 
-        WHERE whop_id = :whop_id
+        SELECT COALESCE(SUM(
+            CASE
+                WHEN p.type IN ('one_time','recurring') THEN p.amount - COALESCE(ap.total_payout,0)
+                ELSE p.amount
+            END
+        ),0) AS total
+        FROM payments p
+        LEFT JOIN (
+            SELECT whop_id, payment_date, SUM(amount) AS total_payout
+            FROM payments
+            WHERE type = 'payout'
+            GROUP BY whop_id, payment_date
+        ) ap ON ap.whop_id = p.whop_id AND ap.payment_date = p.payment_date
+        WHERE p.whop_id = :whop_id
+          AND p.type <> 'payout'
+
     ");
     $stmtSum->execute(['whop_id' => $whopId]);
     $rowSum = $stmtSum->fetch(PDO::FETCH_ASSOC);
