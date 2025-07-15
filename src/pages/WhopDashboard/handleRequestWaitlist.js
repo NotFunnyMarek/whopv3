@@ -8,7 +8,7 @@
  * @returns {Promise<object>}   Parsed JSON response from the server.
  * @throws {Error}              If the server responds with an error or non‐JSON.
  */
-export default async function handleRequestWaitlist(whopId, answers) {
+export default async function handleRequestWaitlist(whopId, answers, showNotification, navigate) {
   // Build the request payload – send "answers" array directly
   const payload = {
     whop_id: whopId,
@@ -33,6 +33,14 @@ export default async function handleRequestWaitlist(whopId, answers) {
     json = JSON.parse(text);
   } catch {
     throw new Error("Server did not return valid JSON.");
+  }
+
+  if (res.status === 401) {
+    if (showNotification) {
+      showNotification({ type: "error", message: "Please log in to continue." });
+    }
+    if (navigate) navigate("/login");
+    throw new Error("Unauthorized");
   }
 
   // Handle conflict (already requested) or explicit error

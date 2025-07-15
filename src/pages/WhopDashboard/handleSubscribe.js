@@ -90,8 +90,11 @@ export default async function handleSubscribe(
       );
     }
 
-    if (!res.ok || data.status !== "success") {
-      // API returned an error (e.g. 400 or 401, or {status:"error"})
+    if (res.status === 401) {
+      showNotification({ type: "error", message: "Please log in to continue." });
+      navigate("/login");
+    } else if (!res.ok || data.status !== "success") {
+      // API returned an error (e.g. 400, 403, etc)
       const msg = data.message || `HTTP error ${res.status}`;
       showNotification({ type: "error", message: msg });
     } else {
