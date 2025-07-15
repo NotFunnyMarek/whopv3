@@ -173,6 +173,10 @@ export default function WhopDashboard() {
 
   // 5️⃣ Subscribe / join free / leave
   const onSubscribe = async () => {
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
     await handleSubscribe(
       whopData,
       showConfirm,
@@ -187,6 +191,10 @@ export default function WhopDashboard() {
     );
   };
   const onJoinFree = async () => {
+    if (!localStorage.getItem("authToken")) {
+      navigate("/login");
+      return;
+    }
     await handleJoinFree(
       whopData,
       setOverlayVisible,
