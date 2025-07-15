@@ -700,6 +700,33 @@
   }
 }
 
+.affiliate-defaults-section {
+  width: 100%;
+  margin-top: var(--spacing-md);
+
+  .affiliate-defaults-fields {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+      color: var(--text-color);
+    }
+
+    input,
+    select {
+      padding: var(--spacing-xs);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-base);
+      background: var(--surface-color);
+      color: var(--text-color);
+    }
+  }
+}
+
 .whop-affiliate-section {
   width: 100%;
   margin-top: var(--spacing-lg);

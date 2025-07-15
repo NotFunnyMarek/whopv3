@@ -21,7 +21,9 @@ export default async function fetchWhopData(
   setEditWhoFor,
   setEditFaq,
   setEditLandingTexts,
-  setEditModules
+  setEditModules,
+  setEditAffiliatePercent,
+  setEditAffiliateRecurring
 ) {
   setLoading(true);
   setError("");
@@ -120,6 +122,13 @@ export default async function fetchWhopData(
           text: true,
         }
       );
+
+      setEditAffiliatePercent(
+        data.affiliate_default_percent !== undefined
+          ? parseFloat(data.affiliate_default_percent)
+          : 30
+      );
+      setEditAffiliateRecurring(Boolean(data.affiliate_recurring));
 
       // ** Waitlist state **
       setWaitlistEnabled(Boolean(data.waitlist_enabled));

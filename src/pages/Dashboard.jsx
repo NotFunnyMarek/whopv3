@@ -12,6 +12,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import AffiliateSection from "./WhopDashboard/components/AffiliateSection";
+import AffiliateDefaultsSection from "./WhopDashboard/components/AffiliateDefaultsSection";
 import fetchAffiliateLinks from "./WhopDashboard/fetchAffiliateLinks";
 import handleUpdateAffiliateLink from "./WhopDashboard/handleUpdateAffiliateLink";
 import "../styles/dashboard.scss";
@@ -36,6 +37,8 @@ export default function Dashboard() {
   const [affiliateLinks, setAffiliateLinks] = useState([]);
   const [affiliateLoading, setAffiliateLoading] = useState(false);
   const [affiliateError, setAffiliateError] = useState("");
+  const [affiliateDefaultPercent, setAffiliateDefaultPercent] = useState(30);
+  const [affiliateRecurring, setAffiliateRecurring] = useState(false);
 
   const [chartData, setChartData] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -80,6 +83,10 @@ export default function Dashboard() {
           setMembersCount(parseInt(json.membersCount || 0, 10));
           setBans(json.bans || []);
           setModerators(json.moderators || []);
+          if (json.affiliate_default_percent !== undefined)
+            setAffiliateDefaultPercent(parseFloat(json.affiliate_default_percent));
+          if (json.affiliate_recurring !== undefined)
+            setAffiliateRecurring(Boolean(json.affiliate_recurring));
           prepareChartData(json.payments || []);
           setDataLoaded(true);
         } else {
@@ -411,10 +418,15 @@ export default function Dashboard() {
     }
   }, [whopId, role]);
 
-  const handleAffiliateChange = async (id, payout) => {
+  const handleAffiliateChange = async (id, payout, recurring) => {
+    const link = affiliateLinks.find((l) => l.id === id) || {};
+    const newPayout = typeof payout === "number" ? payout : link.payout_percent;
+    const newRecurring =
+      typeof recurring === "boolean" ? recurring : Boolean(link.payout_recurring);
     await handleUpdateAffiliateLink(
       id,
-      payout,
+      newPayout,
+      newRecurring,
       false,
       showNotification,
       fetchAffiliates,
@@ -422,15 +434,40 @@ export default function Dashboard() {
     );
   };
 
+  const handleAffiliateRecurring = async (id, recurring) => {
+    await handleAffiliateChange(id, undefined, recurring);
+  };
+
   const handleAffiliateDelete = async (id) => {
     await handleUpdateAffiliateLink(
       id,
       0,
+      false,
       true,
       showNotification,
       fetchAffiliates,
       whopId
     );
+  };
+
+  const handleSaveAffiliateDefaults = async () => {
+    try {
+      const res = await fetch("https://app.byxbot.com/php/update_affiliate_defaults.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          whop_id: whopId,
+          affiliate_default_percent: affiliateDefaultPercent,
+          affiliate_recurring: affiliateRecurring ? 1 : 0,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") throw new Error(json.message || `HTTP ${res.status}`);
+      showNotification({ type: "success", message: "Defaults saved" });
+    } catch (err) {
+      showNotification({ type: "error", message: err.message });
+    }
   };
 
   // payment filtering and pagination
@@ -799,13 +836,26 @@ export default function Dashboard() {
       </div>
 
       {role === "owner" && (
-        <AffiliateSection
-          links={affiliateLinks}
-          loading={affiliateLoading}
-          error={affiliateError}
-          onChangePercent={handleAffiliateChange}
-          onDelete={handleAffiliateDelete}
-        />
+        <>
+          <AffiliateDefaultsSection
+            isEditing={true}
+            defaultPercent={affiliateDefaultPercent}
+            setDefaultPercent={setAffiliateDefaultPercent}
+            recurring={affiliateRecurring}
+            setRecurring={setAffiliateRecurring}
+          />
+          <button className="btn-save" onClick={handleSaveAffiliateDefaults}>
+            Save Affiliate Settings
+          </button>
+          <AffiliateSection
+            links={affiliateLinks}
+            loading={affiliateLoading}
+            error={affiliateError}
+            onChangePercent={(id, val) => handleAffiliateChange(id, val, undefined)}
+            onChangeRecurring={handleAffiliateRecurring}
+            onDelete={handleAffiliateDelete}
+          />
+        </>
       )}
 
       <div className="table-section">

@@ -16,6 +16,7 @@ import MembersSection from "./MembersSection";
 import CampaignModal from "./CampaignModal";
 import OwnerTextMenu from "./OwnerTextMenu";
 import OwnerModules from "./OwnerModules";
+import AffiliateDefaultsSection from "./AffiliateDefaultsSection";
 
 export default function OwnerMode({
   whopData,
@@ -77,6 +78,10 @@ export default function OwnerMode({
   setEditLandingTexts,
   editModules,
   setEditModules,
+  editAffiliatePercent,
+  setEditAffiliatePercent,
+  editAffiliateRecurring,
+  setEditAffiliateRecurring,
   showDiscordSetup,
   setShowDiscordSetup,
 }) {
@@ -161,6 +166,16 @@ export default function OwnerMode({
           setEditModules={setEditModules}
           isEditing={isEditing}
         />
+
+        {editModules.affiliate && (
+          <AffiliateDefaultsSection
+            isEditing={isEditing}
+            defaultPercent={editAffiliatePercent}
+            setDefaultPercent={setEditAffiliatePercent}
+            recurring={editAffiliateRecurring}
+            setRecurring={setEditAffiliateRecurring}
+          />
+        )}
 
         {/* Features section */}
         {editModules.text && (

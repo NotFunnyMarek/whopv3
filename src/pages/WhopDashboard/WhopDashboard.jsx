@@ -77,6 +77,8 @@ export default function WhopDashboard() {
     course: false,
     text: true,
   });
+  const [editAffiliatePercent, setEditAffiliatePercent] = useState(30);
+  const [editAffiliateRecurring, setEditAffiliateRecurring] = useState(false);
 
   // Text-edit states
   const [editLongDescription, setEditLongDescription] = useState("");
@@ -140,7 +142,9 @@ export default function WhopDashboard() {
       setEditWhoFor,
       setEditFaq,
       setEditLandingTexts,
-      setEditModules
+      setEditModules,
+      setEditAffiliatePercent,
+      setEditAffiliateRecurring
     );
   }, [initialSlug, location.pathname]);
 
@@ -283,7 +287,9 @@ export default function WhopDashboard() {
       editFaq,
       editLandingTexts,
       editModules,
-      editCourseSteps
+      editCourseSteps,
+      editAffiliatePercent,
+      editAffiliateRecurring
     );
   };
 
@@ -344,7 +350,9 @@ export default function WhopDashboard() {
         setEditWhoFor,
         setEditFaq,
         setEditLandingTexts,
-        setEditModules
+        setEditModules,
+        setEditAffiliatePercent,
+        setEditAffiliateRecurring
       );
     } catch {
       // handleRequestWaitlist throws errors for conflict or server error
@@ -489,6 +497,10 @@ export default function WhopDashboard() {
       setEditLandingTexts={setEditLandingTexts}
       editModules={editModules}
       setEditModules={setEditModules}
+      editAffiliatePercent={editAffiliatePercent}
+      setEditAffiliatePercent={setEditAffiliatePercent}
+      editAffiliateRecurring={editAffiliateRecurring}
+      setEditAffiliateRecurring={setEditAffiliateRecurring}
       showDiscordSetup={showDiscordSetup}
       setShowDiscordSetup={setShowDiscordSetup}
     />
