@@ -499,10 +499,6 @@ export default function WhopDashboard() {
       setEditLandingTexts={setEditLandingTexts}
       editModules={editModules}
       setEditModules={setEditModules}
-      editAffiliatePercent={editAffiliatePercent}
-      setEditAffiliatePercent={setEditAffiliatePercent}
-      editAffiliateRecurring={editAffiliateRecurring}
-      setEditAffiliateRecurring={setEditAffiliateRecurring}
       showDiscordSetup={showDiscordSetup}
       setShowDiscordSetup={setShowDiscordSetup}
     />
