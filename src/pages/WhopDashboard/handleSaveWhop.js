@@ -24,6 +24,8 @@ export default async function handleSaveWhop(
   setEditLandingTexts,
   setEditModules,
   setEditCourseSteps,
+  setEditAffiliatePercent,
+  setEditAffiliateRecurring,
   waitlistEnabled,         // new parameter
   waitlistQuestions,       // new parameter
   editLongDescription,
