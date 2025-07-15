@@ -52,25 +52,42 @@ if (!$wh || !$wh['waitlist_enabled']) {
     exit;
 }
 
+// Determine affiliate link ID from cookie
+$affiliate_link_id = null;
+if (!empty($_COOKIE['affiliate_code'])) {
+    try {
+        $aff = $pdo->prepare('SELECT id FROM affiliate_links WHERE code=:c AND whop_id=:wid LIMIT 1');
+        $aff->execute(['c' => $_COOKIE['affiliate_code'], 'wid' => $whop_id]);
+        $affiliate_link_id = $aff->fetchColumn() ?: null;
+    } catch (Exception $e) {
+        // ignore
+    }
+}
+
 // Optionally collect answers from UI; for now, an empty array
 $answers = [];
 
 // Insert or update waitlist request
 try {
-    $ins = $pdo->prepare("
-        INSERT INTO waitlist_requests (whop_id, user_id, answers_json)
-        VALUES (:wid, :uid, :ans)
+    $ins = $pdo->prepare(
+        "INSERT INTO waitlist_requests (whop_id, user_id, affiliate_link_id, answers_json)
+        VALUES (:wid, :uid, :aff, :ans)
         ON DUPLICATE KEY UPDATE
             requested_at = NOW(),
             status = 'pending',
             handled_at = NULL,
-            answers_json = :ans
-    ");
-    $ins->execute([
-        'wid' => $whop_id,
-        'uid' => $user_id,
-        'ans' => json_encode($answers)
-    ]);
+            answers_json = :ans,
+            affiliate_link_id = VALUES(affiliate_link_id)"
+    );
+    $ins->bindValue('wid', $whop_id, PDO::PARAM_INT);
+    $ins->bindValue('uid', $user_id, PDO::PARAM_INT);
+    if ($affiliate_link_id === null) {
+        $ins->bindValue('aff', null, PDO::PARAM_NULL);
+    } else {
+        $ins->bindValue('aff', $affiliate_link_id, PDO::PARAM_INT);
+    }
+    $ins->bindValue('ans', json_encode($answers));
+    $ins->execute();
     echo json_encode(["status" => "success", "message" => "Request sent"]);
 } catch (PDOException $e) {
     http_response_code(500);
