@@ -25,6 +25,7 @@ export default function AffiliateSection({
               <th>User</th>
               <th>Clicks</th>
               <th>Signups</th>
+              <th>Earned</th>
               <th>Payout %</th>
               <th>Action</th>
             </tr>
@@ -35,6 +36,7 @@ export default function AffiliateSection({
                 <td>{l.username}</td>
                 <td>{l.clicks}</td>
                 <td>{l.signups}</td>
+                <td>{parseFloat(l.earned || 0).toFixed(2)}</td>
                 <td>
                   <input
                     type="number"
