@@ -60,7 +60,7 @@ try {
 // 5) Verify that the Whop exists and get owner_id + slug
 // ════════════════════════════════════════════════
 try {
-    $stmtOwner = $pdo->prepare("SELECT owner_id, slug FROM whops WHERE id = :whop_id LIMIT 1");
+    $stmtOwner = $pdo->prepare("SELECT owner_id, slug, affiliate_default_percent, affiliate_recurring FROM whops WHERE id = :whop_id LIMIT 1");
     $stmtOwner->execute(['whop_id' => $whopId]);
     $rowOwner = $stmtOwner->fetch(PDO::FETCH_ASSOC);
     if (!$rowOwner) {
@@ -70,6 +70,8 @@ try {
     }
     $ownerId  = intval($rowOwner['owner_id']);
     $whopSlug = $rowOwner['slug'];
+    $defaultPercent = floatval($rowOwner['affiliate_default_percent']);
+    $defaultRecurring = intval($rowOwner['affiliate_recurring']);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Error loading whop: " . $e->getMessage()]);
@@ -325,6 +327,8 @@ echo json_encode([
     "grossRevenue"       => $grossRevenue,
     "membersCount"       => $membersCount,
     "bans"               => $bans,
-    "moderators"         => $moderators
+    "moderators"         => $moderators,
+    "affiliate_default_percent" => $defaultPercent,
+    "affiliate_recurring"       => $defaultRecurring
 ]);
 exit;

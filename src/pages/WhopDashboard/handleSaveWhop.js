@@ -34,7 +34,9 @@ export default async function handleSaveWhop(
   editFaq,
   editLandingTexts,
   editModules,
-  editCourseSteps
+  editCourseSteps,
+  editAffiliatePercent,
+  editAffiliateRecurring
 ) {
   // 1) Validate name and description
   if (!editName.trim() || !editDescription.trim()) {
@@ -76,6 +78,8 @@ export default async function handleSaveWhop(
     faq:                editFaq,
     landing_texts:      editLandingTexts,
     modules:            editModules,
+    affiliate_default_percent: parseFloat(editAffiliatePercent) || 0,
+    affiliate_recurring: editAffiliateRecurring ? 1 : 0,
     course_steps:       editCourseSteps.map(s => ({
                           title: s.title.trim(),
                           content: s.content.trim(),
@@ -162,6 +166,12 @@ export default async function handleSaveWhop(
           text: true,
         }
       );
+      setEditAffiliatePercent(
+        data.affiliate_default_percent !== undefined
+          ? parseFloat(data.affiliate_default_percent)
+          : 30
+      );
+      setEditAffiliateRecurring(Boolean(data.affiliate_recurring));
 
       // Rebuild features state
       const newFeatures = data.features.map((f, idx) => ({

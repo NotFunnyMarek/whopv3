@@ -2,6 +2,7 @@
 export default async function handleUpdateAffiliateLink(
   linkId,
   payout,
+  recurring,
   del,
   showNotification,
   fetchLinks,
@@ -15,6 +16,7 @@ export default async function handleUpdateAffiliateLink(
       body: JSON.stringify({
         link_id: linkId,
         payout_percent: payout,
+        payout_recurring: recurring ? 1 : 0,
         delete: del,
       }),
     });

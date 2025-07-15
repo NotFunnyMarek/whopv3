@@ -8,6 +8,7 @@ export default function AffiliateSection({
   error,
   onChangePercent,
   onDelete,
+  onChangeRecurring,
 }) {
   return (
     <div className="whop-affiliate-section">
@@ -27,6 +28,7 @@ export default function AffiliateSection({
               <th>Signups</th>
               <th>Earned</th>
               <th>Payout %</th>
+              <th>Recurring</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -46,6 +48,15 @@ export default function AffiliateSection({
                     step="0.1"
                     onChange={(e) => onChangePercent(l.id, e.target.value)}
                   />
+                </td>
+                <td>
+                  <select
+                    value={l.payout_recurring ? "1" : "0"}
+                    onChange={(e) => onChangeRecurring(l.id, e.target.value === "1")}
+                  >
+                    <option value="0">One-time</option>
+                    <option value="1">Recurring</option>
+                  </select>
                 </td>
                 <td>
                   <button
