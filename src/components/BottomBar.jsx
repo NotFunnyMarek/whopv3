@@ -6,7 +6,6 @@ import '../styles/bottombar.scss';
 import { FiMenu, FiSun, FiMoon } from 'react-icons/fi';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
 
 export default function BottomBar() {
   const { theme, setLight, setDark } = useTheme();
