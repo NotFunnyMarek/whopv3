@@ -52,6 +52,7 @@ try {
             u.username,
             al.code,
             al.payout_percent,
+            al.payout_recurring,
             al.clicks,
             al.signups,
             COALESCE(SUM(p.amount), 0) AS earned
@@ -62,7 +63,7 @@ try {
           AND p.whop_id = al.whop_id
           AND p.type = 'payout'
          WHERE al.whop_id = :wid
-         GROUP BY al.id, al.user_id, u.username, al.code, al.payout_percent, al.clicks, al.signups
+         GROUP BY al.id, al.user_id, u.username, al.code, al.payout_percent, al.payout_recurring, al.clicks, al.signups
          ORDER BY al.id DESC"
     );
     $stmt->execute(['wid' => $whop_id]);
