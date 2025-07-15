@@ -277,6 +277,8 @@ export default function WhopDashboard() {
       setEditLandingTexts,
       setEditModules,
       setEditCourseSteps,
+      setEditAffiliatePercent,
+      setEditAffiliateRecurring,
       waitlistEnabled,
       waitlistQuestions,
       editLongDescription,
