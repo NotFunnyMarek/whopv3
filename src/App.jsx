@@ -1,6 +1,7 @@
 // src/App.jsx
 
 import React, { Suspense, lazy } from "react";
+import { useAuth } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import BottomBar from "./components/BottomBar";
@@ -28,7 +29,7 @@ const DiscordAccess        = lazy(() => import("./pages/DiscordAccess"));
 const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 
 const App = () => {
-  const loggedIn = Boolean(localStorage.getItem('authToken'));
+  const { isLoggedIn } = useAuth();
   return (
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
@@ -42,11 +43,11 @@ const App = () => {
             path="/intro"
             element={
               <div className="app-container">
-                {loggedIn && <Sidebar />}
-                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}>
+                {isLoggedIn && <Sidebar />}
+                <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}>
                   <Intro />
                 </main>
-                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
+                {isLoggedIn ? <BottomBar /> : <LoginPromptBar />}
               </div>
             }
           />
@@ -125,11 +126,11 @@ const App = () => {
             path="/c/:slug"
             element={
               <div className="app-container">
-                {loggedIn && <Sidebar />}
-                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}> 
+                {isLoggedIn && <Sidebar />}
+                <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
                   <WhopDashboard />
                 </main>
-                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
+                {isLoggedIn ? <BottomBar /> : <LoginPromptBar />}
               </div>
             }
           />
@@ -171,11 +172,11 @@ const App = () => {
             path="/"
             element={
               <div className="app-container">
-                {loggedIn && <Sidebar />}
-                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}> 
+                {isLoggedIn && <Sidebar />}
+                <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
                   <Home />
                 </main>
-                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
+                {isLoggedIn ? <BottomBar /> : <LoginPromptBar />}
               </div>
             }
           />

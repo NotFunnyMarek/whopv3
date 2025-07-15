@@ -1,26 +1,17 @@
 // src/components/ProtectedRoute.jsx
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Protected route: if `localStorage.getItem('authToken')` exists, the user is considered authenticated.
  * Otherwise, redirect to /login.
  */
 const ProtectedRoute = ({ children }) => {
-  const [checking, setChecking] = useState(true);
-  const [loggedIn, setLoggedIn] = useState(false);
+  const { isLoggedIn } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    setLoggedIn(!!token);
-    setChecking(false);
-  }, []);
-
-  if (checking) {
-    return <div className="text-center">Checking session…</div>;
-  }
-  if (!loggedIn) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
   return children;
