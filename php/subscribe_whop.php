@@ -199,9 +199,10 @@ try {
 
     // b) Handle affiliate payout if cookie is set
     $affiliate_amount = 0.0;
+    $affiliate_link_id = null;
     if (!empty($_COOKIE['affiliate_code'])) {
         $affStmt = $pdo->prepare(
-            'SELECT id, user_id, payout_percent FROM affiliate_links WHERE code=:c AND whop_id=:wid LIMIT 1'
+            'SELECT id, user_id, payout_percent, payout_recurring FROM affiliate_links WHERE code=:c AND whop_id=:wid LIMIT 1'
         );
         $affStmt->execute([
             'c'   => $_COOKIE['affiliate_code'],
@@ -209,6 +210,7 @@ try {
         ]);
         $affRow = $affStmt->fetch(PDO::FETCH_ASSOC);
         if ($affRow) {
+            $affiliate_link_id = (int)$affRow['id'];
             $affiliate_amount = $price * (floatval($affRow['payout_percent']) / 100.0);
             $affUpd = $pdo->prepare('UPDATE users4 SET balance = balance + :amt WHERE id = :aid');
             $affUpd->execute([
@@ -267,9 +269,9 @@ try {
     // e) Insert into memberships
     $insertStmt = $pdo->prepare("
       INSERT INTO memberships
-        (user_id, whop_id, price, currency, is_recurring, billing_period, start_at, next_payment_at, status)
+        (user_id, whop_id, price, currency, is_recurring, billing_period, start_at, next_payment_at, affiliate_link_id, status)
       VALUES
-        (:user_id, :whop_id, :price, :currency, :is_recurring, :billing_period, :start_at, :next_payment_at, 'active')
+        (:user_id, :whop_id, :price, :currency, :is_recurring, :billing_period, :start_at, :next_payment_at, :aff_link, 'active')
     ");
     $insertStmt->execute([
         'user_id'         => $user_id,
@@ -279,7 +281,8 @@ try {
         'is_recurring'    => $is_recurring,
         'billing_period'  => $billing_period,
         'start_at'        => $startAt,
-        'next_payment_at' => $nextPaymentAt
+        'next_payment_at' => $nextPaymentAt,
+        'aff_link'       => $affiliate_link_id
     ]);
 
     // f) If free Whop, add to whop_members

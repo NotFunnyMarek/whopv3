@@ -22,6 +22,7 @@ if (!$user_id) {
 $data = json_decode(file_get_contents('php://input'), true);
 $link_id = isset($data['link_id']) ? (int)$data['link_id'] : 0;
 $payout = isset($data['payout_percent']) ? floatval($data['payout_percent']) : null;
+$recurring = isset($data['payout_recurring']) ? intval($data['payout_recurring']) : null;
 $delete = isset($data['delete']) ? boolval($data['delete']) : false;
 if ($link_id <= 0) {
     http_response_code(400);
@@ -54,8 +55,8 @@ try {
         $del = $pdo->prepare("DELETE FROM affiliate_links WHERE id=:id");
         $del->execute(['id' => $link_id]);
     } else {
-        $upd = $pdo->prepare("UPDATE affiliate_links SET payout_percent=:p WHERE id=:id");
-        $upd->execute(['p' => $payout, 'id' => $link_id]);
+        $upd = $pdo->prepare("UPDATE affiliate_links SET payout_percent=:p, payout_recurring=:r WHERE id=:id");
+        $upd->execute(['p' => $payout, 'r' => $recurring, 'id' => $link_id]);
     }
 
     echo json_encode(["status" => "success"]);

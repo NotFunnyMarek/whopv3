@@ -123,7 +123,7 @@ try {
     // b) Handle affiliate payout if waitlist recorded a link
     $affiliate_amount = 0.0;
     if ($affiliate_link_id) {
-        $affStmt = $pdo->prepare('SELECT user_id, payout_percent FROM affiliate_links WHERE id = :id LIMIT 1');
+        $affStmt = $pdo->prepare('SELECT user_id, payout_percent, payout_recurring FROM affiliate_links WHERE id = :id LIMIT 1');
         $affStmt->execute(['id' => $affiliate_link_id]);
         $affRow = $affStmt->fetch(PDO::FETCH_ASSOC);
         if ($affRow) {
@@ -192,12 +192,12 @@ try {
         $nextPaymentAt = null;
     }
 
-    $pdo->prepare("
-      INSERT INTO memberships
-        (user_id, whop_id, price, currency, is_recurring, billing_period, start_at, next_payment_at, status)
-      VALUES
-        (:user_id, :whop_id, :price, :currency, :recurring, :period, :start_at, :next_at, 'active')
-    ")->execute([
+    $pdo->prepare(
+      "INSERT INTO memberships
+        (user_id, whop_id, price, currency, is_recurring, billing_period, start_at, next_payment_at, affiliate_link_id, status)
+       VALUES
+        (:user_id, :whop_id, :price, :currency, :recurring, :period, :start_at, :next_at, :aff_link, 'active')"
+    )->execute([
         'user_id'   => $member_id,
         'whop_id'   => $whop_id,
         'price'     => $price,
@@ -205,7 +205,8 @@ try {
         'recurring' => $is_recurring,
         'period'    => $billing_period,
         'start_at'  => $startAt,
-        'next_at'   => $nextPaymentAt
+        'next_at'   => $nextPaymentAt,
+        'aff_link' => $affiliate_link_id
     ]);
 
     // f) Delete the request from the waitlist

@@ -48,26 +48,32 @@ try {
         }
     }
 
-    $sel = $pdo->prepare("SELECT id, code, payout_percent, clicks, signups FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
+    $sel = $pdo->prepare("SELECT id, code, payout_percent, payout_recurring, clicks, signups FROM affiliate_links WHERE user_id=:uid AND whop_id=:wid LIMIT 1");
     $sel->execute(['uid' => $user_id, 'wid' => $whop_id]);
     $row = $sel->fetch(PDO::FETCH_ASSOC);
     if ($row) {
         $code = $row['code'];
         $payout = (float)$row['payout_percent'];
+        $recurring = (int)$row['payout_recurring'];
         $clicks = (int)$row['clicks'];
         $signups = (int)$row['signups'];
     } else {
         $code = bin2hex(random_bytes(8));
-        $payout = 30.0;
+        $def = $pdo->prepare("SELECT affiliate_default_percent, affiliate_recurring FROM whops WHERE id=:wid LIMIT 1");
+        $def->execute(['wid' => $whop_id]);
+        $drow = $def->fetch(PDO::FETCH_ASSOC);
+        $payout = $drow ? (float)$drow['affiliate_default_percent'] : 30.0;
+        $recurring = $drow ? (int)$drow['affiliate_recurring'] : 0;
         $clicks = 0;
         $signups = 0;
-        $ins = $pdo->prepare("INSERT INTO affiliate_links (user_id, whop_id, code) VALUES (:uid, :wid, :code)");
-        $ins->execute(['uid' => $user_id, 'wid' => $whop_id, 'code' => $code]);
+        $ins = $pdo->prepare("INSERT INTO affiliate_links (user_id, whop_id, code, payout_percent, payout_recurring) VALUES (:uid, :wid, :code, :payout, :rec)");
+        $ins->execute(['uid' => $user_id, 'wid' => $whop_id, 'code' => $code, 'payout' => $payout, 'rec' => $recurring]);
     }
     echo json_encode([
         "status" => "success",
         "code" => $code,
         "payout_percent" => $payout,
+        "payout_recurring" => $recurring,
         "clicks" => $clicks,
         "signups" => $signups
     ]);
