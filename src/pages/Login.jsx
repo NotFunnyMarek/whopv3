@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../components/NotificationProvider';
 import TwoFactorCodeInput from '../components/TwoFactorCodeInput';
 import '../styles/login.scss';
@@ -11,6 +12,7 @@ const GOOGLE_CLIENT_ID = '477836153268-gmsf092g4nprn297cov055if8n66reel.apps.goo
 
 const Login = () => {
   const { showNotification } = useNotifications();
+  const { login } = useAuth();
   const [twofaToken, setTwofaToken] = useState(null);
   const [idToken, setIdToken] = useState(null);
   const [email, setEmail] = useState('');
@@ -150,6 +152,7 @@ const handleResend = async () => {
         const username = data.user.username || data.user.email.split('@')[0];
         localStorage.setItem('authToken', 'loggedIn');
         localStorage.setItem('user', JSON.stringify({ ...data.user, username }));
+        login();
         showNotification({ type: 'success', message: 'Login successful.' });
         setTimeout(() => navigate('/'), 1000);
       } else {

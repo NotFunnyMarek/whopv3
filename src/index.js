@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './components/NotificationProvider';
 
 import './index.scss';
@@ -18,8 +19,10 @@ const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(
   <ThemeProvider>
-    <NotificationProvider>
-      <App />
-    </NotificationProvider>
+    <AuthProvider>
+      <NotificationProvider>
+        <App />
+      </NotificationProvider>
+    </AuthProvider>
   </ThemeProvider>
 );

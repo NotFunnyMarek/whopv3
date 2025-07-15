@@ -1,13 +1,16 @@
 // src/components/BottomBar.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/bottombar.scss';
 import { FiMenu, FiSun, FiMoon } from 'react-icons/fi';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function BottomBar() {
   const { theme, setLight, setDark } = useTheme();
+  const { logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hoveredX, setHoveredX] = useState(null);
   const [joinedWhops, setJoinedWhops] = useState([]);
@@ -128,6 +131,8 @@ export default function BottomBar() {
       });
       if (res.ok) {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        logout();
         navigate('/login');
       } else {
         console.error(`Logout failed (HTTP ${res.status})`);
