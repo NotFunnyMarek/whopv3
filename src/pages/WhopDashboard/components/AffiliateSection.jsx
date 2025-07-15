@@ -46,7 +46,9 @@ export default function AffiliateSection({
                     min="0"
                     max="100"
                     step="0.1"
-                    onChange={(e) => onChangePercent(l.id, e.target.value)}
+                    onChange={(e) =>
+                      onChangePercent(l.id, parseFloat(e.target.value))
+                    }
                   />
                 </td>
                 <td>
