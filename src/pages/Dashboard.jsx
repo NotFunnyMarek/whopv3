@@ -420,7 +420,13 @@ export default function Dashboard() {
 
   const handleAffiliateChange = async (id, payout, recurring) => {
     const link = affiliateLinks.find((l) => l.id === id) || {};
-    const newPayout = typeof payout === "number" ? payout : link.payout_percent;
+    let newPayout;
+    if (payout !== undefined) {
+      const parsed = parseFloat(payout);
+      newPayout = isNaN(parsed) ? link.payout_percent : parsed;
+    } else {
+      newPayout = link.payout_percent;
+    }
     const newRecurring =
       typeof recurring === "boolean" ? recurring : Boolean(link.payout_recurring);
     await handleUpdateAffiliateLink(
