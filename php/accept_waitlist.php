@@ -51,6 +51,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT
           wr.user_id,
+          wr.affiliate_link_id,
           w.owner_id,
           w.price,
           w.currency,
@@ -76,6 +77,8 @@ try {
         echo json_encode(["status" => "error", "message" => "Forbidden – you do not own this Whop"]);
         exit;
     }
+
+    $affiliate_link_id = isset($row['affiliate_link_id']) ? (int)$row['affiliate_link_id'] : null;
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "DB error: " . $e->getMessage()]);
@@ -117,11 +120,34 @@ try {
     $pdo->prepare("UPDATE users4 SET balance = balance - :price WHERE id = :uid")
         ->execute(['price' => $price, 'uid' => $member_id]);
 
-    // b) Credit the owner
-    $pdo->prepare("UPDATE users4 SET balance = balance + :price WHERE id = :own")
-        ->execute(['price' => $price, 'own' => $row['owner_id']]);
+    // b) Handle affiliate payout if waitlist recorded a link
+    $affiliate_amount = 0.0;
+    if ($affiliate_link_id) {
+        $affStmt = $pdo->prepare('SELECT user_id, payout_percent FROM affiliate_links WHERE id = :id LIMIT 1');
+        $affStmt->execute(['id' => $affiliate_link_id]);
+        $affRow = $affStmt->fetch(PDO::FETCH_ASSOC);
+        if ($affRow) {
+            $affiliate_amount = $price * (floatval($affRow['payout_percent']) / 100.0);
+            $pdo->prepare('UPDATE users4 SET balance = balance + :amt WHERE id = :aid')
+                ->execute(['amt' => $affiliate_amount, 'aid' => (int)$affRow['user_id']]);
+            $pdo->prepare('UPDATE affiliate_links SET signups = signups + 1 WHERE id = :id')
+                ->execute(['id' => $affiliate_link_id]);
+            $pdo->prepare('INSERT INTO payments (user_id, whop_id, amount, currency, payment_date, type) VALUES (:uid, :wid, :amt, :curr, UTC_TIMESTAMP(), "payout")')
+                ->execute([
+                    'uid'  => (int)$affRow['user_id'],
+                    'wid'  => $whop_id,
+                    'amt'  => $affiliate_amount,
+                    'curr' => $currency
+                ]);
+        }
+    }
 
-    // c) Insert into payments
+    // c) Credit the owner with remaining amount
+    $owner_amount = $price - $affiliate_amount;
+    $pdo->prepare("UPDATE users4 SET balance = balance + :price WHERE id = :own")
+        ->execute(['price' => $owner_amount, 'own' => $row['owner_id']]);
+
+    // d) Insert into payments
     $now = new DateTime('now', new DateTimeZone('UTC'));
     $startAt = $now->format('Y-m-d H:i:s');
     $payType = $is_recurring === 1 ? 'recurring' : 'one_time';
@@ -140,7 +166,7 @@ try {
         'type'         => $payType
     ]);
 
-    // d) If price is 0, add to whop_members (optional)
+    // e) If price is 0, add to whop_members (optional)
     if ($price <= 0.00) {
         $pdo->prepare("
           INSERT IGNORE INTO whop_members (user_id, whop_id, joined_at)
@@ -148,7 +174,7 @@ try {
         ")->execute(['user_id'=>$member_id, 'whop_id'=>$whop_id]);
     }
 
-    // e) Insert into memberships
+    // f) Insert into memberships
     if ($is_recurring === 1) {
         // Billing period parsing: could be "30 days", "1 year", etc.
         if (preg_match('/^(\d+)\s*(min(ute)?s?)$/i', $billing_period, $m)) {

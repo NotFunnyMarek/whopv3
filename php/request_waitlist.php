@@ -73,6 +73,22 @@ try {
     exit;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 5a) Determine affiliate link ID from cookie if present
+// ─────────────────────────────────────────────────────────────────────────────
+$affiliate_link_id = null;
+if (!empty($_COOKIE['affiliate_code'])) {
+    try {
+        $aff = $pdo->prepare(
+            'SELECT id FROM affiliate_links WHERE code = :c AND whop_id = :wid LIMIT 1'
+        );
+        $aff->execute(['c' => $_COOKIE['affiliate_code'], 'wid' => $whop_id]);
+        $affiliate_link_id = $aff->fetchColumn() ?: null;
+    } catch (Exception $e) {
+        // ignore failures – treat as no affiliate
+    }
+}
+
 // ——————————————————————————————————————————————————————————————
 // 6) Remove any existing waitlist requests for this user+whop
 // ——————————————————————————————————————————————————————————————
@@ -96,13 +112,18 @@ try {
 try {
     $sql = "
         INSERT INTO waitlist_requests
-          (whop_id, user_id, requested_at, status, answers_json)
+          (whop_id, user_id, affiliate_link_id, requested_at, status, answers_json)
         VALUES
-          (:wid, :uid, UTC_TIMESTAMP(), 'pending', :aj)
+          (:wid, :uid, :aff, UTC_TIMESTAMP(), 'pending', :aj)
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':wid', $whop_id, PDO::PARAM_INT);
     $stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
+    if ($affiliate_link_id === null) {
+        $stmt->bindValue(':aff', null, PDO::PARAM_NULL);
+    } else {
+        $stmt->bindValue(':aff', $affiliate_link_id, PDO::PARAM_INT);
+    }
     if ($answers_json === null) {
         $stmt->bindValue(':aj', null, PDO::PARAM_NULL);
     } else {

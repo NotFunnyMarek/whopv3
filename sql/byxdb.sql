@@ -1914,6 +1914,7 @@ INSERT INTO `verify_temp` (`id`, `email`, `pass`, `verify_code`, `expiry_time`) 
 CREATE TABLE `waitlist_requests` (
   `whop_id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
+  `affiliate_link_id` int(10) UNSIGNED DEFAULT NULL,
   `requested_at` datetime NOT NULL DEFAULT current_timestamp(),
   `status` enum('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
   `handled_at` datetime DEFAULT NULL,
@@ -2397,7 +2398,8 @@ ALTER TABLE `verify_temp`
 ALTER TABLE `waitlist_requests`
   ADD PRIMARY KEY (`whop_id`,`user_id`),
   ADD KEY `status` (`status`),
-  ADD KEY `fk_waitlist_user` (`user_id`);
+  ADD KEY `fk_waitlist_user` (`user_id`),
+  ADD KEY `fk_waitlist_afflink` (`affiliate_link_id`);
 
 --
 -- Indexes for table `whops`
@@ -2813,7 +2815,8 @@ ALTER TABLE `user_refresh_tokens`
 --
 ALTER TABLE `waitlist_requests`
   ADD CONSTRAINT `fk_waitlist_user` FOREIGN KEY (`user_id`) REFERENCES `users4` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_waitlist_whop` FOREIGN KEY (`whop_id`) REFERENCES `whops` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_waitlist_whop` FOREIGN KEY (`whop_id`) REFERENCES `whops` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_waitlist_afflink` FOREIGN KEY (`affiliate_link_id`) REFERENCES `affiliate_links` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `whops`
