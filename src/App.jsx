@@ -42,10 +42,11 @@ const App = () => {
             path="/intro"
             element={
               <div className="app-container">
-                <Sidebar />
-                <main className="main-content">
+                {loggedIn && <Sidebar />}
+                <main className={`main-content${loggedIn ? '' : ' no-sidebar'}`}>
                   <Intro />
                 </main>
+                {loggedIn ? <BottomBar /> : <LoginPromptBar />}
               </div>
             }
           />

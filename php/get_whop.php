@@ -21,14 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // =========================================
 require_once __DIR__ . '/session_init.php';
 $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-if ($user_id <= 0) {
-    http_response_code(401);
-    echo json_encode([
-        "status"  => "error",
-        "message" => "Unauthorized – you are not logged in"
-    ]);
-    exit;
-}
+$logged_in = $user_id > 0;
 
 // =========================================
 // 2) Database connection
@@ -238,22 +231,27 @@ if ($method === 'GET') {
             $fs->execute(['wid' => $w['id']]);
             $features = $fs->fetchAll(PDO::FETCH_ASSOC);
 
-            // user balance
-            $b = $pdo->prepare("SELECT balance FROM users4 WHERE id = :uid LIMIT 1");
-            $b->execute(['uid' => $user_id]);
-            $user_balance = (float)$b->fetchColumn();
+            // user-related data
+            $user_balance = 0;
+            $is_pending_waitlist = 0;
+            $is_accepted_waitlist = 0;
+            $waitlist_answers = [];
+            if ($logged_in) {
+                $b = $pdo->prepare("SELECT balance FROM users4 WHERE id = :uid LIMIT 1");
+                $b->execute(['uid' => $user_id]);
+                $user_balance = (float)$b->fetchColumn();
 
-            // waitlist status
-            $wl = $pdo->prepare("
-                SELECT status, answers_json
-                FROM waitlist_requests
-                WHERE user_id = :uid AND whop_id = :wid
-            ");
-            $wl->execute(['uid' => $user_id, 'wid' => $w['id']]);
-            $r = $wl->fetch(PDO::FETCH_ASSOC);
-            $is_pending_waitlist  = ($r && $r['status'] === 'pending')  ? 1 : 0;
-            $is_accepted_waitlist = ($r && $r['status'] === 'accepted') ? 1 : 0;
-            $waitlist_answers     = $r['answers_json'] ? json_decode($r['answers_json'], true) : [];
+                $wl = $pdo->prepare(
+                    "SELECT status, answers_json
+                    FROM waitlist_requests
+                    WHERE user_id = :uid AND whop_id = :wid"
+                );
+                $wl->execute(['uid' => $user_id, 'wid' => $w['id']]);
+                $r = $wl->fetch(PDO::FETCH_ASSOC);
+                $is_pending_waitlist  = ($r && $r['status'] === 'pending')  ? 1 : 0;
+                $is_accepted_waitlist = ($r && $r['status'] === 'accepted') ? 1 : 0;
+                $waitlist_answers     = $r['answers_json'] ? json_decode($r['answers_json'], true) : [];
+            }
 
             // course progress for this user
             $cp = $pdo->prepare(
@@ -316,6 +314,14 @@ if ($method === 'GET') {
 
     // ----- list whops owned by the user -----
     if (isset($_GET['owner']) && $_GET['owner'] === 'me') {
+        if (!$logged_in) {
+            http_response_code(401);
+            echo json_encode([
+                "status"  => "error",
+                "message" => "Unauthorized – you are not logged in"
+            ]);
+            exit;
+        }
         try {
             $q2 = $pdo->prepare("
                 SELECT
