@@ -68,7 +68,20 @@ try {
     );
     $stmt->execute(['wid' => $whop_id]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode(["status" => "success", "data" => $rows]);
+    $formatted = array_map(function ($row) {
+        return [
+            'id' => (int)$row['id'],
+            'user_id' => (int)$row['user_id'],
+            'username' => $row['username'],
+            'code' => $row['code'],
+            'payout_percent' => floatval($row['payout_percent']),
+            'payout_recurring' => intval($row['payout_recurring']),
+            'clicks' => (int)$row['clicks'],
+            'signups' => (int)$row['signups'],
+            'earned' => floatval($row['earned']),
+        ];
+    }, $rows);
+    echo json_encode(["status" => "success", "data" => $formatted]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

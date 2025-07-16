@@ -21,7 +21,14 @@ export default function AffiliateDefaultsSection({
             max="100"
             step="0.1"
             value={defaultPercent}
-            onChange={(e) => setDefaultPercent(e.target.value)}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              if (!isNaN(val)) {
+                setDefaultPercent(Math.min(100, Math.max(0, val)));
+              } else {
+                setDefaultPercent(0);
+              }
+            }}
           />
         </label>
         <label>

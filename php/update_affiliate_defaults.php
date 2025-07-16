@@ -19,6 +19,10 @@ if (!$user_id) {
 $data = json_decode(file_get_contents('php://input'), true);
 $whop_id = isset($data['whop_id']) ? (int)$data['whop_id'] : 0;
 $percent = isset($data['affiliate_default_percent']) ? floatval($data['affiliate_default_percent']) : null;
+if ($percent !== null) {
+    if ($percent < 0) $percent = 0.0;
+    if ($percent > 100) $percent = 100.0;
+}
 $recurring = isset($data['affiliate_recurring']) ? intval($data['affiliate_recurring']) : 0;
 if ($whop_id <= 0 || $percent === null) {
     http_response_code(400);

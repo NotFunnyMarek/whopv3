@@ -199,7 +199,9 @@ try {
         ':landing_texts'    => $landing_json,
         ':modules'                 => $modules_json,
         ':course_steps'            => $course_json,
-        ':affiliate_default_percent' => isset($data['affiliate_default_percent']) ? floatval($data['affiliate_default_percent']) : 0,
+        ':affiliate_default_percent' => isset($data['affiliate_default_percent'])
+            ? max(0.0, min(100.0, floatval($data['affiliate_default_percent'])))
+            : 0,
         ':affiliate_recurring'       => isset($data['affiliate_recurring']) ? intval($data['affiliate_recurring']) : 0,
         ':id'                        => $whopId
     ]);
