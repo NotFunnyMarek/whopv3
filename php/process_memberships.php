@@ -29,9 +29,14 @@ try {
           m.billing_period  AS billing_period,
           m.next_payment_at AS next_payment_at,
           m.is_recurring    AS is_recurring,
-          w.owner_id        AS owner_id
+          m.affiliate_link_id AS affiliate_link_id,
+          w.owner_id        AS owner_id,
+          al.user_id        AS aff_user_id,
+          al.payout_percent AS aff_percent,
+          al.payout_recurring AS aff_recurring
         FROM memberships AS m
         JOIN whops        AS w ON m.whop_id = w.id
+        LEFT JOIN affiliate_links al ON m.affiliate_link_id = al.id
         WHERE m.status = 'active'
           AND m.next_payment_at <= UTC_TIMESTAMP()
     ";
@@ -49,6 +54,10 @@ try {
         $ownerId       = (int)$r['owner_id'];
         $currentNext   = $r['next_payment_at'];   // UTC time that has just passed
         $isRecurring   = (int)$r['is_recurring'];
+        $affLinkId     = $r['affiliate_link_id'] ? (int)$r['affiliate_link_id'] : null;
+        $affUserId     = isset($r['aff_user_id']) ? (int)$r['aff_user_id'] : null;
+        $affPercent    = isset($r['aff_percent']) ? (float)$r['aff_percent'] : 0.0;
+        $affRecurring  = isset($r['aff_recurring']) ? (int)$r['aff_recurring'] : 0;
 
         // 1) If the user has disabled recurrence (is_recurring = 0),
         //    cancel the membership without further payment.
@@ -134,13 +143,25 @@ try {
             ");
             $upd1->execute(['price' => $price, 'uid' => $uid]);
 
+            $affiliateAmount = 0.0;
+            if ($affLinkId && $affRecurring === 1 && $affUserId) {
+                $affiliateAmount = $price * ($affPercent / 100.0);
+                $affUpd = $pdo->prepare("UPDATE users4 SET balance = balance + :amt WHERE id = :aid");
+                $affUpd->execute(['amt' => $affiliateAmount, 'aid' => $affUserId]);
+                $affPay = $pdo->prepare("INSERT INTO payments (user_id, whop_id, amount, currency, payment_date, type) VALUES (:uid, :wid, :amt, :curr, :pd, 'payout')");
+                $affPay->execute([
+                    'uid'  => $affUserId,
+                    'wid'  => $wid,
+                    'amt'  => $affiliateAmount,
+                    'curr' => $currency,
+                    'pd'   => $currentNext
+                ]);
+            }
+
             // 3b) Credit the Whop owner
-            $upd2 = $pdo->prepare("
-                UPDATE users4
-                SET balance = balance + :price
-                WHERE id = :owner_id
-            ");
-            $upd2->execute(['price' => $price, 'owner_id' => $ownerId]);
+            $upd2 = $pdo->prepare("UPDATE users4 SET balance = balance + :price WHERE id = :owner_id");
+            $ownerAmount = $price - $affiliateAmount;
+            $upd2->execute(['price' => $ownerAmount, 'owner_id' => $ownerId]);
 
             // 3c) Insert a 'recurring' record
             $payStmt = $pdo->prepare("

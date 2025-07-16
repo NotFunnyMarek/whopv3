@@ -440,10 +440,6 @@ export default function Dashboard() {
     );
   };
 
-  const handleAffiliateRecurring = async (id, recurring) => {
-    await handleAffiliateChange(id, undefined, recurring);
-  };
-
   const handleAffiliateDelete = async (id) => {
     await handleUpdateAffiliateLink(
       id,
@@ -857,8 +853,7 @@ export default function Dashboard() {
             links={affiliateLinks}
             loading={affiliateLoading}
             error={affiliateError}
-            onChangePercent={(id, val) => handleAffiliateChange(id, val, undefined)}
-            onChangeRecurring={handleAffiliateRecurring}
+            onSave={handleAffiliateChange}
             onDelete={handleAffiliateDelete}
           />
         </>
