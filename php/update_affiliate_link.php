@@ -22,6 +22,10 @@ if (!$user_id) {
 $data = json_decode(file_get_contents('php://input'), true);
 $link_id = isset($data['link_id']) ? (int)$data['link_id'] : 0;
 $payout = isset($data['payout_percent']) ? floatval($data['payout_percent']) : null;
+if ($payout !== null) {
+    if ($payout < 0) $payout = 0.0;
+    if ($payout > 100) $payout = 100.0;
+}
 $recurring = isset($data['payout_recurring']) ? intval($data['payout_recurring']) : null;
 $delete = isset($data['delete']) ? boolval($data['delete']) : false;
 if ($link_id <= 0) {

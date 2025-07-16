@@ -79,9 +79,13 @@ export default function AffiliateSection({
                     min="0"
                     max="100"
                     step="0.1"
-                    onChange={(e) =>
-                      onChangePercent(l.id, parseFloat(e.target.value))
-                    }
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val)) {
+                        const clamped = Math.min(100, Math.max(0, val));
+                        onChangePercent(l.id, clamped);
+                      }
+                    }}
                   />
                 </td>
                 <td>

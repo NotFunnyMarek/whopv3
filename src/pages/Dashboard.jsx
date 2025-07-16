@@ -427,6 +427,7 @@ export default function Dashboard() {
     } else {
       newPayout = link.payout_percent;
     }
+    newPayout = Math.min(100, Math.max(0, newPayout));
     const newRecurring =
       typeof recurring === "boolean" ? recurring : Boolean(link.payout_recurring);
     await handleUpdateAffiliateLink(
@@ -460,7 +461,7 @@ export default function Dashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           whop_id: whopId,
-          affiliate_default_percent: affiliateDefaultPercent,
+          affiliate_default_percent: Math.min(100, Math.max(0, affiliateDefaultPercent)),
           affiliate_recurring: affiliateRecurring ? 1 : 0,
         }),
       });
