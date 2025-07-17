@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import InitialLoader from './components/InitialLoader';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './components/NotificationProvider';
@@ -21,6 +22,7 @@ root.render(
   <ThemeProvider>
     <AuthProvider>
       <NotificationProvider>
+        <InitialLoader />
         <App />
       </NotificationProvider>
     </AuthProvider>
