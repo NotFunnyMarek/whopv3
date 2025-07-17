@@ -821,6 +821,15 @@
   }
 }
 
+@media (max-width: 480px) {
+  .whop-banner {
+    height: 140px;
+  }
+  .whop-content {
+    padding: 0 var(--spacing-sm);
+  }
+}
+
 .owner-text-menu {
   position: fixed;
   top: 0;

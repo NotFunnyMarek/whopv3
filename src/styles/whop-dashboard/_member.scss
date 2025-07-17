@@ -599,3 +599,13 @@
     margin-bottom: var(--spacing-md);
   }
 }
+
+@media (max-width: 480px) {
+  .member-sidebar .nav-button {
+    font-size: 0.875rem;
+    padding: var(--spacing-xxs) var(--spacing-xs);
+  }
+  .member-banner {
+    height: 8rem;
+  }
+}
