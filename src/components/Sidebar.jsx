@@ -66,7 +66,6 @@ export default function Sidebar({ isOpen, onClose }) {
         </button>
         {/* Logo */}
         <div className="sidebar__logo">
-          <img src={Logo} alt="Platform Logo" />
         </div>
 
         {/* Navigation */}
