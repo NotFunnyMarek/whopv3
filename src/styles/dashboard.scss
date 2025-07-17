@@ -8,6 +8,25 @@
   padding: 2rem;
 }
 
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .filter-input {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .table-section {
+    overflow-x: auto;
+  }
+
+  .dashboard-table {
+    min-width: 600px;
+  }
+}
+
 .dashboard-title {
   margin-bottom: 1.5rem;
   font-size: 2rem;
