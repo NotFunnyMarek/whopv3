@@ -16,11 +16,13 @@ import {
 import { FaUserShield, FaDollarSign } from "react-icons/fa";
 import ChatModal from "./Chat/ChatModal";
 import SearchModal from "./SearchModal";
+import useJoinedWhops from "../hooks/useJoinedWhops";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { joinedWhops } = useJoinedWhops();
   const navigate = useNavigate();
 
   // Load user profile data (avatar)
@@ -149,6 +151,27 @@ export default function Sidebar({ isOpen, onClose }) {
             </li>
           </ul>
         </nav>
+        {/* Joined Whops shown on mobile */}
+        <div className="sidebar__whops-list">
+          {joinedWhops.map((whop) => (
+            <button
+              key={whop.slug}
+              className="sidebar__whops-item"
+              onClick={() => {
+                navigate(`/c/${whop.slug}?mode=member`);
+                if (window.innerWidth <= 1024) onClose?.();
+              }}
+              type="button"
+            >
+              <img
+                src={whop.banner_url}
+                alt={whop.slug}
+                className="sidebar__whop-avatar"
+              />
+              <span>{whop.name}</span>
+            </button>
+          ))}
+        </div>
       </aside>
 
       {/* Search Modal */}

@@ -118,6 +118,50 @@
   }
 }
 
+.sidebar__whops-list {
+  display: none;
+
+  @include respond(sm) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: var(--spacing-sm) 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-md);
+    gap: var(--spacing-xs);
+  }
+
+  .sidebar__whops-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: none;
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    width: 100%;
+    color: var(--text-color);
+    border-radius: var(--radius-base);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition);
+
+    &:hover {
+      background-color: var(--border-color);
+    }
+
+    .sidebar__whop-avatar {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    span {
+      font-size: 0.9rem;
+    }
+  }
+}
+
 // Aby hlavní obsah (např. .main-content) nezačínal pod sidebar:
 // Váš hlavní wrapper v JSX by měl mít třídu .main-content, a níže doplnit margin‐left.
 .main-content {
