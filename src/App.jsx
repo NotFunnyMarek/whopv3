@@ -1,13 +1,15 @@
 // src/App.jsx
 
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { useAuth } from "./context/AuthContext";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import BottomBar from "./components/BottomBar";
 import LoginPromptBar from "./components/LoginPromptBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Loading from "./components/Loading";
+import MobileHeader from "./components/MobileHeader";
+import PageLoader from "./components/PageLoader";
 
 const Home                 = lazy(() => import("./pages/Home"));
 const Intro                = lazy(() => import("./pages/Intro"));
@@ -30,8 +32,10 @@ const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 
 const App = () => {
   const { isLoggedIn } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
     <BrowserRouter>
+      <PageLoader />
       <Suspense fallback={<Loading />}>
         <Routes>
           {/* Public routes */}
@@ -43,8 +47,13 @@ const App = () => {
             path="/intro"
             element={
               <div className="app-container">
-                {isLoggedIn && <Sidebar />}
-                <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}>
+                {isLoggedIn && (
+                  <>
+                    <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  </>
+                )}
+                <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
                   <Intro />
                 </main>
                 {isLoggedIn ? <BottomBar /> : <LoginPromptBar />}
@@ -58,7 +67,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Onboarding />
                   </main>
@@ -73,7 +83,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Setup />
                   </main>
@@ -86,7 +97,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <ChooseLink />
                   </main>
@@ -99,7 +111,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <FeaturesSetup />
                   </main>
@@ -112,7 +125,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <BannerSetup />
                   </main>
@@ -126,7 +140,12 @@ const App = () => {
             path="/c/:slug"
             element={
               <div className="app-container">
-                {isLoggedIn && <Sidebar />}
+                {isLoggedIn && (
+                  <>
+                    <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  </>
+                )}
                 <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
                   <WhopDashboard />
                 </main>
@@ -141,7 +160,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Dashboard />
                   </main>
@@ -157,7 +177,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <SubmissionsOverview />
                   </main>
@@ -172,7 +193,12 @@ const App = () => {
             path="/"
             element={
               <div className="app-container">
-                {isLoggedIn && <Sidebar />}
+                {isLoggedIn && (
+                  <>
+                    <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  </>
+                )}
                 <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
                   <Home />
                 </main>
@@ -187,7 +213,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Profile />
                   </main>
@@ -203,7 +230,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Balances />
                   </main>
@@ -219,7 +247,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Memberships />
                   </main>
@@ -235,7 +264,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <Payments />
                   </main>
@@ -251,7 +281,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <DiscordAccess />
                   </main>
@@ -267,7 +298,8 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <div className="app-container">
-                  <Sidebar />
+                  <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
                   <main className="main-content">
                     <DiscordAccessSetup />
                   </main>

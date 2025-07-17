@@ -22,6 +22,22 @@
   top: 0;
   z-index: 40;
 
+  &__close {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    z-index: 1;
+
+    @include respond(md) {
+      display: block;
+    }
+  }
+
   &__logo {
     margin-bottom: var(--spacing-lg);
 
@@ -110,4 +126,17 @@
 
 .main-content.no-sidebar {
   margin-left: 0;
+}
+
+@include respond(md) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+  }
 }

@@ -70,6 +70,9 @@
 .home-whop-grid {
   display: flex;
   gap: var(--spacing-md);
+  @include respond(sm) {
+    flex-direction: column;
+  }
 }
 
 .home-whop-column {
@@ -77,6 +80,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  @include respond(sm) {
+    width: 100%;
+  }
 }
 
 .whop-card-link {

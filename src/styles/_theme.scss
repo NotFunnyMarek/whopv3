@@ -43,6 +43,7 @@ body.theme-light {
 
   --icon-size: 20px;
   --bottombar-height: 60px;
+  --sidebar-width: 60px;
 }
 
 /* --- Dark theme (optional) --- */
@@ -65,6 +66,7 @@ body.theme-dark {
   --border-color: rgba(255, 255, 255, 0.1);
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --sidebar-width: 60px;
 }
 
 /* Reset & global styles */
