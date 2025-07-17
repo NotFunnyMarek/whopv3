@@ -88,6 +88,13 @@
         transition: color var(--transition), transform var(--transition);
       }
 
+      .sidebar__label {
+        display: none;
+        margin-left: var(--spacing-sm);
+        color: var(--text-color);
+        font-size: 0.9rem;
+      }
+
       a.active .sidebar__icon {
         color: rgb(177, 97, 22);
       }
@@ -170,6 +177,26 @@
 
 .main-content.no-sidebar {
   margin-left: 0;
+}
+
+@include respond(sm) {
+  .sidebar {
+    width: 220px;
+  }
+  .sidebar__nav {
+    flex: none;
+    justify-content: flex-start;
+  }
+  .sidebar__nav-item {
+    justify-content: flex-start;
+    .sidebar__icon {
+      display: none;
+    }
+    .sidebar__label {
+      display: inline;
+      font-size: 1rem;
+    }
+  }
 }
 
 @include respond(md) {

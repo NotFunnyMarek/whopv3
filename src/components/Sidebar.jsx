@@ -76,6 +76,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <li className="sidebar__nav-item">
               <NavLink to="/" className="sidebar__link" end>
                 <FiHome className="sidebar__icon" />
+                <span className="sidebar__label">Home</span>
               </NavLink>
             </li>
 
@@ -90,6 +91,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 }}
               >
                 <FiSearch className="sidebar__icon" />
+                <span className="sidebar__label">Search</span>
               </a>
             </li>
 
@@ -104,6 +106,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 }}
               >
                 <FiMessageSquare className="sidebar__icon" />
+                <span className="sidebar__label">Chat</span>
               </a>
             </li>
 
@@ -111,6 +114,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <li className="sidebar__nav-item">
               <NavLink to="/notifications" className="sidebar__link">
                 <FiBell className="sidebar__icon" />
+                <span className="sidebar__label">Notifications</span>
               </NavLink>
             </li>
 
@@ -118,6 +122,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <li className="sidebar__nav-item">
               <NavLink to="/balances" className="sidebar__link">
                 <FiBarChart2 className="sidebar__icon" />
+                <span className="sidebar__label">Balances</span>
               </NavLink>
             </li>
 
@@ -125,6 +130,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <li className="sidebar__nav-item">
               <NavLink to="/memberships" className="sidebar__link">
                 <FaUserShield className="sidebar__icon" />
+                <span className="sidebar__label">Memberships</span>
               </NavLink>
             </li>
 
@@ -132,6 +138,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <li className="sidebar__nav-item">
               <NavLink to="/payments" className="sidebar__link">
                 <FaDollarSign className="sidebar__icon" />
+                <span className="sidebar__label">Payments</span>
               </NavLink>
             </li>
 
@@ -147,6 +154,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 ) : (
                   <FiUser className="sidebar__icon" />
                 )}
+                <span className="sidebar__label">Profile</span>
               </NavLink>
             </li>
           </ul>

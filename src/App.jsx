@@ -33,6 +33,7 @@ const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 const App = () => {
   const { isLoggedIn } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   return (
     <BrowserRouter>
       <PageLoader />
@@ -50,7 +51,7 @@ const App = () => {
                 {isLoggedIn && (
                   <>
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                    <MobileHeader onMenu={toggleSidebar} />
                   </>
                 )}
                 <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
@@ -68,7 +69,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Onboarding />
                   </main>
@@ -84,7 +85,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Setup />
                   </main>
@@ -98,7 +99,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <ChooseLink />
                   </main>
@@ -112,7 +113,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <FeaturesSetup />
                   </main>
@@ -126,7 +127,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <BannerSetup />
                   </main>
@@ -143,7 +144,7 @@ const App = () => {
                 {isLoggedIn && (
                   <>
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                    <MobileHeader onMenu={toggleSidebar} />
                   </>
                 )}
                 <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
@@ -161,7 +162,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Dashboard />
                   </main>
@@ -178,7 +179,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <SubmissionsOverview />
                   </main>
@@ -196,7 +197,7 @@ const App = () => {
                 {isLoggedIn && (
                   <>
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                    <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                    <MobileHeader onMenu={toggleSidebar} />
                   </>
                 )}
                 <main className={`main-content${isLoggedIn ? '' : ' no-sidebar'}`}> 
@@ -214,7 +215,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Profile />
                   </main>
@@ -231,7 +232,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Balances />
                   </main>
@@ -248,7 +249,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Memberships />
                   </main>
@@ -265,7 +266,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <Payments />
                   </main>
@@ -282,7 +283,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <DiscordAccess />
                   </main>
@@ -299,7 +300,7 @@ const App = () => {
               <ProtectedRoute>
                 <div className="app-container">
                   <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                  <MobileHeader onMenu={() => setSidebarOpen(true)} />
+                  <MobileHeader onMenu={toggleSidebar} />
                   <main className="main-content">
                     <DiscordAccessSetup />
                   </main>
