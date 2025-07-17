@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "../styles/sidebar.scss";
+import { FiX } from "react-icons/fi";
 import Logo from "../assets/logo.png";
 import {
   FiHome,
@@ -16,7 +17,7 @@ import { FaUserShield, FaDollarSign } from "react-icons/fa";
 import ChatModal from "./Chat/ChatModal";
 import SearchModal from "./SearchModal";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -46,7 +47,21 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="sidebar">
+      <aside className={`sidebar${isOpen ? ' open' : ''}`}
+        onClick={() => {
+          if (window.innerWidth <= 1024) onClose?.();
+        }}
+      >
+        <button
+          className="sidebar__close"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose?.();
+          }}
+          type="button"
+        >
+          <FiX />
+        </button>
         {/* Logo */}
         <div className="sidebar__logo">
           <img src={Logo} alt="Platform Logo" />

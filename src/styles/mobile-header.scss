@@ -1,0 +1,32 @@
+@import './design-system';
+
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
+  display: none;
+  align-items: center;
+  padding: 0 var(--spacing-md);
+  z-index: 5000;
+
+  @include respond(md) {
+    display: flex;
+  }
+
+  + .main-content {
+    @include respond(md) {
+      padding-top: 50px;
+    }
+  }
+
+  &__menu {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+  }
+}
