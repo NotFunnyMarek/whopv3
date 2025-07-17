@@ -223,6 +223,22 @@
   }
 }
 
+@include respond(xs) {
+  .whop-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .whop-content {
+    padding: var(--spacing-sm) 0;
+    align-items: center;
+  }
+  .whop-tag {
+    margin-left: 0;
+    margin-top: var(--spacing-sm);
+  }
+}
+
 /* Zlatá, stříbrná, bronzová medaile pro první 3 karty v prvním sloupci */
 .home-whop-column:first-child {
   .whop-card-link:nth-child(1) .whop-card {
