@@ -48,8 +48,8 @@ body.theme-light {
 
 /* --- Dark theme (optional) --- */
 body.theme-dark {
-  --bg-color: #1c1c1c;
-  --surface-color: #2a2a2a;
+  --bg-color: #0e0e0e;
+  --surface-color: #181818;
 
   --text-color: #e0e0e0;
   --muted-color: #999999;
@@ -63,7 +63,7 @@ body.theme-dark {
   --error-hover: #cc4b55;
   --success-color: #2bb673;
 
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.2);
   --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   --sidebar-width: 60px;
