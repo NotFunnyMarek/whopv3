@@ -591,6 +591,10 @@
     transition: transform var(--transition);
     z-index: 50;
   }
+
+  .whop-features-grid {
+    grid-template-columns: 1fr;
+  }
   .member-sidebar.open {
     transform: translateX(0);
   }
@@ -601,6 +605,22 @@
     margin-top: 0;
     flex: 1;
     padding: var(--spacing-lg);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity var(--transition);
+    pointer-events: none;
+    z-index: 40;
+  }
+
+  .member-container.sidebar-open .sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .course-viewer {
