@@ -17,10 +17,11 @@ export default function MemberSidebar({
   activeTab,
   setActiveTab,
   memberLoading,
-  handleLeave
+  handleLeave,
+  isMobileOpen = false
 }) {
   return (
-    <div className="member-sidebar">
+    <div className={`member-sidebar${isMobileOpen ? ' open' : ''}`}>
       <div className="member-banner">
         {whopData.banner_url ? (
           <img
