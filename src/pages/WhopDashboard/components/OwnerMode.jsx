@@ -80,8 +80,6 @@ export default function OwnerMode({
   showDiscordSetup,
   setShowDiscordSetup,
 }) {
-  if (!whopData) return null;
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(true);
   const containerRef = useRef(null);
 
@@ -111,6 +109,8 @@ export default function OwnerMode({
       container.removeEventListener("touchend", end);
     };
   }, [mobileMenuOpen]);
+
+  if (!whopData) return null;
 
   return (
     <div
