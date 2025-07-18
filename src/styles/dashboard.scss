@@ -177,6 +177,26 @@ button.btn-remove-mod:hover {
   color: var(--muted-color);
 }
 
+/* Skeletons shown while dashboard loads */
+.dashboard-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.dashboard-skeleton-card {
+  height: 100px;
+  background: var(--border-color);
+  border-radius: var(--radius-base);
+  animation: dashboardPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes dashboardPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* Pagination */
 .pagination {
   display: flex;

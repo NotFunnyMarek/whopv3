@@ -491,7 +491,13 @@ export default function Dashboard() {
   }, [filteredPayments, currentPage]);
 
   if (!dataLoaded) {
-    return <p className="dashboard-loading">Loading dashboard…</p>;
+    return (
+      <div className="dashboard-skeleton">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="dashboard-skeleton-card" />
+        ))}
+      </div>
+    );
   }
 
   return (
