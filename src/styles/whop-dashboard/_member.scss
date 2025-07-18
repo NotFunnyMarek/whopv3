@@ -4,6 +4,7 @@
   height: calc(100vh - var(--bottombar-height));
   background: var(--bg-color);
   position: relative;
+  overflow-x: hidden;
 }
 
 .member-sidebar {
@@ -134,7 +135,6 @@
 .member-main {
   flex: 1;
   min-width: 0;
-  width: 100%;
   background: var(--bg-color);
   padding: var(--spacing-lg);
   overflow-y: auto;
@@ -609,7 +609,6 @@
     margin-top: 0;
     flex: 1;
     min-width: 0;
-    width: 100%;
     padding: var(--spacing-lg);
   }
 
