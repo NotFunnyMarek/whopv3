@@ -1,0 +1,21 @@
+.skeleton-line,
+.skeleton-box {
+  background: var(--border-color);
+  animation: pulse 1.2s ease-in-out infinite;
+  border-radius: var(--radius-base);
+}
+
+.skeleton-line {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-box {
+  height: 150px;
+  margin-bottom: 1rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

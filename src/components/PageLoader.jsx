@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/page-loader.scss';
-import logo from './../assets/load.png'
+import logo from './../assets/load.png';
+import { useLoading } from '../context/LoadingContext';
 
 export default function PageLoader() {
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
+  const { loading, showLoader, hideLoader } = useLoading();
 
   useEffect(() => {
-    setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 800);
+    showLoader();
+    const timeout = setTimeout(() => hideLoader(), 300);
     return () => clearTimeout(timeout);
-  }, [location]);
+  }, [location, showLoader, hideLoader]);
 
   if (!loading) return null;
   return (
