@@ -3,10 +3,12 @@
   width: 100%;
   height: calc(100vh - var(--bottombar-height));
   background: var(--bg-color);
+  position: relative;
 }
 
 .member-sidebar {
   width: 18rem;
+  flex-shrink: 0;
   background: var(--surface-color);
   backdrop-filter: blur(8px);
   border-right: 1px solid var(--border-color);
@@ -131,6 +133,8 @@
 
 .member-main {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   background: var(--bg-color);
   padding: var(--spacing-lg);
   overflow-y: auto;
@@ -604,6 +608,8 @@
   .member-main {
     margin-top: 0;
     flex: 1;
+    min-width: 0;
+    width: 100%;
     padding: var(--spacing-lg);
   }
 
