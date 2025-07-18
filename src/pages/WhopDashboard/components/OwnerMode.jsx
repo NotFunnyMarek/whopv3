@@ -1,6 +1,6 @@
 // src/pages/WhopDashboard/components/OwnerMode.jsx
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import "../../../styles/whop-dashboard/_owner.scss";
 
@@ -82,8 +82,41 @@ export default function OwnerMode({
 }) {
   if (!whopData) return null;
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(true);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || window.innerWidth > 768) return;
+    let startX = null;
+    const start = (e) => {
+      startX = e.touches[0].clientX;
+    };
+    const end = (e) => {
+      if (startX === null) return;
+      const diff = e.changedTouches[0].clientX - startX;
+      if (!mobileMenuOpen && diff < -50) {
+        setMobileMenuOpen(true);
+        window.navigator.vibrate?.(20);
+      } else if (mobileMenuOpen && diff > 50) {
+        setMobileMenuOpen(false);
+        window.navigator.vibrate?.(20);
+      }
+      startX = null;
+    };
+    container.addEventListener("touchstart", start);
+    container.addEventListener("touchend", end);
+    return () => {
+      container.removeEventListener("touchstart", start);
+      container.removeEventListener("touchend", end);
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <div className="whop-container">
+    <div
+      className={`whop-container${mobileMenuOpen ? ' menu-open' : ''}`}
+      ref={containerRef}
+    >
       {/* Show "Back" button only in edit mode */}
       {isEditing && (
         <button
@@ -125,6 +158,7 @@ export default function OwnerMode({
           setEditFaq={setEditFaq}
           editLandingTexts={editLandingTexts}
           setEditLandingTexts={setEditLandingTexts}
+          isMobileOpen={mobileMenuOpen}
         />
       )}
 
@@ -224,6 +258,10 @@ export default function OwnerMode({
           fetchCampaigns={fetchCampaigns}
         />
       )}
+      <div
+        className={`sidebar-overlay${mobileMenuOpen ? ' visible' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
     </div>
   );
 }
