@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import "../../../styles/whop-dashboard/_owner.scss";
 
 export default function OwnerTextMenu({
@@ -16,33 +16,8 @@ export default function OwnerTextMenu({
   setEditFaq,
   editLandingTexts,
   setEditLandingTexts,
+  isMobileOpen,
 }) {
-  const [isOpen, setIsOpen] = useState(true);
-  const touchStartXRef = useRef(null);
-
-  useEffect(() => {
-    const handleTouchStart = (e) => {
-      touchStartXRef.current = e.touches[0].clientX;
-    };
-    const handleTouchEnd = (e) => {
-      if (touchStartXRef.current === null) return;
-      const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-      if (Math.abs(deltaX) > 50) {
-        if (deltaX > 0 && isOpen) {
-          setIsOpen(false);
-        } else if (deltaX < 0 && !isOpen) {
-          setIsOpen(true);
-        }
-      }
-      touchStartXRef.current = null;
-    };
-    document.addEventListener("touchstart", handleTouchStart);
-    document.addEventListener("touchend", handleTouchEnd);
-    return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [isOpen]);
   const handleSocialChange = (key, value) => {
     setEditSocials((prev) => ({ ...prev, [key]: value }));
   };
@@ -72,7 +47,7 @@ export default function OwnerTextMenu({
   };
 
   return (
-    <div className={`owner-text-menu${isOpen ? "" : " closed"}`}>
+    <div className={`owner-text-menu${isMobileOpen ? "" : " closed"}`}>
       <h3>Edit Text Content</h3>
       <textarea
         className="otm-textarea"
