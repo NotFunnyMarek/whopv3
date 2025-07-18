@@ -23,7 +23,7 @@ export default function MemberMode({
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || window.innerWidth > 1024) return;
+    if (!container || window.innerWidth > 768) return;
     let startX = null;
     const start = (e) => {
       startX = e.touches[0].clientX;

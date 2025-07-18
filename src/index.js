@@ -5,7 +5,6 @@ import InitialLoader from './components/InitialLoader';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './components/NotificationProvider';
-import { LoadingProvider } from './context/LoadingContext';
 
 import './index.scss';
 import './styles/App.scss';
@@ -22,12 +21,10 @@ const root = createRoot(container);
 root.render(
   <ThemeProvider>
     <AuthProvider>
-      <LoadingProvider>
-        <NotificationProvider>
-          <InitialLoader />
-          <App />
-        </NotificationProvider>
-      </LoadingProvider>
+      <NotificationProvider>
+        <InitialLoader />
+        <App />
+      </NotificationProvider>
     </AuthProvider>
   </ThemeProvider>
 );
