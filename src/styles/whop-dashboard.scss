@@ -78,6 +78,8 @@
   width: 100%;
   height: calc(100vh - var(--bottombar-height));
   background: var(--bg-color);
+  position: relative;
+  overflow-x: hidden;
 }
 
 /* ––––– SIDEBAR PRO ČLENA ––––– */
@@ -981,15 +983,7 @@
   .whop-title {
     font-size: 1.5rem;
   }
-  .member-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: column;
-  }
-  .member-main {
-    margin-top: var(--spacing-lg);
-  }
+  /* Mobile layout handled in _member.scss */
 }
 
 /* -------------------------------------------------
@@ -1294,13 +1288,5 @@
   .whop-title {
     font-size: 1.5rem;
   }
-  .member-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: column;
-  }
-  .member-main {
-    margin-top: var(--spacing-lg);
-  }
+  /* Mobile layout handled in _member.scss */
 }
