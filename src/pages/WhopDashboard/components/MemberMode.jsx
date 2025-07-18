@@ -72,6 +72,10 @@ export default function MemberMode({
           campaign={selectedCampaign}
           onBack={handleBackFromSubmission}
         />
+        <div
+          className={`sidebar-overlay${mobileSidebarOpen ? ' visible' : ''}`}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
       </div>
     );
   }
@@ -96,6 +100,10 @@ export default function MemberMode({
         campaignsError={campaignsError}
         onSelectCampaign={setSelectedCampaign}
         setWhopData={setWhopData}
+      />
+      <div
+        className={`sidebar-overlay${mobileSidebarOpen ? ' visible' : ''}`}
+        onClick={() => setMobileSidebarOpen(false)}
       />
     </div>
   );
