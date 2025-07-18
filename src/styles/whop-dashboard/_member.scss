@@ -3,10 +3,13 @@
   width: 100%;
   height: calc(100vh - var(--bottombar-height));
   background: var(--bg-color);
+  position: relative;
+  overflow-x: hidden;
 }
 
 .member-sidebar {
   width: 18rem;
+  flex-shrink: 0;
   background: var(--surface-color);
   backdrop-filter: blur(8px);
   border-right: 1px solid var(--border-color);
@@ -131,9 +134,9 @@
 
 .member-main {
   flex: 1;
+  min-width: 0;
   background: var(--bg-color);
   padding: var(--spacing-lg);
-  overflow-y: auto;
 
   .member-tab-content {
     & > h3 {
@@ -580,31 +583,51 @@
 }
 
 @media (max-width: 768px) {
-  .member-sidebar {
-    width: 16rem;
-    max-width: 80%;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    transform: translateX(-100%);
-    transition: transform var(--transition);
-    z-index: 50;
+  .member-container {
+    display: block;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: var(--bg-color);
+
+    &.sidebar-open {
+      display: flex;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
   }
 
-  .whop-features-grid {
-    grid-template-columns: 1fr;
+  .member-main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    background: var(--bg-color);
+    overflow-y: auto;
   }
-  .member-sidebar.open {
-    transform: translateX(0);
+
+  .member-sidebar {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: translateX(-100%);
+    visibility: hidden;
+    opacity: 0;
+    background: var(--surface-color);
+    z-index: 50;
+    transition: transform var(--transition), visibility var(--transition), opacity var(--transition);
   }
+
   .member-container.sidebar-open .member-sidebar {
     transform: translateX(0);
-  }
-  .member-main {
-    margin-top: 0;
-    flex: 1;
-    padding: var(--spacing-lg);
+    visibility: visible;
+    opacity: 1;
   }
 
   .sidebar-overlay {
@@ -613,15 +636,30 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(2px);
     opacity: 0;
-    transition: opacity var(--transition);
     pointer-events: none;
     z-index: 40;
+    transition: opacity var(--transition);
   }
 
   .member-container.sidebar-open .sidebar-overlay {
     opacity: 1;
     pointer-events: auto;
   }
+
+  .member-sidebar::before,
+  .member-sidebar::after {
+    display: none;
+  }
+
+
+
+  .member-main {
+    height: auto;
+    min-height: auto;
+    overflow-y: auto;
+  }
+}
+
 
   .course-viewer {
     flex-direction: column;
@@ -631,7 +669,7 @@
     width: 100%;
     margin-bottom: var(--spacing-md);
   }
-}
+
 
 @media (max-width: 480px) {
   .member-sidebar .nav-button {
