@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/page-loader.scss';
-import logo from './../assets/load.png'
+import logo from './../assets/load.png';
 
 export default function PageLoader() {
   const location = useLocation();
@@ -9,7 +9,7 @@ export default function PageLoader() {
 
   useEffect(() => {
     setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 800);
+    const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, [location]);
 
