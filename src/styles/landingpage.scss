@@ -254,3 +254,10 @@
     font-size: 1.6rem;
   }
 }
+
+@media (max-width: 480px) {
+  .reviews-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}

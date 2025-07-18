@@ -581,13 +581,26 @@
 
 @media (max-width: 768px) {
   .member-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: column;
+    width: 16rem;
+    max-width: 80%;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    z-index: 50;
+  }
+  .member-sidebar.open {
+    transform: translateX(0);
+  }
+  .member-container.sidebar-open .member-sidebar {
+    transform: translateX(0);
   }
   .member-main {
-    margin-top: var(--spacing-lg);
+    margin-top: 0;
+    flex: 1;
+    padding: var(--spacing-lg);
   }
 
   .course-viewer {
@@ -607,5 +620,8 @@
   }
   .member-banner {
     height: 8rem;
+  }
+  .member-sidebar {
+    width: 14rem;
   }
 }
