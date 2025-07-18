@@ -1,6 +1,7 @@
 // src/pages/Dashboard.jsx
 
 import React, { useEffect, useState, useMemo } from "react";
+import DashboardSkeleton from "../components/DashboardSkeleton";
 import { useNotifications } from "../components/NotificationProvider";
 import {
   LineChart,
@@ -491,7 +492,7 @@ export default function Dashboard() {
   }, [filteredPayments, currentPage]);
 
   if (!dataLoaded) {
-    return <p className="dashboard-loading">Loading dashboard…</p>;
+    return <DashboardSkeleton />;
   }
 
   return (

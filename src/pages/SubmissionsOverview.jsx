@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SubmissionCard from "../components/SubmissionCard";
 import RejectModal from "../components/RejectModal";
 import ApproveModal from "../components/ApproveModal";
+import SubmissionsSkeleton from "../components/SubmissionsSkeleton";
 import "../styles/submissions-overview.scss";
 
 export default function SubmissionsOverview() {
@@ -51,7 +52,7 @@ export default function SubmissionsOverview() {
     setModalType(null);
   };
 
-  if (loading) return <div className="loading">Loading…</div>;
+  if (loading) return <SubmissionsSkeleton />;
   if (error) return <div className="error">Error: {error}</div>;
 
   return (
