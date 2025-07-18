@@ -842,6 +842,12 @@
   overflow-y: auto;
   box-shadow: var(--shadow-soft);
   z-index: 1000;
+  transform: translateX(0);
+  transition: transform var(--transition);
+
+  &.closed {
+    transform: translateX(100%);
+  }
 
   h3,
   h4 {
