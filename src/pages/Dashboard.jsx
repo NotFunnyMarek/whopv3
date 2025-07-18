@@ -16,6 +16,7 @@ import AffiliateDefaultsSection from "./WhopDashboard/components/AffiliateDefaul
 import fetchAffiliateLinks from "./WhopDashboard/fetchAffiliateLinks";
 import handleUpdateAffiliateLink from "./WhopDashboard/handleUpdateAffiliateLink";
 import "../styles/dashboard.scss";
+import DashboardSkeleton from "../components/DashboardSkeleton";
 
 export default function Dashboard() {
   const { showNotification, showConfirm } = useNotifications();
@@ -491,7 +492,7 @@ export default function Dashboard() {
   }, [filteredPayments, currentPage]);
 
   if (!dataLoaded) {
-    return <p className="dashboard-loading">Loading dashboard…</p>;
+    return <DashboardSkeleton />;
   }
 
   return (

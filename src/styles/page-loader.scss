@@ -9,16 +9,22 @@
 .page-loader {
   position: fixed;
   inset: 0;
-  background: rgba(240, 240, 240, 0.8);
+  background: rgba(240, 240, 240, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10000;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(3px);
+  animation: fadeOut 0.2s ease forwards;
+  animation-delay: 0.25s;
 }
 
 .page-loader__image {
-  width: 200px;
-  height: 200px;
-  animation: pulse 1.2s ease-in-out infinite;
+  width: 120px;
+  height: 120px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; visibility: hidden; }
 }
