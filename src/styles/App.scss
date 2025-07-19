@@ -14,6 +14,7 @@ html, body {
   background-color: var(--bg-color);
   color: var(--text-color);
   overflow-x: hidden;
+  overscroll-behavior-x: none; // prevent browser back swipe on supported browsers
 }
 
 *,

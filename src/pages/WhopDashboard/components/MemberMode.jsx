@@ -27,23 +27,37 @@ export default function MemberMode({
     let startX = null;
     const start = (e) => {
       startX = e.touches[0].clientX;
+      const width = container.clientWidth;
+      // Ignore system back swipe by not starting from the very edge
+      if (startX < 20 || startX > width - 20) {
+        startX = null;
+      }
     };
-    const end = (e) => {
+    const move = (e) => {
       if (startX === null) return;
-      const diff = e.changedTouches[0].clientX - startX;
+      const diff = e.touches[0].clientX - startX;
       if (!mobileSidebarOpen && diff > 50) {
         setMobileSidebarOpen(true);
         window.navigator.vibrate?.(20);
+        startX = null;
       } else if (mobileSidebarOpen && diff < -50) {
         setMobileSidebarOpen(false);
         window.navigator.vibrate?.(20);
+        startX = null;
       }
+      if (startX === null) {
+        e.preventDefault();
+      }
+    };
+    const end = () => {
       startX = null;
     };
-    container.addEventListener('touchstart', start);
+    container.addEventListener('touchstart', start, { passive: false });
+    container.addEventListener('touchmove', move, { passive: false });
     container.addEventListener('touchend', end);
     return () => {
       container.removeEventListener('touchstart', start);
+      container.removeEventListener('touchmove', move);
       container.removeEventListener('touchend', end);
     };
   }, [mobileSidebarOpen]);
