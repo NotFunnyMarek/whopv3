@@ -67,6 +67,18 @@ export default function OwnerSlugPrice({
       <div className="whop-price-section">
         {isEditing ? (
           <div className="price-edit-wrapper">
+            <div className="price-field">
+              <label>Subscription</label>
+              <select
+                value={whopData.is_recurring ? "1" : "0"}
+                onChange={e =>
+                  updateField("is_recurring", parseInt(e.target.value, 10))
+                }
+              >
+                <option value="0">One-time / Free</option>
+                <option value="1">Recurring</option>
+              </select>
+            </div>
             {editPricingPlans.length === 0 && (
               <>
                 <div className="price-field">
@@ -91,18 +103,6 @@ export default function OwnerSlugPrice({
                       updateField("currency", e.target.value.toUpperCase())
                     }
                   />
-                </div>
-                <div className="price-field">
-                  <label>Subscription</label>
-                  <select
-                    value={whopData.is_recurring ? "1" : "0"}
-                    onChange={e =>
-                      updateField("is_recurring", parseInt(e.target.value, 10))
-                    }
-                  >
-                    <option value="0">One-time</option>
-                    <option value="1">Recurring</option>
-                  </select>
                 </div>
                 {whopData.is_recurring && (
                   <div className="price-field">
@@ -149,6 +149,9 @@ export default function OwnerSlugPrice({
                   value={p.billing_period}
                   onChange={e => handlePlanChange(p.id, "billing_period", e.target.value)}
                 >
+                  <option value="none">Free</option>
+                  <option value="single">Single Payment</option>
+                  <option value="1min">1 minute</option>
                   <option value="7 days">7 days</option>
                   <option value="14 days">14 days</option>
                   <option value="30 days">30 days</option>

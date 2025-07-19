@@ -270,7 +270,8 @@ export default function WhopDashboard() {
         id: newId,
         plan_name: "",
         price: 0,
-        billing_period: "7 days",
+        billing_period:
+          whopData?.is_recurring ? "7 days" : "single",
         currency: whopData?.currency || "USD",
       },
     ]);
