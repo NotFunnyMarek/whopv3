@@ -113,10 +113,14 @@ export default function WhopDashboard() {
           setLoading(false);
           return;
         }
-        setWhopData(json.data);
-        if (Array.isArray(json.data.pricing_plans) && json.data.pricing_plans.length > 0) {
-          setSelectedPlanId(json.data.pricing_plans[0].id);
+        const incoming = { ...json.data };
+        if (Array.isArray(incoming.pricing_plans) && incoming.pricing_plans.length > 0) {
+          incoming.price = incoming.pricing_plans[0].price;
+          incoming.currency = incoming.pricing_plans[0].currency;
+          incoming.billing_period = incoming.pricing_plans[0].billing_period;
+          setSelectedPlanId(incoming.pricing_plans[0].id);
         }
+        setWhopData(incoming);
 
         // If owner, prepare editing state
         if (json.data.is_owner) {
@@ -616,15 +620,28 @@ export default function WhopDashboard() {
     }
 
     // Build payload (including price/recurring)
+    const basePrice =
+      editPricingPlans.length > 0
+        ? parseFloat(editPricingPlans[0].price) || 0
+        : parseFloat(whopData.price) || 0;
+    const baseCurr =
+      editPricingPlans.length > 0
+        ? editPricingPlans[0].currency || whopData.currency || "USD"
+        : whopData.currency || "USD";
+    const basePeriod =
+      editPricingPlans.length > 0
+        ? editPricingPlans[0].billing_period
+        : whopData.billing_period || "";
+
     const payload = {
       slug: whopData.slug,
       name: editName.trim(),
       description: editDescription.trim(),
       bannerUrl: editBannerUrl.trim(),
-      price: parseFloat(whopData.price) || 0.00,
-      currency: whopData.currency || "USD",
+      price: basePrice,
+      currency: baseCurr,
       is_recurring: whopData.is_recurring || 0,
-      billing_period: whopData.billing_period || "",
+      billing_period: basePeriod,
       features: validFeats.map((f) => ({
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
@@ -678,7 +695,13 @@ export default function WhopDashboard() {
         return;
       }
       if (refreshRes.ok && refreshJson.status === "success") {
-        setWhopData(refreshJson.data);
+        const incoming = { ...refreshJson.data };
+        if (Array.isArray(incoming.pricing_plans) && incoming.pricing_plans.length > 0) {
+          incoming.price = incoming.pricing_plans[0].price;
+          incoming.currency = incoming.pricing_plans[0].currency;
+          incoming.billing_period = incoming.pricing_plans[0].billing_period;
+        }
+        setWhopData(incoming);
         // Update local states
         setEditName(refreshJson.data.name);
         setEditDescription(refreshJson.data.description);
@@ -692,6 +715,15 @@ export default function WhopDashboard() {
           error: ""
         }));
         setEditFeatures(newFeatArr);
+        setEditPricingPlans(
+          (refreshJson.data.pricing_plans || []).map((p) => ({
+            id: p.id,
+            plan_name: p.plan_name || "",
+            price: p.price,
+            billing_period: p.billing_period,
+            currency: p.currency || refreshJson.data.currency
+          }))
+        );
         setError("");
         setBannerError("");
         setSlugError("");
@@ -1476,64 +1508,68 @@ export default function WhopDashboard() {
         <div className="whop-price-section">
           {isEditing ? (
             <div className="price-edit-wrapper">
-              <div className="price-field">
-                <label>Cena (např. 10.00)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={whopData.price ?? ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setWhopData((prev) => ({
-                      ...prev,
-                      price: val !== "" ? parseFloat(val) : 0
-                    }));
-                  }}
-                />
-              </div>
-              <div className="price-field">
-                <label>Měna</label>
-                <input
-                  type="text"
-                  value={whopData.currency || "USD"}
-                  onChange={(e) => {
-                    const val = e.target.value.toUpperCase();
-                    setWhopData((prev) => ({ ...prev, currency: val }));
-                  }}
-                />
-              </div>
-              <div className="price-field">
-                <label>Předplatné</label>
-                <select
-                  value={whopData.is_recurring ? "1" : "0"}
-                  onChange={(e) => {
-                    const rec = parseInt(e.target.value, 10);
-                    setWhopData((prev) => ({ ...prev, is_recurring: rec }));
-                  }}
-                >
-                  <option value="0">Jednorázově</option>
-                  <option value="1">Opakované</option>
-                </select>
-              </div>
-              {whopData.is_recurring ? (
-                <div className="price-field">
-                  <label>Perioda</label>
-                  <select
-                    value={whopData.billing_period || ""}
-                    onChange={(e) => {
-                      const period = e.target.value;
-                      setWhopData((prev) => ({ ...prev, billing_period: period }));
-                    }}
-                  >
-                    <option value="1 minute">1 minute</option>
-                    <option value="7 days">7 days</option>
-                    <option value="14 days">14 days</option>
-                  <option value="30 days">30 days</option>
-                  <option value="1 year">1 year</option>
-                </select>
-              </div>
-              ) : null}
+              {editPricingPlans.length === 0 && (
+                <>
+                  <div className="price-field">
+                    <label>Cena (např. 10.00)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={whopData.price ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setWhopData((prev) => ({
+                          ...prev,
+                          price: val !== "" ? parseFloat(val) : 0
+                        }));
+                      }}
+                    />
+                  </div>
+                  <div className="price-field">
+                    <label>Měna</label>
+                    <input
+                      type="text"
+                      value={whopData.currency || "USD"}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase();
+                        setWhopData((prev) => ({ ...prev, currency: val }));
+                      }}
+                    />
+                  </div>
+                  <div className="price-field">
+                    <label>Předplatné</label>
+                    <select
+                      value={whopData.is_recurring ? "1" : "0"}
+                      onChange={(e) => {
+                        const rec = parseInt(e.target.value, 10);
+                        setWhopData((prev) => ({ ...prev, is_recurring: rec }));
+                      }}
+                    >
+                      <option value="0">Jednorázově</option>
+                      <option value="1">Opakované</option>
+                    </select>
+                  </div>
+                  {whopData.is_recurring ? (
+                    <div className="price-field">
+                      <label>Perioda</label>
+                      <select
+                        value={whopData.billing_period || ""}
+                        onChange={(e) => {
+                          const period = e.target.value;
+                          setWhopData((prev) => ({ ...prev, billing_period: period }));
+                        }}
+                      >
+                        <option value="1 minute">1 minute</option>
+                        <option value="7 days">7 days</option>
+                        <option value="14 days">14 days</option>
+                        <option value="30 days">30 days</option>
+                        <option value="1 year">1 year</option>
+                      </select>
+                    </div>
+                  ) : null}
+                </>
+              )}
 
               {editPricingPlans.map((p, idx) => (
                 <div key={p.id} className="price-field plan-field">
@@ -1549,6 +1585,12 @@ export default function WhopDashboard() {
                     step="0.01"
                     value={p.price}
                     onChange={(e) => handlePlanChange(p.id, "price", e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    value={p.currency}
+                    onChange={(e) => handlePlanChange(p.id, "currency", e.target.value.toUpperCase())}
+                    className="plan-currency"
                   />
                   <select
                     value={p.billing_period}
