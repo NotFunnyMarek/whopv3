@@ -41,7 +41,7 @@ try {
 }
 
 // =====================================
-// Pokud all=1, vrátíme všechny whopy
+// Pokud all=1, vrÃ¡tÃ­me vÅ¡echny whopy
 // =====================================
 if (isset($_GET['all']) && $_GET['all'] === '1') {
     try {
@@ -74,7 +74,21 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
             )
             FROM whop_features AS f
             WHERE f.whop_id = w.id
-          ) AS features
+          )) AS features,
+          (
+            SELECT JSON_ARRAYAGG(JSON_OBJECT(
+              'id', pp.id,
+              'plan_name', pp.plan_name,
+              'description', pp.description,
+              'price', pp.price,
+              'currency', pp.currency,
+              'billing_period', pp.billing_period,
+              'sort_order', pp.sort_order
+            ))
+            FROM (
+              SELECT * FROM whop_pricing_plans WHERE whop_id = w.id ORDER BY sort_order, id
+            ) AS pp
+          ) AS pricing_plans,
         FROM whops AS w
         LEFT JOIN payments AS p
           ON p.whop_id = w.id
@@ -83,6 +97,11 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
         ";
         $stmt = $pdo->query($sql);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($items as &$row) {
+            $row["features"] = $row["features"] ? json_decode($row["features"], true) : [];
+            $row["pricing_plans"] = $row["pricing_plans"] ? json_decode($row["pricing_plans"], true) : [];
+        }
+        unset($row);
 
         echo json_encode([
             "status" => "success",
@@ -100,7 +119,35 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
 }
 
 // =====================================
-// Fallback: pokud je zadáno q, hledáme
+          COALESCE(SUM(p.amount),0) AS revenue,
+          (
+            SELECT JSON_ARRAYAGG(JSON_OBJECT(
+              'title', f.title,
+              'subtitle', f.subtitle,
+              'image_url', f.image_url
+            ))
+            FROM whop_features AS f
+            WHERE f.whop_id = w.id
+          ) AS features,
+          (
+            SELECT JSON_ARRAYAGG(JSON_OBJECT(
+              'id', pp.id,
+              'plan_name', pp.plan_name,
+              'description', pp.description,
+              'price', pp.price,
+              'currency', pp.currency,
+              'billing_period', pp.billing_period,
+              'sort_order', pp.sort_order
+            ))
+            FROM (
+              SELECT * FROM whop_pricing_plans WHERE whop_id = w.id ORDER BY sort_order, id
+            ) AS pp
+          ) AS pricing_plans
+    foreach ($items as &$row) {
+        $row["features"] = $row["features"] ? json_decode($row["features"], true) : [];
+        $row["pricing_plans"] = $row["pricing_plans"] ? json_decode($row["pricing_plans"], true) : [];
+    }
+    unset($row);
 // =====================================
 $q = trim($_GET['q'] ?? '');
 if ($q === '') {

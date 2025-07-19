@@ -49,6 +49,7 @@ export default function Home() {
           members_count: parseInt(w.members_count, 10) || 0,
           review_count:  parseInt(w.review_count, 10)  || 0,
           features:      Array.isArray(w.features) ? w.features : [],
+          pricing_plans: Array.isArray(w.pricing_plans) ? w.pricing_plans : [],
           created_at:    w.created_at || null,
         })));
       } catch {

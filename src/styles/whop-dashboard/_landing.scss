@@ -76,6 +76,7 @@
   }
 
   .plan-option {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-xxs);
@@ -86,11 +87,29 @@
     color: var(--primary-color);
     cursor: pointer;
     font-size: 0.875rem;
+    transition: background var(--transition), color var(--transition);
   }
 
   .plan-option.selected {
     background: var(--primary-color);
     color: #fff;
+    box-shadow: 0 0 0 2px var(--primary-color) inset;
+  }
+
+  .plan-option.selected::after {
+    content: "\2713";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--success-color);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.6rem;
   }
 
   .plan-option::before {
