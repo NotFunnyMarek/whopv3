@@ -134,7 +134,8 @@ export default function Home() {
 }
 
 function Card({ item, index, visibleCount }) {
-  const isFree = item.price === 0;
+  const hasPlans = Array.isArray(item.pricing_plans) && item.pricing_plans.length > 0;
+  const isFree = item.price === 0 && !hasPlans;
   const visible = index < visibleCount;
   return (
     <Link to={`/c/${item.slug}`} className="whop-card-link">
@@ -163,10 +164,20 @@ function Card({ item, index, visibleCount }) {
           </div>
         </div>
         <div className="whop-tag">
-          {isFree
-            ? <span className="free-access">Free Access</span>
-            : <span>{item.currency}{item.price.toFixed(2)}{item.is_recurring ? ` / ${item.billing_period}` : ''}</span>
-          }
+          {isFree ? (
+            <span className="free-access">Free Access</span>
+          ) : hasPlans ? (
+            item.pricing_plans.map((p) => (
+              <span key={p.id}>
+                {(p.currency || item.currency)}{parseFloat(p.price).toFixed(2)}
+                {item.is_recurring ? ` / ${p.billing_period}` : ''}
+              </span>
+            ))
+          ) : (
+            <span>
+              {item.currency}{item.price.toFixed(2)}{item.is_recurring ? ` / ${item.billing_period}` : ''}
+            </span>
+          )}
         </div>
       </div>
     </Link>

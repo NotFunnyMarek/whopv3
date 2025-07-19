@@ -1324,17 +1324,22 @@ export default function WhopDashboard() {
           <p className="whop-landing-description">{whopData.description}</p>
 
           {Array.isArray(whopData.pricing_plans) && whopData.pricing_plans.length > 0 && (
-            <select
-              className="plan-select"
-              value={selectedPlanId || whopData.pricing_plans[0].id}
-              onChange={(e) => setSelectedPlanId(parseInt(e.target.value, 10))}
-            >
+            <div className="plan-options">
               {whopData.pricing_plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.plan_name || `${p.price}/${p.billing_period}`}
-                </option>
+                <button
+                  type="button"
+                  key={p.id}
+                  className={`plan-option${selectedPlanId === p.id ? ' selected' : ''}`}
+                  onClick={() => setSelectedPlanId(p.id)}
+                >
+                  <span className="plan-name">{p.plan_name || p.billing_period}</span>
+                  <span className="plan-price">
+                    {(p.currency || whopData.currency)}{parseFloat(p.price).toFixed(2)}
+                    {whopData.is_recurring ? `/${p.billing_period}` : ''}
+                  </span>
+                </button>
               ))}
-            </select>
+            </div>
           )}
 
           <button
