@@ -48,10 +48,19 @@ try {
 
 // 4) Load waitlist request + ownership check
 try {
-    $stmt = $pdo->prepare("
-        SELECT
-          wr.user_id,
-          wr.affiliate_link_id,
+    // Determine if the waitlist_requests table contains the affiliate_link_id
+    // column. Older installations might miss this column which would break the
+    // query below. We issue a simple SHOW COLUMNS query and adjust the SELECT
+    // statement accordingly.
+    $colCheck = $pdo->prepare(
+        "SHOW COLUMNS FROM waitlist_requests LIKE 'affiliate_link_id'"
+    );
+    $colCheck->execute();
+    $hasAffColumn = $colCheck->rowCount() > 0;
+
+    $selectSql = "SELECT
+          wr.user_id,"
+        . ($hasAffColumn ? " wr.affiliate_link_id," : " NULL AS affiliate_link_id,") . "
           w.owner_id,
           w.price,
           w.currency,
@@ -62,8 +71,9 @@ try {
         WHERE wr.user_id  = :rid
           AND wr.whop_id  = :wid
           AND wr.status   = 'pending'
-        LIMIT 1
-    ");
+        LIMIT 1";
+
+    $stmt = $pdo->prepare($selectSql);
     $stmt->execute(['rid' => $request_id, 'wid' => $whop_id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
