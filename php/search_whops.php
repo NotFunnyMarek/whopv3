@@ -41,7 +41,7 @@ try {
 }
 
 // =====================================
-// Pokud all=1, vr·tÌme vöechny whopy
+// Pokud all=1, vr√°t√≠me v¬öechny whopy
 // =====================================
 if (isset($_GET['all']) && $_GET['all'] === '1') {
     try {
@@ -74,7 +74,21 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
             )
             FROM whop_features AS f
             WHERE f.whop_id = w.id
-          ) AS features
+          ) AS features,
+          (
+            SELECT JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', pp.id,
+                'plan_name', pp.plan_name,
+                'price', pp.price,
+                'currency', pp.currency,
+                'billing_period', pp.billing_period,
+                'sort_order', pp.sort_order
+              )
+            )
+            FROM whop_pricing_plans AS pp
+            WHERE pp.whop_id = w.id
+          ) AS pricing_plans
         FROM whops AS w
         LEFT JOIN payments AS p
           ON p.whop_id = w.id
@@ -100,7 +114,7 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
 }
 
 // =====================================
-// Fallback: pokud je zad·no q, hled·me
+// Fallback: pokud je zad√°no q, hled√°me
 // =====================================
 $q = trim($_GET['q'] ?? '');
 if ($q === '') {

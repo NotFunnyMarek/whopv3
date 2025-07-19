@@ -78,33 +78,32 @@
   .plan-option {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xxs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border: 1px solid var(--primary-color);
-    border-radius: var(--radius-base);
-    background: transparent;
-    color: var(--primary-color);
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--surface-color);
+    color: var(--text-color);
     cursor: pointer;
     font-size: 0.875rem;
   }
 
   .plan-option.selected {
-    background: var(--primary-color);
-    color: #fff;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
   }
 
   .plan-option::before {
     content: "";
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    border: 1px solid var(--primary-color);
-    background: transparent;
-    margin-right: var(--spacing-xxs);
+    background: var(--border-color);
+    margin-right: var(--spacing-xs);
   }
 
   .plan-option.selected::before {
-    background: var(--secondary-color);
+    background: var(--primary-color);
   }
   .whop-landing-join-btn {
     display: inline-flex;
