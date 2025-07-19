@@ -1,8 +1,7 @@
 // src/pages/WhopDashboard/components/OwnerMode.jsx
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaArrowLeft, FaChevronLeft } from "react-icons/fa";
-import { FaArrowLeft } from "react-icons/fa";
 import "../../../styles/whop-dashboard/_owner.scss";
 
 import OwnerHeader from "./OwnerHeader";
