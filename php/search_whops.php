@@ -74,60 +74,6 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
             )
             FROM whop_features AS f
             WHERE f.whop_id = w.id
-          )) AS features,
-          (
-            SELECT JSON_ARRAYAGG(JSON_OBJECT(
-              'id', pp.id,
-              'plan_name', pp.plan_name,
-              'description', pp.description,
-              'price', pp.price,
-              'currency', pp.currency,
-              'billing_period', pp.billing_period,
-              'sort_order', pp.sort_order
-            ))
-            FROM (
-              SELECT * FROM whop_pricing_plans WHERE whop_id = w.id ORDER BY sort_order, id
-            ) AS pp
-          ) AS pricing_plans,
-        FROM whops AS w
-        LEFT JOIN payments AS p
-          ON p.whop_id = w.id
-        GROUP BY w.id
-        ORDER BY revenue DESC
-        ";
-        $stmt = $pdo->query($sql);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($items as &$row) {
-            $row["features"] = $row["features"] ? json_decode($row["features"], true) : [];
-            $row["pricing_plans"] = $row["pricing_plans"] ? json_decode($row["pricing_plans"], true) : [];
-        }
-        unset($row);
-
-        echo json_encode([
-            "status" => "success",
-            "data"   => $items
-        ]);
-        exit;
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode([
-            "status"  => "error",
-            "message" => "SQL error: " . $e->getMessage()
-        ]);
-        exit;
-    }
-}
-
-// =====================================
-          COALESCE(SUM(p.amount),0) AS revenue,
-          (
-            SELECT JSON_ARRAYAGG(JSON_OBJECT(
-              'title', f.title,
-              'subtitle', f.subtitle,
-              'image_url', f.image_url
-            ))
-            FROM whop_features AS f
-            WHERE f.whop_id = w.id
           ) AS features,
           (
             SELECT JSON_ARRAYAGG(JSON_OBJECT(
@@ -143,17 +89,43 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
               SELECT * FROM whop_pricing_plans WHERE whop_id = w.id ORDER BY sort_order, id
             ) AS pp
           ) AS pricing_plans
-    foreach ($items as &$row) {
-        $row["features"] = $row["features"] ? json_decode($row["features"], true) : [];
-        $row["pricing_plans"] = $row["pricing_plans"] ? json_decode($row["pricing_plans"], true) : [];
+        FROM whops AS w
+        LEFT JOIN payments AS p
+          ON p.whop_id = w.id
+        GROUP BY w.id
+        ORDER BY revenue DESC
+        ";
+        $stmt = $pdo->query($sql);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($items as &$row) {
+            $row['features'] = $row['features'] ? json_decode($row['features'], true) : [];
+            $row['pricing_plans'] = $row['pricing_plans'] ? json_decode($row['pricing_plans'], true) : [];
+        }
+        unset($row);
+
+        echo json_encode([
+            'status' => 'success',
+            'data'   => $items
+        ]);
+        exit;
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'SQL error: ' . $e->getMessage()
+        ]);
+        exit;
     }
-    unset($row);
+}
+
+// =====================================
+// Fallback: pokud je zadáno q, hledáme
 // =====================================
 $q = trim($_GET['q'] ?? '');
 if ($q === '') {
     echo json_encode([
-        "status" => "success",
-        "data"   => []
+        'status' => 'success',
+        'data'   => []
     ]);
     exit;
 }
@@ -186,13 +158,13 @@ try {
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
-        "status" => "success",
-        "data"   => $items
+        'status' => 'success',
+        'data'   => $items
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
-        "status"  => "error",
-        "message" => "SQL error: " . $e->getMessage()
+        'status'  => 'error',
+        'message' => 'SQL error: ' . $e->getMessage()
     ]);
 }
