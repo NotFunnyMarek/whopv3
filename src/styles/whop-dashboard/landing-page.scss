@@ -228,3 +228,74 @@
     max-width: 320px;
   }
 }
+
+.pricing-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.plan-option {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  cursor: pointer;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  transition: border 0.3s, background 0.3s;
+
+  &:hover {
+    border-color: #4a90e2;
+  }
+
+  &.selected {
+    border-color: #4a90e2;
+    background: #f5faff;
+
+    .radio-circle {
+      background-color: #4a90e2;
+      border-color: #4a90e2;
+    }
+  }
+}
+
+.plan-radio {
+  margin-top: 5px;
+}
+
+.radio-circle {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  background: #eee;
+  transition: all 0.3s;
+}
+
+.plan-details {
+  flex: 1;
+}
+
+.plan-benefits {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+
+    svg {
+      color: #4a90e2;
+    }
+  }
+}

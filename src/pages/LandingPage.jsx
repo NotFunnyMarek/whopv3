@@ -181,23 +181,36 @@ export default function LandingPage({ data = {} }) {
       </Section>
 
       <Section className="pricing">
-        <h2 className="section-title">Pricing</h2>
-        <div className="pricing-container">
-          <div className="lp-card pricing-card">
-            <h3 className="price-title">
-              {pricing.name} – {pricing.price}
-            </h3>
-            <button className="btn primary pricing-btn">Join</button>
-            <ul className="benefits">
-              {pricing.benefits?.map((b, i) => (
-                <li key={i}>
-                  <FaCheckCircle /> {b}
-                </li>
-              ))}
-            </ul>
-          </div>
+  <h2 className="section-title">Pricing</h2>
+  <div className="pricing-options">
+    {pricing.options?.map((plan, i) => (
+      <label
+        key={i}
+        className={`plan-option ${pricing.selected === plan.id ? "selected" : ""}`}
+        onClick={() => {
+          if (typeof pricing.onSelect === "function") {
+            pricing.onSelect(plan.id);
+          }
+        }}
+      >
+        <div className="plan-radio">
+          <div className="radio-circle" />
         </div>
-      </Section>
+        <div className="plan-details">
+          <h3>{plan.name}</h3>
+          <p>{plan.price}</p>
+          <ul className="plan-benefits">
+            {plan.benefits?.map((b, j) => (
+              <li key={j}><FaCheckCircle /> {b}</li>
+            ))}
+          </ul>
+        </div>
+      </label>
+    ))}
+  </div>
+  <button className="btn primary pricing-btn">Join</button>
+</Section>
+
 
       <Section className="faq">
         <h2 className="section-title">Frequently asked questions</h2>
