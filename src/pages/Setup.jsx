@@ -26,6 +26,15 @@ export default function Setup() {
   const [billingPeriod, setBillingPeriod] = useState(
     cookieData.billing_period || "none"
   );
+  const [isRecurring, setIsRecurring] = useState(
+    typeof cookieData.is_recurring === "number"
+      ? cookieData.is_recurring
+      : cookieData.billing_period &&
+        cookieData.billing_period !== "none" &&
+        cookieData.billing_period !== "single"
+      ? 1
+      : 0
+  );
   const [pricingPlans, setPricingPlans] = useState(
     Array.isArray(cookieData.pricing_plans)
       ? cookieData.pricing_plans.map((p, idx) => ({
@@ -82,8 +91,6 @@ export default function Setup() {
   // Constants
   const maxNameLength = 30;
   const maxDescLength = 200;
-  const isRecurring =
-    billingPeriod !== "none" && billingPeriod !== "single" ? 1 : 0;
 
   // Persist to cookie
   useEffect(() => {
@@ -158,7 +165,15 @@ export default function Setup() {
       setPrice(e.target.value);
     }
   };
-  const handleBillingChange = (e) => setBillingPeriod(e.target.value);
+  const handleBillingChange = (e) => {
+    const val = e.target.value;
+    setBillingPeriod(val);
+    if (val === "none" || val === "single") {
+      setIsRecurring(0);
+    } else {
+      setIsRecurring(1);
+    }
+  };
   const handleWaitlistToggle = (e) => {
     const enabled = e.target.checked;
     setWaitlistEnabled(enabled);
@@ -173,6 +188,10 @@ export default function Setup() {
   };
   const handleModuleToggle = (key) => {
     setModules((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+  const handleRecurringChange = (e) => {
+    const val = parseInt(e.target.value, 10);
+    setIsRecurring(val);
   };
   const handleBioChange = (e) => setAboutBio(e.target.value);
   const handleWebsiteChange = (e) => setWebsiteUrl(e.target.value);
@@ -215,7 +234,7 @@ export default function Setup() {
         plan_name: "",
         price: 0,
         currency: "USD",
-        billing_period: "7 days",
+        billing_period: isRecurring ? "7 days" : "single",
       },
     ]);
   };
@@ -351,6 +370,16 @@ export default function Setup() {
             </>
           ) : (
             <div className="price-edit-wrapper">
+              <div className="price-field">
+                <label>Subscription</label>
+                <select
+                  value={isRecurring ? "1" : "0"}
+                  onChange={handleRecurringChange}
+                >
+                  <option value="0">One-time / Free</option>
+                  <option value="1">Recurring</option>
+                </select>
+              </div>
               {pricingPlans.map((p, idx) => (
                 <div key={p.id} className="price-field plan-field">
                   <label>Plan {idx + 1}</label>
@@ -378,6 +407,9 @@ export default function Setup() {
                     value={p.billing_period}
                     onChange={(e) => handlePlanChange(p.id, 'billing_period', e.target.value)}
                   >
+                    <option value="none">Free</option>
+                    <option value="single">Single Payment</option>
+                    <option value="1min">1 minute</option>
                     <option value="7 days">7 days</option>
                     <option value="14 days">14 days</option>
                     <option value="30 days">30 days</option>
