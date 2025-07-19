@@ -76,34 +76,56 @@
   }
 
   .plan-option {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border: 2px solid var(--border-color);
     border-radius: var(--radius-lg);
     background: var(--surface-color);
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-soft);
+    transition: border-color var(--transition), box-shadow var(--transition),
+      transform var(--transition);
+
+    &:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
   }
 
   .plan-option.selected {
     border-color: var(--primary-color);
-    color: var(--primary-color);
+    box-shadow: var(--shadow);
   }
 
   .plan-option::before {
     content: "";
-    width: 12px;
-    height: 12px;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: var(--border-color);
-    margin-right: var(--spacing-xs);
+    border: 2px solid var(--border-color);
+    background: var(--surface-color);
+    transition: background var(--transition), border-color var(--transition);
+    margin-right: var(--spacing-sm);
   }
 
   .plan-option.selected::before {
     background: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  .plan-name {
+    flex: 1;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .plan-price {
+    font-weight: 500;
   }
   .whop-landing-join-btn {
     display: inline-flex;
