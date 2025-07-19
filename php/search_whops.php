@@ -96,26 +96,63 @@ if (isset($_GET['all']) && $_GET['all'] === '1') {
         ORDER BY revenue DESC
         ";
         $stmt = $pdo->query($sql);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($items as &$row) {
+    } catch (PDOException $e) {
+        // Likely older MySQL/MariaDB without JSON_ARRAYAGG support
+        $fallbackSql = "
+        SELECT
+          w.id,
+          w.name,
+          w.slug,
+          w.description,
+          w.logo_url,
+          w.banner_url,
+          w.currency,
+          w.price,
+          w.is_recurring,
+          w.billing_period,
+          w.created_at,
+          COALESCE(SUM(p.amount),0) AS revenue,
+          (
+            (SELECT COUNT(*) FROM whop_members WHERE whop_id = w.id)
+            +
+            (SELECT COUNT(*) FROM memberships WHERE whop_id = w.id AND status = 'active')
+          ) AS members_count
+        FROM whops AS w
+        LEFT JOIN payments AS p
+          ON p.whop_id = w.id
+        GROUP BY w.id
+        ORDER BY revenue DESC
+        ";
+        $stmt = $pdo->query($fallbackSql);
+    }
+
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // If JSON aggregation failed (fallback query), fetch features and pricing plans manually
+    foreach ($items as &$row) {
+        if (!isset($row['features'])) {
+            $fStmt = $pdo->prepare('SELECT title, subtitle, image_url FROM whop_features WHERE whop_id = ?');
+            $fStmt->execute([$row['id']]);
+            $row['features'] = $fStmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
             $row['features'] = $row['features'] ? json_decode($row['features'], true) : [];
+        }
+
+        if (!isset($row['pricing_plans'])) {
+            $pStmt = $pdo->prepare('SELECT id, plan_name, description, price, currency, billing_period, sort_order FROM whop_pricing_plans WHERE whop_id = ? ORDER BY sort_order, id');
+            $pStmt->execute([$row['id']]);
+            $row['pricing_plans'] = $pStmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
             $row['pricing_plans'] = $row['pricing_plans'] ? json_decode($row['pricing_plans'], true) : [];
         }
-        unset($row);
-
-        echo json_encode([
-            'status' => 'success',
-            'data'   => $items
-        ]);
-        exit;
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode([
-            'status'  => 'error',
-            'message' => 'SQL error: ' . $e->getMessage()
-        ]);
-        exit;
     }
+    unset($row);
+
+    echo json_encode([
+        'status' => 'success',
+        'data'   => $items
+    ]);
+    exit;
 }
 
 // =====================================
