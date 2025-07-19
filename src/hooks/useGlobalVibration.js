@@ -7,22 +7,29 @@ export default function useGlobalVibration() {
     const canVibrate = typeof navigator !== 'undefined' &&
       typeof navigator.vibrate === 'function';
 
-    if (!isMobile || !canVibrate) {
-      return;
-    }
+    if (!isMobile || !canVibrate) return;
 
-    const handleVibrate = e => {
-      const target = e.target.closest(
-        'button, a, [role="button"], input[type="button"], input[type="submit"]'
-      );
-      if (target) {
-        navigator.vibrate(30);
+    const handleVibrate = (e) => {
+      // Používáme native event path pro větší spolehlivost
+      const path = e.composedPath ? e.composedPath() : (e.path || []);
+      for (let el of path) {
+        if (!el || el === document || el === window) break;
+
+        if (
+          el.tagName === 'BUTTON' ||
+          el.tagName === 'A' ||
+          el.getAttribute?.('role') === 'button' ||
+          el.matches?.('input[type="submit"], input[type="button"]')
+        ) {
+          navigator.vibrate(30);
+          break;
+        }
       }
     };
 
-    document.body.addEventListener('click', handleVibrate, true);
+    document.body.addEventListener('click', handleVibrate, { passive: true });
     return () => {
-      document.body.removeEventListener('click', handleVibrate, true);
+      document.body.removeEventListener('click', handleVibrate, { passive: true });
     };
   }, []);
 }
