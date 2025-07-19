@@ -5,6 +5,7 @@
   background: var(--bg-color);
   position: relative;
   overflow-x: hidden;
+  touch-action: pan-y; // allow vertical scroll but prevent horizontal navigation
 }
 
 .member-sidebar {
