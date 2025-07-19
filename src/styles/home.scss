@@ -208,9 +208,12 @@
   }
 
   .whop-tag {
-          margin-top: 10px;
+    margin-top: 10px;
     flex: 0 0 auto;
     margin-left: var(--spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xxs);
 
     .free-access {
       padding: var(--spacing-xs) var(--spacing-sm);

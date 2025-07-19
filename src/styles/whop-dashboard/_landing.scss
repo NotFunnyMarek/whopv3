@@ -66,6 +66,46 @@
     line-height: 1.5;
     max-width: 700px;
   }
+
+  .plan-options {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: var(--spacing-sm);
+  }
+
+  .plan-option {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius-base);
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .plan-option.selected {
+    background: var(--primary-color);
+    color: #fff;
+  }
+
+  .plan-option::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--primary-color);
+    background: transparent;
+    margin-right: var(--spacing-xxs);
+  }
+
+  .plan-option.selected::before {
+    background: var(--secondary-color);
+  }
   .whop-landing-join-btn {
     display: inline-flex;
     align-items: center;
