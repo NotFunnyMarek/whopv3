@@ -869,7 +869,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 75%;
+    width: var(--mobile-sidebar-width, 75%);
     height: 100%;
     transform: translateX(100%);
     visibility: hidden;
@@ -905,7 +905,7 @@
   }
 
   .whop-container.menu-open .sidebar-toggle {
-    right: 75%;
+    right: var(--mobile-sidebar-width, 75%);
     transform: translate(50%, -50%) rotate(180deg);
   }
 
