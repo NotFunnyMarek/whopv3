@@ -42,7 +42,7 @@ export default function SearchModal({ onClose }) {
     setLoading(true);
     const timer = setTimeout(() => {
       fetch(
-        `https://app.byxbot.com/php/search_whops.php?q=${encodeURIComponent(
+        `/php/search_whops.php?q=${encodeURIComponent(
           query.trim()
         )}`,
         {
