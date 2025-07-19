@@ -15,6 +15,7 @@ html, body {
   color: var(--text-color);
   overflow-x: hidden;
   overscroll-behavior-x: none; // prevent browser back swipe on supported browsers
+  touch-action: pan-y; // disable horizontal swipe navigation
 }
 
 *,
