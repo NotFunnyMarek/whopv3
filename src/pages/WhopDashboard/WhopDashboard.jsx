@@ -496,6 +496,10 @@ export default function WhopDashboard() {
       handleImageChange={onFeatureImageUpload}
       removeFeature={removeFeature}
       addFeature={addFeature}
+      editPricingPlans={editPricingPlans}
+      addPlan={addPlan}
+      removePlan={removePlan}
+      handlePlanChange={handlePlanChange}
       editCourseSteps={editCourseSteps}
       handleCourseChange={handleCourseChange}
       handleFileUpload={onCourseFileUpload}
