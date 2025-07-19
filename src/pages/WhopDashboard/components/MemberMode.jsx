@@ -25,8 +25,9 @@ export default function MemberMode({
     const container = containerRef.current;
     if (!container || window.innerWidth > 768) return;
     let startX = null;
+    const getX = (ev) => (ev.touches ? ev.touches[0].clientX : ev.clientX);
     const start = (e) => {
-      startX = e.touches[0].clientX;
+      startX = getX(e);
       const width = container.clientWidth;
       // Ignore system back swipe by not starting from the very edge
       if (startX < 20 || startX > width - 20) {
@@ -35,7 +36,7 @@ export default function MemberMode({
     };
     const move = (e) => {
       if (startX === null) return;
-      const diff = e.touches[0].clientX - startX;
+      const diff = getX(e) - startX;
       if (!mobileSidebarOpen && diff > 50) {
         setMobileSidebarOpen(true);
         window.navigator.vibrate?.(20);
@@ -55,10 +56,16 @@ export default function MemberMode({
     container.addEventListener('touchstart', start, { passive: false });
     container.addEventListener('touchmove', move, { passive: false });
     container.addEventListener('touchend', end);
+    container.addEventListener('pointerdown', start, { passive: false });
+    container.addEventListener('pointermove', move, { passive: false });
+    container.addEventListener('pointerup', end);
     return () => {
       container.removeEventListener('touchstart', start);
       container.removeEventListener('touchmove', move);
       container.removeEventListener('touchend', end);
+      container.removeEventListener('pointerdown', start);
+      container.removeEventListener('pointermove', move);
+      container.removeEventListener('pointerup', end);
     };
   }, [mobileSidebarOpen]);
 

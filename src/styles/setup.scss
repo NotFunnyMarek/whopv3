@@ -110,3 +110,44 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.price-edit-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.price-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+
+  input,
+  select {
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    background: var(--surface-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+  }
+}
+
+.plan-field {
+  border: 1px dashed var(--border-color);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-base);
+}
+
+.add-plan-btn {
+  align-self: flex-start;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+}
+
+.plan-currency {
+  width: 60px;
+}

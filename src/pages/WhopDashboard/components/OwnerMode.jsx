@@ -112,12 +112,13 @@ export default function OwnerMode({
     const container = containerRef.current;
     if (!container || window.innerWidth > 768 || !isEditing) return;
     let startX = null;
+    const getX = (ev) => (ev.touches ? ev.touches[0].clientX : ev.clientX);
     const start = (e) => {
-      startX = e.touches[0].clientX;
+      startX = getX(e);
     };
     const end = (e) => {
       if (startX === null) return;
-      const diff = e.changedTouches[0].clientX - startX;
+      const diff = getX(e) - startX;
       if (!mobileMenuOpen && diff < -50) {
         setMobileMenuOpen(true);
         window.navigator.vibrate?.(20);
@@ -129,9 +130,13 @@ export default function OwnerMode({
     };
     container.addEventListener("touchstart", start);
     container.addEventListener("touchend", end);
+    container.addEventListener("pointerdown", start);
+    container.addEventListener("pointerup", end);
     return () => {
       container.removeEventListener("touchstart", start);
       container.removeEventListener("touchend", end);
+      container.removeEventListener("pointerdown", start);
+      container.removeEventListener("pointerup", end);
     };
   }, [mobileMenuOpen, isEditing]);
 

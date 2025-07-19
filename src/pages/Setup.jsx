@@ -26,6 +26,17 @@ export default function Setup() {
   const [billingPeriod, setBillingPeriod] = useState(
     cookieData.billing_period || "none"
   );
+  const [pricingPlans, setPricingPlans] = useState(
+    Array.isArray(cookieData.pricing_plans)
+      ? cookieData.pricing_plans.map((p, idx) => ({
+          id: idx + 1,
+          plan_name: p.plan_name || "",
+          price: p.price,
+          currency: p.currency || "USD",
+          billing_period: p.billing_period || "7 days",
+        }))
+      : []
+  );
   const [waitlistEnabled, setWaitlistEnabled] = useState(
     Boolean(cookieData.waitlist_enabled)
   );
@@ -76,15 +87,28 @@ export default function Setup() {
 
   // Persist to cookie
   useEffect(() => {
+    const basePrice =
+      pricingPlans.length > 0
+        ? parseFloat(pricingPlans[0].price) || 0
+        : parseFloat(price) || 0;
+    const basePeriod =
+      pricingPlans.length > 0
+        ? pricingPlans[0].billing_period
+        : billingPeriod;
+    const baseCurr =
+      pricingPlans.length > 0
+        ? pricingPlans[0].currency || "USD"
+        : "USD";
     setWhopSetupCookie({
       name: whopName,
       description,
       long_description: longDescription,
       logoUrl,
-      price: parseFloat(price) || 0,
-      billing_period: billingPeriod,
+      price: basePrice,
+      billing_period: basePeriod,
       is_recurring: isRecurring,
-      currency: "USD",
+      currency: baseCurr,
+      pricing_plans: pricingPlans,
       waitlist_enabled: waitlistEnabled,
       waitlist_questions: waitlistEnabled
         ? waitlistQuestions.filter((q) => q.trim() !== "")
@@ -104,6 +128,7 @@ export default function Setup() {
     logoUrl,
     price,
     billingPeriod,
+    pricingPlans,
     isRecurring,
     waitlistEnabled,
     waitlistQuestions,
@@ -178,9 +203,40 @@ export default function Setup() {
     setLandingTexts((prev) => ({ ...prev, [field]: value }));
   };
 
+  const addPlan = () => {
+    const newId =
+      pricingPlans.length > 0
+        ? Math.max(...pricingPlans.map((p) => p.id || 0)) + 1
+        : 1;
+    setPricingPlans((prev) => [
+      ...prev,
+      {
+        id: newId,
+        plan_name: "",
+        price: 0,
+        currency: "USD",
+        billing_period: "7 days",
+      },
+    ]);
+  };
+
+  const removePlan = (id) => {
+    setPricingPlans((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handlePlanChange = (id, field, value) => {
+    setPricingPlans((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+    );
+  };
+
   // Validation
-  const pricingInvalid =
-    billingPeriod !== "none" && (isNaN(parseFloat(price)) || parseFloat(price) <= 0);
+  const pricingInvalid = pricingPlans.length > 0
+    ? pricingPlans.some(
+        (p) => isNaN(parseFloat(p.price)) || parseFloat(p.price) < 0
+      )
+    : billingPeriod !== "none" &&
+      (isNaN(parseFloat(price)) || parseFloat(price) < 0);
   const waitlistInvalid =
     waitlistEnabled && waitlistQuestions.every((q) => !q.trim());
 
@@ -262,33 +318,77 @@ export default function Setup() {
           />
         </div>
 
-        {/* Price */}
-        <div className="setup-input-wrapper">
-          <label>Price (USD) *</label>
-          <input
-            type="text"
-            className="setup-input"
-            value={price}
-            onChange={handlePriceChange}
-          />
-        </div>
-
-        {/* Billing */}
-        <div className="setup-input-wrapper">
-          <label>Payment Type *</label>
-          <select
-            className="setup-input"
-            value={billingPeriod}
-            onChange={handleBillingChange}
-          >
-            <option value="none">Free</option>
-            <option value="single">Single Payment</option>
-            <option value="1min">Every 1 minute</option>
-            <option value="7days">Every 7 days</option>
-            <option value="14days">Every 14 days</option>
-            <option value="30days">Every 30 days</option>
-            <option value="1year">Every 1 year</option>
-          </select>
+        {/* Pricing */}
+        <div className="setup-section">
+          {pricingPlans.length === 0 ? (
+            <>
+              <div className="setup-input-wrapper">
+                <label>Price (USD) *</label>
+                <input
+                  type="text"
+                  className="setup-input"
+                  value={price}
+                  onChange={handlePriceChange}
+                />
+              </div>
+              <div className="setup-input-wrapper">
+                <label>Payment Type *</label>
+                <select
+                  className="setup-input"
+                  value={billingPeriod}
+                  onChange={handleBillingChange}
+                >
+                  <option value="none">Free</option>
+                  <option value="single">Single Payment</option>
+                  <option value="1min">Every 1 minute</option>
+                  <option value="7days">Every 7 days</option>
+                  <option value="14days">Every 14 days</option>
+                  <option value="30days">Every 30 days</option>
+                  <option value="1year">Every 1 year</option>
+                </select>
+              </div>
+              <button className="add-plan-btn" onClick={addPlan}>Add Plan</button>
+            </>
+          ) : (
+            <div className="price-edit-wrapper">
+              {pricingPlans.map((p, idx) => (
+                <div key={p.id} className="price-field plan-field">
+                  <label>Plan {idx + 1}</label>
+                  <input
+                    type="text"
+                    value={p.plan_name}
+                    onChange={(e) => handlePlanChange(p.id, 'plan_name', e.target.value)}
+                    placeholder="Name"
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={p.price}
+                    onChange={(e) => handlePlanChange(p.id, 'price', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    value={p.currency}
+                    onChange={(e) =>
+                      handlePlanChange(p.id, 'currency', e.target.value.toUpperCase())
+                    }
+                    className="plan-currency"
+                  />
+                  <select
+                    value={p.billing_period}
+                    onChange={(e) => handlePlanChange(p.id, 'billing_period', e.target.value)}
+                  >
+                    <option value="7 days">7 days</option>
+                    <option value="14 days">14 days</option>
+                    <option value="30 days">30 days</option>
+                    <option value="1 year">1 year</option>
+                  </select>
+                  <button onClick={() => removePlan(p.id)}>-</button>
+                </div>
+              ))}
+              <button className="add-plan-btn" onClick={addPlan}>Add Plan</button>
+            </div>
+          )}
         </div>
 
         {/* Waitlist */}

@@ -18,8 +18,9 @@ import './styles/notifications.scss';
 
 // Disable swipe navigation from the screen edges in mobile PWAs
 const preventEdgeSwipe = (e) => {
-  if (e.touches.length !== 1) return;
-  const x = e.touches[0].clientX;
+  const touch = e.touches ? e.touches[0] : e;
+  if (!touch) return;
+  const x = touch.clientX;
   if (x < 20 || x > window.innerWidth - 20) {
     e.preventDefault();
   }
@@ -27,6 +28,11 @@ const preventEdgeSwipe = (e) => {
 
 window.addEventListener('touchstart', preventEdgeSwipe, { passive: false });
 window.addEventListener('touchmove', preventEdgeSwipe, { passive: false });
+window.addEventListener('pointerdown', preventEdgeSwipe, { passive: false });
+window.addEventListener('pointermove', preventEdgeSwipe, { passive: false });
+window.addEventListener('gesturestart', preventEdgeSwipe, { passive: false });
+window.addEventListener('gesturechange', preventEdgeSwipe, { passive: false });
+window.addEventListener('gestureend', preventEdgeSwipe, { passive: false });
 
 const container = document.getElementById('root');
 const root = createRoot(container);
