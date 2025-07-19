@@ -49,6 +49,14 @@ export default async function fetchWhopData(
     }
 
     const data = json.data;
+    if (data.modules && typeof data.modules === 'object') {
+      data.modules = Object.fromEntries(
+        Object.entries(data.modules).map(([k, v]) => [
+          k,
+          v === true || v === 1 || v === '1' || v === 'true',
+        ])
+      );
+    }
     setWhopData(data);
 
     // If owner, prepare editing state:

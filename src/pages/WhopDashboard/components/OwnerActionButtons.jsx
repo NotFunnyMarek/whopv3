@@ -43,7 +43,7 @@ export default function OwnerActionButtons({
           >
             Cancel
           </button>
-          {whopData.modules?.discord_access && (
+          {Boolean(whopData.modules?.discord_access) && (
             <button
               className="whop-discord-btn"
               onClick={() => setShowDiscordSetup(true)}
@@ -76,7 +76,7 @@ export default function OwnerActionButtons({
           <button className="whop-dashboard-btn" onClick={openDashboard}>
             <FaTachometerAlt /> Dashboard
           </button>
-          {whopData.modules?.discord_access && (
+          {Boolean(whopData.modules?.discord_access) && (
             <button
               className="whop-discord-btn"
               onClick={() => setShowDiscordSetup(true)}
