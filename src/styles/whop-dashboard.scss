@@ -982,10 +982,12 @@
     font-size: 1.5rem;
   }
   .member-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: column;
+    width: var(--mobile-sidebar-width, 75%);
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
   }
   .member-main {
     margin-top: var(--spacing-lg);
@@ -1295,10 +1297,12 @@
     font-size: 1.5rem;
   }
   .member-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    flex-direction: column;
+    width: var(--mobile-sidebar-width, 75%);
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
   }
   .member-main {
     margin-top: var(--spacing-lg);
