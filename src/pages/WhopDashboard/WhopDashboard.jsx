@@ -67,6 +67,7 @@ export default function WhopDashboard() {
 
   // Feature-edit
   const [editFeatures, setEditFeatures] = useState([]);
+  const [editPricingPlans, setEditPricingPlans] = useState([]);
   const [editCourseSteps, setEditCourseSteps] = useState([
     { id: 1, title: "", content: "", fileUrl: "", fileType: "", isUploading: false, error: "" }
   ]);
@@ -131,6 +132,7 @@ export default function WhopDashboard() {
       setEditBannerUrl,
       setNewSlugValue,
       setEditFeatures,
+      setEditPricingPlans,
       fetchCampaignsBound,
       setWaitlistEnabled,
       setWaitlistQuestions,
@@ -246,6 +248,34 @@ export default function WhopDashboard() {
     setEditCourseSteps
   );
 
+  // Manage pricing plans
+  const addPlan = () => {
+    const newId =
+      editPricingPlans.length > 0
+        ? Math.max(...editPricingPlans.map(p => p.id || 0)) + 1
+        : 1;
+    setEditPricingPlans(prev => [
+      ...prev,
+      {
+        id: newId,
+        plan_name: "",
+        price: 0,
+        billing_period: "7 days",
+        currency: whopData?.currency || "USD",
+      },
+    ]);
+  };
+
+  const removePlan = id => {
+    setEditPricingPlans(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handlePlanChange = (id, field, value) => {
+    setEditPricingPlans(prev =>
+      prev.map(p => (p.id === id ? { ...p, [field]: value } : p))
+    );
+  };
+
   // 8️⃣ Slug save
   const onSlugSave = async () => {
     await handleSlugSave(whopData, newSlugValue, showNotification, setSlugError, navigate);
@@ -259,12 +289,14 @@ export default function WhopDashboard() {
       editDescription,
       editBannerUrl,
       editFeatures,
+      editPricingPlans,
       showNotification,
       setError,
       setEditName,
       setEditDescription,
       setEditBannerUrl,
       setEditFeatures,
+      setEditPricingPlans,
       setSlugError,
       fetchCampaignsBound,
       setWhopData,
@@ -338,10 +370,11 @@ export default function WhopDashboard() {
         setWhopData,
         setEditName,
         setEditDescription,
-        setEditBannerUrl,
-        setNewSlugValue,
-        setEditFeatures,
-        fetchCampaignsBound,
+      setEditBannerUrl,
+      setNewSlugValue,
+      setEditFeatures,
+      setEditPricingPlans,
+      fetchCampaignsBound,
         setWaitlistEnabled,
         setWaitlistQuestions,
         setEditCourseSteps,

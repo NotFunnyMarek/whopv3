@@ -6,12 +6,14 @@ export default async function handleSaveWhop(
   editDescription,
   editBannerUrl,
   editFeatures,
+  editPricingPlans,
   showNotification,
   setError,
   setEditName,
   setEditDescription,
   setEditBannerUrl,
   setEditFeatures,
+  setEditPricingPlans,
   setSlugError,
   fetchCampaigns,
   setWhopData,
@@ -80,6 +82,14 @@ export default async function handleSaveWhop(
     faq:                editFaq,
     landing_texts:      editLandingTexts,
     modules:            editModules,
+    pricing_plans:     editPricingPlans.map((p, idx) => ({
+                          id: p.id,
+                          plan_name: p.plan_name,
+                          price: parseFloat(p.price) || 0,
+                          currency: p.currency || whopData.currency,
+                          billing_period: p.billing_period,
+                          sort_order: idx,
+                        })),
     affiliate_default_percent: parseFloat(editAffiliatePercent) || 0,
     affiliate_recurring: editAffiliateRecurring ? 1 : 0,
     course_steps:       editCourseSteps.map(s => ({
@@ -185,6 +195,18 @@ export default async function handleSaveWhop(
         error:       "",
       }));
       setEditFeatures(newFeatures);
+
+      setEditPricingPlans(
+        Array.isArray(data.pricing_plans)
+          ? data.pricing_plans.map(p => ({
+              id: p.id,
+              plan_name: p.plan_name || "",
+              price: p.price,
+              billing_period: p.billing_period,
+              currency: p.currency || data.currency,
+            }))
+          : []
+      );
 
       setEditCourseSteps(
         Array.isArray(data.course_steps) && data.course_steps.length

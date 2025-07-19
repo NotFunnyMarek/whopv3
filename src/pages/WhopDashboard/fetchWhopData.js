@@ -10,6 +10,7 @@ export default async function fetchWhopData(
   setEditBannerUrl,
   setNewSlugValue,
   setEditFeatures,
+  setEditPricingPlans,
   fetchCampaigns,        // bound version
   setWaitlistEnabled,    // newly added
   setWaitlistQuestions,  // newly added
@@ -75,6 +76,18 @@ export default async function fetchWhopData(
           isUploading: false,
           error: "",
         }))
+      );
+
+      setEditPricingPlans(
+        Array.isArray(data.pricing_plans)
+          ? data.pricing_plans.map(p => ({
+              id: p.id,
+              plan_name: p.plan_name || "",
+              price: p.price,
+              billing_period: p.billing_period,
+              currency: p.currency || data.currency,
+            }))
+          : []
       );
 
       const toAbsolute = url => {
