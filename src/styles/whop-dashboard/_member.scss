@@ -617,7 +617,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 75%;
+    width: var(--mobile-sidebar-width, 75%);
     height: 100%;
     transform: translateX(-100%);
     visibility: hidden;
@@ -653,7 +653,7 @@
   }
 
   .member-container.sidebar-open .sidebar-toggle {
-    left: 75%;
+    left: var(--mobile-sidebar-width, 75%);
     transform: translate(-50%, -50%) rotate(180deg);
   }
 
@@ -707,7 +707,7 @@
     height: 8rem;
   }
   .member-sidebar {
-    width: 75%;
+    width: var(--mobile-sidebar-width, 75%);
   }
 }
 
