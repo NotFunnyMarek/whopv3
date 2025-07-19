@@ -16,6 +16,7 @@
  */
 export default async function handleSubscribe(
   whopData,
+  planId,
   showConfirm,
   setOverlayVisible,
   setOverlayFading,
@@ -28,8 +29,15 @@ export default async function handleSubscribe(
 ) {
   if (!whopData) return;
 
+  let plan = null;
+  if (planId && Array.isArray(whopData.pricing_plans)) {
+    plan = whopData.pricing_plans.find(p => p.id === planId) || null;
+  }
+
+  const priceVal = plan ? plan.price : whopData.price;
+
   // If free (price ≤ 0), redirect to the free join flow
-  if (!whopData.price || parseFloat(whopData.price) <= 0) {
+  if (!priceVal || parseFloat(priceVal) <= 0) {
     const { default: joinFree } = await import("./handleJoinFree");
     await joinFree(
       whopData,
@@ -46,11 +54,13 @@ export default async function handleSubscribe(
   }
 
   // Paid flow: first, get user confirmation
-  const price = parseFloat(whopData.price).toFixed(2);
+  const price = parseFloat(priceVal).toFixed(2);
+  const billingPeriod = plan ? plan.billing_period : whopData.billing_period;
+  const currency = plan ? plan.currency || whopData.currency : whopData.currency;
   const period = whopData.is_recurring
-    ? `recurs every ${whopData.billing_period}`
+    ? `recurs every ${billingPeriod}`
     : "one-time";
-  const confirmMessage = `This Whop costs ${whopData.currency}${price} ${period}.\nDo you want to continue?`;
+  const confirmMessage = `This Whop costs ${currency}${price} ${period}.\nDo you want to continue?`;
 
   try {
     await showConfirm(confirmMessage);
@@ -69,6 +79,7 @@ export default async function handleSubscribe(
   try {
     // Send subscription request to PHP
     const payload = { whop_id: whopData.id };
+    if (planId) payload.plan_id = planId;
     const res = await fetch("https://app.byxbot.com/php/subscribe_whop.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
