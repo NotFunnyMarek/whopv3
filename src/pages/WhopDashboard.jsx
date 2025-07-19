@@ -65,6 +65,7 @@ export default function WhopDashboard() {
 
   // Edit features
   const [editFeatures, setEditFeatures] = useState([]);
+  const [editPricingPlans, setEditPricingPlans] = useState([]);
 
   // Campaign modal
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
@@ -77,6 +78,7 @@ export default function WhopDashboard() {
   // Member mode
   const [activeTab, setActiveTab] = useState("Home");
   const [memberLoading, setMemberLoading] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
 
   // “View as Member” mode
   const [viewAsMemberMode, setViewAsMemberMode] = useState(false);
@@ -112,6 +114,9 @@ export default function WhopDashboard() {
           return;
         }
         setWhopData(json.data);
+        if (Array.isArray(json.data.pricing_plans) && json.data.pricing_plans.length > 0) {
+          setSelectedPlanId(json.data.pricing_plans[0].id);
+        }
 
         // If owner, prepare editing state
         if (json.data.is_owner) {
@@ -127,6 +132,15 @@ export default function WhopDashboard() {
               imageUrl: f.image_url,
               isUploading: false,
               error: ""
+            }))
+          );
+          setEditPricingPlans(
+            (json.data.pricing_plans || []).map((p) => ({
+              id: p.id,
+              plan_name: p.plan_name || "",
+              price: p.price,
+              billing_period: p.billing_period,
+              currency: p.currency || json.data.currency,
             }))
           );
           await fetchCampaigns(json.data.id);
@@ -188,11 +202,18 @@ export default function WhopDashboard() {
     }
 
     // Paid whop: potvrzení přes custom confirm modal
-    const price = parseFloat(whopData.price).toFixed(2);
+    let plan = null;
+    if (Array.isArray(whopData.pricing_plans) && selectedPlanId) {
+      plan = whopData.pricing_plans.find((p) => p.id === selectedPlanId);
+    }
+    const priceVal = plan ? plan.price : whopData.price;
+    const billPeriod = plan ? plan.billing_period : whopData.billing_period;
+    const price = parseFloat(priceVal).toFixed(2);
     const period = whopData.is_recurring
-      ? `opakuje se každých ${whopData.billing_period}`
+      ? `opakuje se každých ${billPeriod}`
       : "jednorázově";
-    const confirmMessage = `Tento Whop stojí ${whopData.currency}${price} ${period}.\nChcete pokračovat?`;
+    const currency = plan ? plan.currency || whopData.currency : whopData.currency;
+    const confirmMessage = `Tento Whop stojí ${currency}${price} ${period}.\nChcete pokračovat?`;
 
     try {
       await showConfirm(confirmMessage);
@@ -211,6 +232,7 @@ export default function WhopDashboard() {
 
     try {
       const payload = { whop_id: whopData.id };
+      if (selectedPlanId) payload.plan_id = selectedPlanId;
       const res = await fetch("https://app.byxbot.com/php/subscribe_whop.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -521,6 +543,22 @@ export default function WhopDashboard() {
     );
   };
 
+  const addPlan = () => {
+    const newId = editPricingPlans.length > 0 ? Math.max(...editPricingPlans.map((p) => p.id || 0)) + 1 : 1;
+    setEditPricingPlans((prev) => [
+      ...prev,
+      { id: newId, plan_name: "", price: 0, billing_period: "7 days", currency: whopData.currency || "USD" }
+    ]);
+  };
+
+  const removePlan = (id) => {
+    setEditPricingPlans((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const handlePlanChange = (id, field, value) => {
+    setEditPricingPlans((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+  };
+
   // ----------------------------------------
   // 9) Save slug (owner)
   // ----------------------------------------
@@ -591,6 +629,14 @@ export default function WhopDashboard() {
         title: f.title.trim(),
         subtitle: f.subtitle.trim(),
         imageUrl: f.imageUrl
+      })),
+      pricing_plans: editPricingPlans.map((p, idx) => ({
+        id: p.id,
+        plan_name: p.plan_name,
+        price: parseFloat(p.price) || 0,
+        currency: p.currency || whopData.currency,
+        billing_period: p.billing_period,
+        sort_order: idx
       }))
     };
 
@@ -1245,6 +1291,20 @@ export default function WhopDashboard() {
           </div>
           <p className="whop-landing-description">{whopData.description}</p>
 
+          {Array.isArray(whopData.pricing_plans) && whopData.pricing_plans.length > 0 && (
+            <select
+              className="plan-select"
+              value={selectedPlanId || whopData.pricing_plans[0].id}
+              onChange={(e) => setSelectedPlanId(parseInt(e.target.value, 10))}
+            >
+              {whopData.pricing_plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.plan_name || `${p.price}/${p.billing_period}`}
+                </option>
+              ))}
+            </select>
+          )}
+
           <button
             className="whop-landing-join-btn"
             onClick={handleSubscribe}
@@ -1255,9 +1315,16 @@ export default function WhopDashboard() {
             ) : (
               <>
                 <FaUserPlus />{" "}
-                {whopData.price && parseFloat(whopData.price) > 0
-                  ? `${whopData.currency}${parseFloat(whopData.price).toFixed(2)}`
-                  : "Připojit se zdarma"}
+                {(() => {
+                  const plan = Array.isArray(whopData.pricing_plans) && selectedPlanId
+                    ? whopData.pricing_plans.find((p) => p.id === selectedPlanId)
+                    : null;
+                  const price = plan ? plan.price : whopData.price;
+                  const currency = plan ? plan.currency || whopData.currency : whopData.currency;
+                  return price && parseFloat(price) > 0
+                    ? `${currency}${parseFloat(price).toFixed(2)}`
+                    : "Připojit se zdarma";
+                })()}
               </>
             )}
           </button>
@@ -1462,11 +1529,40 @@ export default function WhopDashboard() {
                     <option value="1 minute">1 minute</option>
                     <option value="7 days">7 days</option>
                     <option value="14 days">14 days</option>
+                  <option value="30 days">30 days</option>
+                  <option value="1 year">1 year</option>
+                </select>
+              </div>
+              ) : null}
+
+              {editPricingPlans.map((p, idx) => (
+                <div key={p.id} className="price-field plan-field">
+                  <label>Plan {idx + 1}</label>
+                  <input
+                    type="text"
+                    value={p.plan_name}
+                    onChange={(e) => handlePlanChange(p.id, "plan_name", e.target.value)}
+                    placeholder="Name"
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={p.price}
+                    onChange={(e) => handlePlanChange(p.id, "price", e.target.value)}
+                  />
+                  <select
+                    value={p.billing_period}
+                    onChange={(e) => handlePlanChange(p.id, "billing_period", e.target.value)}
+                  >
+                    <option value="7 days">7 days</option>
+                    <option value="14 days">14 days</option>
                     <option value="30 days">30 days</option>
                     <option value="1 year">1 year</option>
                   </select>
+                  <button onClick={() => removePlan(p.id)}>-</button>
                 </div>
-              ) : null}
+              ))}
+              <button className="add-plan-btn" onClick={addPlan}>Add Plan</button>
             </div>
           ) : (
             <div className="price-view-wrapper">

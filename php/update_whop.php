@@ -154,6 +154,29 @@ $landing_json   = isset($data['landing_texts']) ? json_encode($data['landing_tex
 $modules_json   = isset($data['modules']) ? json_encode($data['modules'], JSON_UNESCAPED_UNICODE) : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 $course_json    = isset($data['course_steps']) ? json_encode($data['course_steps'], JSON_UNESCAPED_UNICODE) : json_encode([], JSON_UNESCAPED_UNICODE);
 
+$pricing_plans = [];
+if (isset($data['pricing_plans']) && is_array($data['pricing_plans'])) {
+    foreach ($data['pricing_plans'] as $idx => $pp) {
+        if (!isset($pp['price']) || !isset($pp['billing_period'])) {
+            continue;
+        }
+        $pricing_plans[] = [
+            'plan_name'      => $pp['plan_name'] ?? null,
+            'description'    => $pp['description'] ?? null,
+            'price'          => floatval($pp['price']),
+            'currency'       => $pp['currency'] ?? $currency,
+            'billing_period' => $pp['billing_period'],
+            'sort_order'     => $idx
+        ];
+    }
+}
+if (count($pricing_plans) > 0) {
+    $first = $pricing_plans[0];
+    $price = $first['price'];
+    $currency = $first['currency'];
+    $billing_period = $first['billing_period'];
+}
+
 // 12) Update the Whop record
 try {
     $updStmt = $pdo->prepare("
@@ -233,6 +256,27 @@ try {
             ':subtitle'  => $feat['subtitle'] ?? "",
             ':image_url' => $feat['imageUrl'],
         ]);
+    }
+
+    // Replace pricing plans
+    $pdo->prepare('DELETE FROM whop_pricing_plans WHERE whop_id = :wid')
+        ->execute([':wid' => $whopId]);
+    if (count($pricing_plans) > 0) {
+        $planStmt = $pdo->prepare(
+            'INSERT INTO whop_pricing_plans (whop_id, plan_name, description, price, currency, billing_period, sort_order) '
+            . 'VALUES (:wid, :name, :desc, :price, :curr, :bp, :ord)'
+        );
+        foreach ($pricing_plans as $pp) {
+            $planStmt->execute([
+                'wid'   => $whopId,
+                'name'  => $pp['plan_name'],
+                'desc'  => $pp['description'],
+                'price' => $pp['price'],
+                'curr'  => $pp['currency'],
+                'bp'    => $pp['billing_period'],
+                'ord'   => $pp['sort_order']
+            ]);
+        }
     }
 } catch (PDOException $e) {
     http_response_code(500);
