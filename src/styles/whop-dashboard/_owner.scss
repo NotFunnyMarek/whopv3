@@ -866,8 +866,10 @@
 
   .owner-text-menu {
     position: fixed;
-    inset: 0;
-    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 75%;
     height: 100%;
     transform: translateX(100%);
     visibility: hidden;
@@ -881,6 +883,30 @@
     transform: translateX(0);
     visibility: visible;
     opacity: 1;
+  }
+
+  .sidebar-toggle {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translate(50%, -50%);
+    z-index: 60;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: right var(--transition), transform var(--transition);
+  }
+
+  .whop-container.menu-open .sidebar-toggle {
+    right: 75%;
+    transform: translate(50%, -50%) rotate(180deg);
   }
 
   .sidebar-overlay {
@@ -928,6 +954,10 @@
     &.closed {
       transform: translateX(100%);
     }
+  }
+
+  .sidebar-toggle {
+    display: none;
   }
 }
 
