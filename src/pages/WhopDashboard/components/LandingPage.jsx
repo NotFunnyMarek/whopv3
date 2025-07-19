@@ -147,7 +147,9 @@ export default function LandingPage({
           {long_description && (
             <p className="long-desc">{long_description}</p>
           )}
-          {Array.isArray(whopData.pricing_plans) && whopData.pricing_plans.length > 0 && (
+          {Array.isArray(whopData.pricing_plans) &&
+            whopData.pricing_plans.length > 0 &&
+            !requested && (
             <div className="plan-options">
               {whopData.pricing_plans.map(p => (
                 <button
