@@ -70,7 +70,7 @@ export default function MemberSidebar({
             <FaDollarSign /> Affiliate
           </button>
         )}
-        {Boolean(whopData.modules?.discord_access) && (
+        {whopData.modules?.discord_access === true && (
           <button
             className={`nav-button ${activeTab === "Discord" ? "active" : ""}`}
             onClick={() => setActiveTab("Discord")}
