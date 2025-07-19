@@ -37,6 +37,7 @@ if (!$input || !isset($input['whop_id'])) {
     exit;
 }
 $whopId = intval($input['whop_id']);
+$planId = isset($input['plan_id']) ? intval($input['plan_id']) : null;
 
 // 4) Database connection
 require_once __DIR__ . '/config_login.php';
@@ -84,12 +85,9 @@ try {
 
 // 6) Fetch Whop parameters
 try {
-    $stmt = $pdo->prepare("
-      SELECT owner_id, price, currency, is_recurring, billing_period
-        FROM whops
-       WHERE id = :whop_id
-       LIMIT 1
-    ");
+    $stmt = $pdo->prepare(
+        "SELECT owner_id, price, currency, is_recurring, billing_period FROM whops WHERE id = :whop_id LIMIT 1"
+    );
     $stmt->execute(['whop_id' => $whopId]);
     $whop = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$whop) {
@@ -99,6 +97,20 @@ try {
             "message" => "Whop not found"
         ]);
         exit;
+    }
+
+    if ($planId) {
+        $p = $pdo->prepare("SELECT price, currency, billing_period FROM whop_pricing_plans WHERE id = :pid AND whop_id = :wid LIMIT 1");
+        $p->execute(['pid' => $planId, 'wid' => $whopId]);
+        $plan = $p->fetch(PDO::FETCH_ASSOC);
+        if (!$plan) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Invalid plan_id"]);
+            exit;
+        }
+        $whop['price'] = $plan['price'];
+        $whop['currency'] = $plan['currency'];
+        $whop['billing_period'] = $plan['billing_period'];
     }
 } catch (PDOException $e) {
     http_response_code(500);

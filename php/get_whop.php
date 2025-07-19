@@ -231,6 +231,16 @@ if ($method === 'GET') {
             $fs->execute(['wid' => $w['id']]);
             $features = $fs->fetchAll(PDO::FETCH_ASSOC);
 
+            // pricing plans
+            $pps = $pdo->prepare(
+                "SELECT id, plan_name, description, price, currency, billing_period, sort_order
+                   FROM whop_pricing_plans
+                  WHERE whop_id = :wid
+                  ORDER BY sort_order, id"
+            );
+            $pps->execute(['wid' => $w['id']]);
+            $pricing_plans = $pps->fetchAll(PDO::FETCH_ASSOC);
+
             // user-related data
             $user_balance = 0;
             $is_pending_waitlist = 0;
@@ -304,6 +314,7 @@ if ($method === 'GET') {
                     "is_member"              => ($is_free || $is_paid) ? 1 : 0,
                     "members_count"          => $members_count,
                     "features"               => $features,
+                    "pricing_plans"          => $pricing_plans,
                     "user_balance"           => $user_balance,
                     "is_pending_waitlist"    => $is_pending_waitlist,
                     "is_accepted_waitlist"   => $is_accepted_waitlist,

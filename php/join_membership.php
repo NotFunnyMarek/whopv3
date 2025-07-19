@@ -53,6 +53,7 @@ if (!isset($data['whop_id'], $data['price'], $data['currency'], $data['is_recurr
 }
 
 $whop_id        = intval($data['whop_id']);
+$plan_id        = isset($data['plan_id']) ? intval($data['plan_id']) : null;
 $price          = floatval($data['price']);
 $currency       = trim($data['currency']);
 $is_recurring   = intval($data['is_recurring']);  // 0 = one-time, 1 = subscription
@@ -82,13 +83,11 @@ try {
 // 5) Verify that the Whop exists & load its owner and settings
 // ——————————————————————————————————————————————————————————
 try {
-    $stmt = $pdo->prepare("
-        SELECT owner_id, price AS whop_price, currency AS whop_currency,
-               is_recurring AS whop_rec, billing_period AS whop_bp
-        FROM whops
-        WHERE id = :whop_id
-        LIMIT 1
-    ");
+    $stmt = $pdo->prepare(
+        "SELECT owner_id, price AS whop_price, currency AS whop_currency,"
+        . " is_recurring AS whop_rec, billing_period AS whop_bp"
+        . " FROM whops WHERE id = :whop_id LIMIT 1"
+    );
     $stmt->execute(['whop_id' => $whop_id]);
     $wp = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$wp) {
@@ -101,6 +100,25 @@ try {
     $whop_currency_db = $wp['whop_currency'];
     $whop_rec_db      = intval($wp['whop_rec']);
     $whop_bp_db       = $wp['whop_bp'];
+
+    if ($plan_id) {
+        $p = $pdo->prepare(
+            "SELECT price, currency, billing_period FROM whop_pricing_plans WHERE id = :pid AND whop_id = :wid LIMIT 1"
+        );
+        $p->execute(['pid' => $plan_id, 'wid' => $whop_id]);
+        $plan = $p->fetch(PDO::FETCH_ASSOC);
+        if (!$plan) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Invalid plan_id"]);
+            exit;
+        }
+        $whop_price_db = floatval($plan['price']);
+        $whop_currency_db = $plan['currency'];
+        $whop_bp_db = $plan['billing_period'];
+        $price = $whop_price_db;
+        $currency = $whop_currency_db;
+        $billing_period = $whop_bp_db;
+    }
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "SQL Error: " . $e->getMessage()]);

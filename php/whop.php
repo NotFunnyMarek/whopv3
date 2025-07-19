@@ -136,6 +136,16 @@ if ($method === 'GET') {
             $fs->execute(['wid' => $w['id']]);
             $features = $fs->fetchAll(PDO::FETCH_ASSOC);
 
+            // pricing plans
+            $pps = $pdo->prepare(
+                "SELECT id, plan_name, description, price, currency, billing_period, sort_order
+                 FROM whop_pricing_plans
+                 WHERE whop_id = :wid
+                 ORDER BY sort_order, id"
+            );
+            $pps->execute(['wid' => $w['id']]);
+            $pricing_plans = $pps->fetchAll(PDO::FETCH_ASSOC);
+
             // user balance
             $b = $pdo->prepare("SELECT balance FROM users4 WHERE id = :uid LIMIT 1");
             $b->execute(['uid' => $user_id]);
@@ -185,6 +195,7 @@ if ($method === 'GET') {
                     "is_member"            => ($is_free || $is_paid) ? 1 : 0,
                     "members_count"        => $members_count,
                     "features"             => $features,
+                    "pricing_plans"        => $pricing_plans,
                     "user_balance"         => $user_balance,
                     "is_pending_waitlist"  => $is_pending_waitlist,
                     "is_accepted_waitlist" => $is_accepted_waitlist,
@@ -307,6 +318,29 @@ if ($method === 'GET') {
                    ? json_encode($input['modules'], JSON_UNESCAPED_UNICODE)
                    : json_encode(new stdClass(), JSON_UNESCAPED_UNICODE);
 
+   $pricing_plans = [];
+   if (isset($input['pricing_plans']) && is_array($input['pricing_plans'])) {
+       foreach ($input['pricing_plans'] as $idx => $pp) {
+           if (!isset($pp['price']) || !isset($pp['billing_period'])) {
+               continue;
+           }
+           $pricing_plans[] = [
+               'plan_name'      => $pp['plan_name'] ?? null,
+               'description'    => $pp['description'] ?? null,
+               'price'          => floatval($pp['price']),
+               'currency'       => $pp['currency'] ?? $currency,
+               'billing_period' => $pp['billing_period'],
+               'sort_order'     => $idx
+           ];
+       }
+   }
+   if (count($pricing_plans) > 0) {
+       $first = $pricing_plans[0];
+       $price = $first['price'];
+       $currency = $first['currency'];
+       $billing_period = $first['billing_period'];
+   }
+
     // Slug uniqueness
     try {
         $check = $pdo->prepare("SELECT id FROM whops WHERE slug = :slug");
@@ -386,6 +420,24 @@ if ($method === 'GET') {
                         'image_url' => $imageUrl
                     ]);
                 }
+            }
+        }
+
+        if (count($pricing_plans) > 0) {
+            $planStmt = $pdo->prepare(
+                "INSERT INTO whop_pricing_plans (whop_id, plan_name, description, price, currency, billing_period, sort_order)"
+                . " VALUES (:wid, :name, :desc, :price, :curr, :bp, :ord)"
+            );
+            foreach ($pricing_plans as $pp) {
+                $planStmt->execute([
+                    'wid'   => $newId,
+                    'name'  => $pp['plan_name'],
+                    'desc'  => $pp['description'],
+                    'price' => $pp['price'],
+                    'curr'  => $pp['currency'],
+                    'bp'    => $pp['billing_period'],
+                    'ord'   => $pp['sort_order']
+                ]);
             }
         }
 
