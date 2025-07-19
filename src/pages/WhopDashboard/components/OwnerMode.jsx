@@ -45,6 +45,10 @@ export default function OwnerMode({
   handleImageChange,
   removeFeature,
   addFeature,
+  editPricingPlans,
+  addPlan,
+  removePlan,
+  handlePlanChange,
   editCourseSteps,
   handleCourseChange,
   handleFileUpload,
@@ -82,6 +86,27 @@ export default function OwnerMode({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef(null);
+
+  // Open sidebar by default on desktop when editing
+  useEffect(() => {
+    if (isEditing) {
+      if (window.innerWidth > 768) setMobileMenuOpen(true);
+    } else {
+      setMobileMenuOpen(false);
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isEditing) {
+        setMobileMenuOpen(true);
+      } else if (window.innerWidth <= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isEditing]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -174,6 +199,10 @@ export default function OwnerMode({
           setNewSlugValue={setNewSlugValue}
           slugError={slugError}
           handleSlugSave={handleSlugSave}
+          editPricingPlans={editPricingPlans}
+          addPlan={addPlan}
+          removePlan={removePlan}
+          handlePlanChange={handlePlanChange}
         />
 
         {/* Owner action buttons */}

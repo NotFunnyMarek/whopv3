@@ -12,6 +12,10 @@ export default function OwnerSlugPrice({
   setNewSlugValue,
   slugError,
   handleSlugSave,
+  editPricingPlans,
+  addPlan,
+  removePlan,
+  handlePlanChange,
 }) {
   if (!whopData) return null;
 
@@ -63,58 +67,97 @@ export default function OwnerSlugPrice({
       <div className="whop-price-section">
         {isEditing ? (
           <div className="price-edit-wrapper">
-            <div className="price-field">
-              <label>Price (e.g. 10.00)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={whopData.price ?? ""}
-                onChange={e => {
-                  const val = e.target.value;
-                  updateField("price", val !== "" ? parseFloat(val) : 0);
-                }}
-              />
-            </div>
-            <div className="price-field">
-              <label>Currency</label>
-              <input
-                type="text"
-                value={whopData.currency || "USD"}
-                onChange={e =>
-                  updateField("currency", e.target.value.toUpperCase())
-                }
-              />
-            </div>
-            <div className="price-field">
-              <label>Subscription</label>
-              <select
-                value={whopData.is_recurring ? "1" : "0"}
-                onChange={e =>
-                  updateField("is_recurring", parseInt(e.target.value, 10))
-                }
-              >
-                <option value="0">One-time</option>
-                <option value="1">Recurring</option>
-              </select>
-            </div>
-            {whopData.is_recurring && (
-              <div className="price-field">
-                <label>Billing period</label>
+            {editPricingPlans.length === 0 && (
+              <>
+                <div className="price-field">
+                  <label>Price (e.g. 10.00)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={whopData.price ?? ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      updateField("price", val !== "" ? parseFloat(val) : 0);
+                    }}
+                  />
+                </div>
+                <div className="price-field">
+                  <label>Currency</label>
+                  <input
+                    type="text"
+                    value={whopData.currency || "USD"}
+                    onChange={e =>
+                      updateField("currency", e.target.value.toUpperCase())
+                    }
+                  />
+                </div>
+                <div className="price-field">
+                  <label>Subscription</label>
+                  <select
+                    value={whopData.is_recurring ? "1" : "0"}
+                    onChange={e =>
+                      updateField("is_recurring", parseInt(e.target.value, 10))
+                    }
+                  >
+                    <option value="0">One-time</option>
+                    <option value="1">Recurring</option>
+                  </select>
+                </div>
+                {whopData.is_recurring && (
+                  <div className="price-field">
+                    <label>Billing period</label>
+                    <select
+                      value={whopData.billing_period || ""}
+                      onChange={e =>
+                        updateField("billing_period", e.target.value)
+                      }
+                    >
+                      <option value="1 minute">1 minute</option>
+                      <option value="7 days">7 days</option>
+                      <option value="14 days">14 days</option>
+                      <option value="30 days">30 days</option>
+                      <option value="1 year">1 year</option>
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
+
+            {editPricingPlans.map((p, idx) => (
+              <div key={p.id} className="price-field plan-field">
+                <label>Plan {idx + 1}</label>
+                <input
+                  type="text"
+                  value={p.plan_name}
+                  onChange={e => handlePlanChange(p.id, "plan_name", e.target.value)}
+                  placeholder="Name"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={p.price}
+                  onChange={e => handlePlanChange(p.id, "price", e.target.value)}
+                />
+                <input
+                  type="text"
+                  value={p.currency}
+                  onChange={e => handlePlanChange(p.id, "currency", e.target.value.toUpperCase())}
+                  className="plan-currency"
+                />
                 <select
-                  value={whopData.billing_period || ""}
-                  onChange={e =>
-                    updateField("billing_period", e.target.value)
-                  }
+                  value={p.billing_period}
+                  onChange={e => handlePlanChange(p.id, "billing_period", e.target.value)}
                 >
-                  <option value="1 minute">1 minute</option>
                   <option value="7 days">7 days</option>
                   <option value="14 days">14 days</option>
                   <option value="30 days">30 days</option>
                   <option value="1 year">1 year</option>
                 </select>
+                <button onClick={() => removePlan(p.id)}>-</button>
               </div>
-            )}
+            ))}
+            <button className="add-plan-btn" onClick={addPlan}>Add Plan</button>
 
             {/* Waitlist toggle */}
             <div className="price-field">
