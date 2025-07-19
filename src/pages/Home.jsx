@@ -42,15 +42,34 @@ export default function Home() {
       try {
         const res = await fetch(API_WHOPS_URL, { credentials: 'include' });
         const json = await res.json();
-        setWhops(json.data.map(w => ({
-          ...w,
-          revenue:       parseFloat(w.revenue) || 0,
-          price:         parseFloat(w.price)   || 0,
-          members_count: parseInt(w.members_count, 10) || 0,
-          review_count:  parseInt(w.review_count, 10)  || 0,
-          features:      Array.isArray(w.features) ? w.features : [],
-          created_at:    w.created_at || null,
-        })));
+        setWhops(
+          json.data.map((w) => {
+            let features = [];
+            if (Array.isArray(w.features)) {
+              features = w.features;
+            } else if (w.features) {
+              try { features = JSON.parse(w.features); } catch {}
+            }
+
+            let plans = [];
+            if (Array.isArray(w.pricing_plans)) {
+              plans = w.pricing_plans;
+            } else if (w.pricing_plans) {
+              try { plans = JSON.parse(w.pricing_plans); } catch {}
+            }
+
+            return {
+              ...w,
+              revenue:       parseFloat(w.revenue) || 0,
+              price:         parseFloat(w.price)   || 0,
+              members_count: parseInt(w.members_count, 10) || 0,
+              review_count:  parseInt(w.review_count, 10)  || 0,
+              features,
+              pricing_plans: plans,
+              created_at:    w.created_at || null,
+            };
+          })
+        );
       } catch {
         setErrorMsg('Chyba při načítání.');
       } finally {
