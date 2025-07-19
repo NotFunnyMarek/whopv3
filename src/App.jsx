@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Loading from "./components/Loading";
 import MobileHeader from "./components/MobileHeader";
 import PageLoader from "./components/PageLoader";
+import useGlobalVibration from "./hooks/useGlobalVibration";
 
 const Home                 = lazy(() => import("./pages/Home"));
 const Intro                = lazy(() => import("./pages/Intro"));
@@ -31,6 +32,7 @@ const DiscordAccess        = lazy(() => import("./pages/DiscordAccess"));
 const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
 
 const App = () => {
+  useGlobalVibration();
   const { isLoggedIn } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
