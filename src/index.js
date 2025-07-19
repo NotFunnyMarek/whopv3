@@ -16,6 +16,19 @@ import './styles/register.scss';
 import './styles/profile.scss';
 import './styles/notifications.scss';
 
+// Disable swipe navigation from the screen edges in mobile PWAs
+window.addEventListener(
+  'touchstart',
+  (e) => {
+    if (e.touches.length !== 1) return;
+    const x = e.touches[0].clientX;
+    if (x < 20 || x > window.innerWidth - 20) {
+      e.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(
