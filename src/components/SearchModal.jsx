@@ -49,11 +49,17 @@ export default function SearchModal({ onClose }) {
           credentials: "include",
         }
       )
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
         .then((data) => {
           setResults(data.status === "success" ? data.data : []);
         })
-        .catch(() => setResults([]))
+        .catch((err) => {
+          console.error('Search error:', err);
+          setResults([]);
+        })
         .finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(timer);

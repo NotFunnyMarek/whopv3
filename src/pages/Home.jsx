@@ -42,6 +42,7 @@ export default function Home() {
     (async () => {
       try {
         const res = await fetch(API_WHOPS_URL, { credentials: 'include' });
+        if (!res.ok) throw new Error('Network response was not ok');
         const json = await res.json();
         setWhops(json.data.map(w => ({
           ...w,
@@ -53,7 +54,8 @@ export default function Home() {
           pricing_plans: Array.isArray(w.pricing_plans) ? w.pricing_plans : [],
           created_at:    w.created_at || null,
         })));
-      } catch {
+      } catch (err) {
+        console.error('Error loading whops:', err);
         setErrorMsg('Chyba při načítání.');
       } finally {
         setLoading(false);
