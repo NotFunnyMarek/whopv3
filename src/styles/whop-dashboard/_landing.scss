@@ -81,18 +81,20 @@
     align-items: center;
     gap: var(--spacing-xxs);
     padding: var(--spacing-xs) var(--spacing-sm);
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-base);
     background: transparent;
-    color: var(--primary-color);
+    color: var(--text-color);
     cursor: pointer;
     font-size: 0.875rem;
-    transition: background var(--transition), color var(--transition);
+    transition: background var(--transition), color var(--transition),
+      border-color var(--transition);
   }
 
   .plan-option.selected {
     background: var(--primary-color);
     color: #fff;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-color) inset;
   }
 
@@ -117,13 +119,15 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--border-color);
     background: transparent;
     margin-right: var(--spacing-xxs);
+    transition: background var(--transition), border-color var(--transition);
   }
 
   .plan-option.selected::before {
     background: var(--secondary-color);
+    border-color: var(--secondary-color);
   }
   .whop-landing-join-btn {
     display: inline-flex;

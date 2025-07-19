@@ -3,7 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/home.scss';
 
-const API_WHOPS_URL = 'https://app.byxbot.com/php/search_whops.php?all=1';
+// Use relative path so CRA proxy can avoid CORS issues in development
+const API_WHOPS_URL = '/php/search_whops.php?all=1';
 
 const FILTER_TAGS = [
   'Biggest revenue',
