@@ -108,6 +108,7 @@ export default function WhopDashboard() {
   // Member-mode tabs & loading
   const [activeTab, setActiveTab] = useState("Home");
   const [memberLoading, setMemberLoading] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
 
   // Owner “view as member”
   const [viewAsMemberMode, setViewAsMemberMode] = useState(false);
@@ -162,6 +163,14 @@ export default function WhopDashboard() {
     }
   }, [whopData]);
 
+  useEffect(() => {
+    if (Array.isArray(whopData?.pricing_plans) && whopData.pricing_plans.length > 0) {
+      setSelectedPlanId(whopData.pricing_plans[0].id);
+    } else {
+      setSelectedPlanId(null);
+    }
+  }, [whopData]);
+
   // 3️⃣ Fetch campaigns if owner or member
   useEffect(() => {
     if (whopData && (whopData.is_owner || whopData.is_member)) {
@@ -185,6 +194,7 @@ export default function WhopDashboard() {
     }
     await handleSubscribe(
       whopData,
+      selectedPlanId,
       showConfirm,
       setOverlayVisible,
       setOverlayFading,
@@ -462,6 +472,8 @@ export default function WhopDashboard() {
         handleSubscribe={onSubscribe}
         handleRequestWaitlist={onRequestWaitlist}
         showNotification={showNotification}
+        selectedPlanId={selectedPlanId}
+        setSelectedPlanId={setSelectedPlanId}
       />
     );
   }

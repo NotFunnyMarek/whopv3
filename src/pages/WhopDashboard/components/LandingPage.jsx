@@ -22,6 +22,8 @@ export default function LandingPage({
   handleSubscribe,
   handleRequestWaitlist,
   showNotification,
+  selectedPlanId,
+  setSelectedPlanId,
 }) {
   const [loaded, setLoaded] = useState(false);
   const [requested, setRequested] = useState(false);
@@ -87,9 +89,17 @@ export default function LandingPage({
     landing_texts = {},
   } = whopData;
 
+  const selectedPlan =
+    Array.isArray(whopData.pricing_plans) && selectedPlanId
+      ? whopData.pricing_plans.find(p => p.id === selectedPlanId)
+      : null;
+  const planPrice = selectedPlan ? selectedPlan.price : price;
+  const planCurrency = selectedPlan ? selectedPlan.currency || currency : currency;
+  const planPeriod = selectedPlan ? selectedPlan.billing_period : billing_period;
+
   const priceLabel =
-    price > 0
-      ? `${currency}${price.toFixed(2)}${is_recurring ? `/${billing_period}` : ""}`
+    planPrice > 0
+      ? `${planCurrency}${parseFloat(planPrice).toFixed(2)}${is_recurring ? `/${planPeriod}` : ""}`
       : "Free";
 
   const reviewsTitle = landing_texts.reviews_title || "See what other people are saying";
@@ -97,7 +107,7 @@ export default function LandingPage({
   const aboutTitle = landing_texts.about_title || "Learn about me";
   const faqTitle = landing_texts.faq_title || "Frequently asked questions";
   function handleWaitlistClick() {
-    if (price > 0 && user_balance < price) {
+    if (planPrice > 0 && user_balance < planPrice) {
       showNotification({ type: "error", message: "Insufficient balance." });
       return;
     }
@@ -137,10 +147,23 @@ export default function LandingPage({
           {long_description && (
             <p className="long-desc">{long_description}</p>
           )}
+          {Array.isArray(whopData.pricing_plans) && whopData.pricing_plans.length > 0 && (
+            <select
+              className="plan-select"
+              value={selectedPlanId || whopData.pricing_plans[0].id}
+              onChange={e => setSelectedPlanId(parseInt(e.target.value, 10))}
+            >
+              {whopData.pricing_plans.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.plan_name || `${p.price}/${p.billing_period}`}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="hero-buttons">
             <button
               className="btn primary"
-              onClick={waitlist_enabled ? handleWaitlistClick : handleSubscribe}
+              onClick={waitlist_enabled ? handleWaitlistClick : () => handleSubscribe(selectedPlanId)}
               disabled={memberLoading || requested}
             >
               {memberLoading
@@ -318,7 +341,7 @@ export default function LandingPage({
             </ul>
             <button
               className="btn primary pricing-btn"
-              onClick={waitlist_enabled ? handleWaitlistClick : handleSubscribe}
+              onClick={waitlist_enabled ? handleWaitlistClick : () => handleSubscribe(selectedPlanId)}
               disabled={memberLoading || requested}
             >
               {waitlist_enabled
