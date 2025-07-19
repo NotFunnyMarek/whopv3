@@ -80,12 +80,12 @@ export default function OwnerMode({
   showDiscordSetup,
   setShowDiscordSetup,
 }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || window.innerWidth > 768) return;
+    if (!container || window.innerWidth > 768 || !isEditing) return;
     let startX = null;
     const start = (e) => {
       startX = e.touches[0].clientX;
@@ -108,13 +108,13 @@ export default function OwnerMode({
       container.removeEventListener("touchstart", start);
       container.removeEventListener("touchend", end);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, isEditing]);
 
   if (!whopData) return null;
 
   return (
     <div
-      className={`whop-container${mobileMenuOpen ? ' menu-open' : ''}`}
+      className={`whop-container${isEditing && mobileMenuOpen ? ' menu-open' : ''}`}
       ref={containerRef}
     >
       {/* Show "Back" button only in edit mode */}
@@ -259,7 +259,7 @@ export default function OwnerMode({
         />
       )}
       <div
-        className={`sidebar-overlay${mobileMenuOpen ? ' visible' : ''}`}
+        className={`sidebar-overlay${isEditing && mobileMenuOpen ? ' visible' : ''}`}
         onClick={() => setMobileMenuOpen(false)}
       />
     </div>
