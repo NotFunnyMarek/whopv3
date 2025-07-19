@@ -268,7 +268,7 @@ export default function MemberMain({
       )}
 
       {/* DISCORD */}
-      {activeTab === "Discord" && whopData.modules?.discord_access && (
+      {activeTab === "Discord" && Boolean(whopData.modules?.discord_access) && (
         <div className="member-tab-content">
           <h3 className="member-subtitle">Discord Access</h3>
           <p className="member-text">
