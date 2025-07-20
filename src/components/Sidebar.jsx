@@ -15,7 +15,7 @@ import { FaUserShield, FaDollarSign } from "react-icons/fa";
 import ChatModal from "./Chat/ChatModal";
 import SearchModal from "./SearchModal";
 import useJoinedWhops from "../hooks/useJoinedWhops";
-import Logo from "../assets/logo.png";
+import Logo from "../assets/logo.svg";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -55,6 +55,9 @@ export default function Sidebar({ isOpen, onClose }) {
     <>
       <aside className={sidebarClass} onClick={() => isMobile && onClose?.()}>
 
+        <div className="sidebar__logo">
+          <img src={Logo} alt="Logo" />
+        </div>
 
         <div className="sidebar__content">
           <nav className="sidebar__nav">

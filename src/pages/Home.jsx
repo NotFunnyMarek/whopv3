@@ -1,4 +1,3 @@
-// src/components/Home.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/home.scss';
@@ -33,8 +32,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [activeFilter, setActiveFilter] = useState('Biggest revenue');
-
-  // pro staggered reveal
   const [visibleCount, setVisibleCount] = useState(0);
 
   useEffect(() => {
@@ -80,11 +77,9 @@ export default function Home() {
 
   const displayedWhops = useMemo(() => applyFilter(whops, activeFilter), [whops, activeFilter]);
 
-  // rozdělíme na sloupce 1–5 / 6–10
   const leftColumn  = displayedWhops.slice(0, 5);
   const rightColumn = displayedWhops.slice(5, 10);
 
-  // spustíme staggered reveal, když data dojdou
   useEffect(() => {
     if (!loading) {
       setVisibleCount(0);
@@ -156,6 +151,14 @@ function Card({ item, index, visibleCount }) {
   const hasPlans = Array.isArray(item.pricing_plans) && item.pricing_plans.length > 0;
   const isFree = item.price === 0 && !hasPlans;
   const visible = index < visibleCount;
+  const [collapsed, setCollapsed] = useState(true);
+
+  const handleCollapseClick = (e) => {
+    e.preventDefault(); // zabrání navigaci
+    e.stopPropagation();
+    setCollapsed(!collapsed);
+  };
+
   return (
     <Link to={`/c/${item.slug}`} className="whop-card-link">
       <div
@@ -165,6 +168,7 @@ function Card({ item, index, visibleCount }) {
         <div className="whop-thumb">
           <img src={item.banner_url || item.logo_url || '/placeholder.png'} alt={item.name} />
         </div>
+
         <div className="whop-content">
           <div className="whop-title"><strong>{item.name}</strong></div>
           <div className="whop-desc">{item.description || 'No description'}</div>
@@ -174,15 +178,29 @@ function Card({ item, index, visibleCount }) {
             </span>
             <span className="whop-members">{item.members_count} members</span>
           </div>
-          <div className="whop-features">
+
+          <div
+            className={`whop-features ${collapsed ? 'collapsed' : 'expanded'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             {item.features.map((f, i) => (
               <div key={i} className="whop-feature">
                 <strong>{f.title}</strong>: {f.subtitle}
               </div>
             ))}
           </div>
+
+          {item.features.length > 0 && (
+            <button
+              className="whop-collapse-btn"
+              onClick={handleCollapseClick}
+            >
+              {collapsed ? 'Show more' : 'Show less'}
+            </button>
+          )}
         </div>
-        <div className="whop-tag">
+
+        <div className="whop-tag" onClick={(e) => e.stopPropagation()}>
           {isFree ? (
             <span className="free-access">Free Access</span>
           ) : hasPlans ? (
