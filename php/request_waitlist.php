@@ -74,7 +74,20 @@ try {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 5a) Determine affiliate link ID from cookie if present
+// 5a) Check if waitlist_requests has affiliate_link_id column
+// ─────────────────────────────────────────────────────────────────────────────
+$hasAffColumn = false;
+try {
+    $chk = $pdo->prepare("SHOW COLUMNS FROM waitlist_requests LIKE 'affiliate_link_id'");
+    $chk->execute();
+    $hasAffColumn = $chk->rowCount() > 0;
+} catch (Exception $e) {
+    // If the query fails just assume the column doesn't exist
+    $hasAffColumn = false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5b) Determine affiliate link ID from cookie if present
 // ─────────────────────────────────────────────────────────────────────────────
 $affiliate_link_id = null;
 if (!empty($_COOKIE['affiliate_code'])) {
@@ -110,19 +123,30 @@ try {
 // 7) Insert new pending request
 // ——————————————————————————————————————————————————————————————
 try {
-    $sql = "
-        INSERT INTO waitlist_requests
-          (whop_id, user_id, affiliate_link_id, requested_at, status, answers_json)
-        VALUES
-          (:wid, :uid, :aff, UTC_TIMESTAMP(), 'pending', :aj)
-    ";
+    if ($hasAffColumn) {
+        $sql = "
+            INSERT INTO waitlist_requests
+              (whop_id, user_id, affiliate_link_id, requested_at, status, answers_json)
+            VALUES
+              (:wid, :uid, :aff, UTC_TIMESTAMP(), 'pending', :aj)
+        ";
+    } else {
+        $sql = "
+            INSERT INTO waitlist_requests
+              (whop_id, user_id, requested_at, status, answers_json)
+            VALUES
+              (:wid, :uid, UTC_TIMESTAMP(), 'pending', :aj)
+        ";
+    }
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':wid', $whop_id, PDO::PARAM_INT);
     $stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
-    if ($affiliate_link_id === null) {
-        $stmt->bindValue(':aff', null, PDO::PARAM_NULL);
-    } else {
-        $stmt->bindValue(':aff', $affiliate_link_id, PDO::PARAM_INT);
+    if ($hasAffColumn) {
+        if ($affiliate_link_id === null) {
+            $stmt->bindValue(':aff', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue(':aff', $affiliate_link_id, PDO::PARAM_INT);
+        }
     }
     if ($answers_json === null) {
         $stmt->bindValue(':aj', null, PDO::PARAM_NULL);
