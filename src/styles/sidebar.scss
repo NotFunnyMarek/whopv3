@@ -40,6 +40,24 @@
 
     .sidebar__link {
       justify-content: center;
+      padding: 0.6rem;
+
+      .sidebar__icon {
+        display: inline-block;
+        filter: none;
+        color: var(--text-color);
+        opacity: 1;
+      }
+    }
+
+    .sidebar__link.active {
+      background: var(--primary-color);
+      color: #fff;
+
+      .sidebar__icon {
+        color: #fff;
+        filter: none;
+      }
     }
   }
 
@@ -114,12 +132,17 @@
         .sidebar__icon,
         .sidebar__label,
         .sidebar__profile-img {
-          filter: brightness(10);
+          filter: none;
+          color: #fff;
         }
       }
 
       .sidebar__icon {
         font-size: 1.2rem;
+        display: inline-block;
+        filter: none;
+        color: var(--text-color);
+        opacity: 1;
       }
 
       .sidebar__label {
@@ -153,16 +176,16 @@
     }
 
     .sidebar__whops-item {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
-  background: rgba(0, 0, 0, 0.075);
-  border: 1px solid rgba(0, 0, 0, 0.144);
-  padding: 5px 15px;
-  border-radius: var(--radius-base);
-  color: var(--text-color);
-  cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.075);
+      border: 1px solid rgba(0, 0, 0, 0.144);
+      padding: 5px 15px;
+      border-radius: var(--radius-base);
+      color: var(--text-color);
+      cursor: pointer;
 
       &:hover {
         background-color: var(--border-color);
@@ -186,13 +209,15 @@
     margin-bottom: var(--spacing-lg);
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 0.8rem;
     color: var(--text-color);
     cursor: pointer;
+    margin-bottom: 60px;
     display: flex;
     align-items: center;
     gap: 0.25rem;
     transition: all 0.3s ease;
+
     @include respond(md) {
       display: none;
     }

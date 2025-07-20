@@ -162,7 +162,7 @@
       height: 2.5rem;
       border-radius: 12px;
       background: rgba(120, 120, 120, 0.2);
-      overflow: hidden;
+      overflow: visible;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -184,16 +184,20 @@
 
       .bottombar-center__tooltip {
         position: absolute;
-        bottom: 110%;
-        background: white;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--surface-color);
+        color: var(--text-color);
         padding: 0.3rem 0.6rem;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         font-size: 0.75rem;
         border-radius: 0.4rem;
         white-space: nowrap;
         opacity: 0;
         pointer-events: none;
         transition: all 0.2s ease;
+        z-index: 10;
       }
 
       &:hover .bottombar-center__tooltip {
