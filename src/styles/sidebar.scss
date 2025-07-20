@@ -1,213 +1,200 @@
 @import './design-system';
 
-// =============================
-// Sidebar (vertical fixed) – glassmorphism, neumorphism
-// =============================
-
 .sidebar {
-  // Pokud nemáš globální proměnnou --sidebar-width, můžeš ji definovat v variables.scss,
-  // např. --sidebar-width: 60px; Poté zde:
-  width: var(--sidebar-width, 60px);
+  position: fixed;
+  top: 0;
+  left: 0;
   height: 100vh;
-  background: var(--surface-color);
-  backdrop-filter: blur(12px);
+  width: 220px;
+  background: #fff;
   border-right: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: var(--spacing-lg);
-  box-shadow: var(--shadow-soft);
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 40;
+  padding: var(--spacing-md);
+  z-index: 50;
+  transition: all 0.3s ease;
+
+  // MOBILE CLOSED
+  &.closed {
+    transform: translateX(-100%);
+  }
+
+  // MOBILE OPEN
+  @include respond(md) {
+    transform: translateX(-100%);
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  // COLLAPSED (DESKTOP ICONS ONLY)
+  &.collapsed {
+    width: 64px;
+
+    .sidebar__label,
+    .sidebar__collapse-btn span {
+      display: none;
+    }
+
+    .sidebar__link {
+      justify-content: center;
+    }
+  }
 
   &__close {
-    display: none;
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
     background: none;
     border: none;
     font-size: 1.5rem;
     color: var(--text-color);
-    position: absolute;
-    top: var(--spacing-md);
-    right: var(--spacing-md);
-    z-index: 1;
+    z-index: 10;
 
-    @include respond(md) {
-      display: block;
+    @include respond(lg-up) {
+      display: none;
     }
   }
 
   &__logo {
-    margin-bottom: var(--spacing-lg);
-
+    margin-bottom: var(--spacing-md);
     img {
       width: 2rem;
       height: 2rem;
-      border-radius: var(--radius-sm);
-      transition: transform var(--transition);
-      cursor: pointer;
-
-      &:hover {
-        transform: scale(1.1);
-      }
+      border-radius: 0.5rem;
     }
   }
 
-  &__nav {
+  &__content {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    width: 100%;
+  }
+
+  &__nav {
+    width: 100%;
 
     ul {
       list-style: none;
-      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
       padding: 0;
+      margin: 0 auto;
       width: 100%;
     }
+  }
 
-    // Položka navigace
-    &-item {
-      width: 100%;
+  &__nav-item {
+    width: 100%;
+
+    .sidebar__link {
       display: flex;
-      justify-content: center;
       align-items: center;
-      margin: var(--spacing-lg) 0;
-      position: relative;
-      cursor: pointer;
-      transition: transform var(--transition), background-color var(--transition);
+      gap: var(--spacing-sm);
+      padding: 0.6rem var(--spacing-md);
+      text-decoration: none;
+      color: var(--text-color);
+      border-radius: var(--radius-lg);
+      transition: background 0.2s ease;
 
       &:hover {
-        transform: translateY(-2px);
+        background: var(--border-color);
+      }
+
+      &.active {
+        background: var(--primary-color);
+        color: #fff;
+
+        .sidebar__icon,
+        .sidebar__label,
+        .sidebar__profile-img {
+          filter: brightness(10);
+        }
       }
 
       .sidebar__icon {
-        font-size: var(--icon-size, 24px);
-        color: var(--muted-color);
-        transition: color var(--transition), transform var(--transition);
+        font-size: 1.2rem;
       }
 
       .sidebar__label {
-        display: none;
-        margin-left: var(--spacing-sm);
-        color: var(--text-color);
-        font-size: 0.9rem;
-      }
-
-      a.active .sidebar__icon {
-        color: rgb(177, 97, 22);
-      }
-
-      &:hover .sidebar__icon {
-        color: var(--primary-hover);
-        transform: scale(1.1);
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap;
       }
 
       .sidebar__profile-img {
-        width:  32px;
-        height: 32px;
+        width: 1.5rem;
+        height: 1.5rem;
+        object-fit: cover;
+        border-radius: 50%;
+        background-color: var(--surface-color);
+        border: 2px solid var(--border-color);
+      }
+    }
+  }
+
+  &__whops-list {
+    display: none;
+
+    @include respond(md) {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: var(--spacing-xs);
+      padding-top: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .sidebar__whops-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.144);
+  padding: 5px 15px;
+  border-radius: var(--radius-base);
+  color: var(--text-color);
+  cursor: pointer;
+
+      &:hover {
+        background-color: var(--border-color);
+      }
+
+      .sidebar__whop-avatar {
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid var(--border-color);
-        transition: transform var(--transition), border-color var(--transition);
       }
 
-      a.active .sidebar__profile-img {
-        border-color: var(--primary-color);
-      }
-
-      &:hover .sidebar__profile-img {
-        transform: scale(1.1);
-        border-color: var(--primary-hover);
+      span {
+        font-size: 0.9rem;
       }
     }
   }
-}
 
-.sidebar__whops-list {
-  display: none;
-
-  @include respond(sm) {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: var(--spacing-sm) 0;
-    border-top: 1px solid var(--border-color);
-    margin-top: var(--spacing-md);
-    gap: var(--spacing-xs);
-  }
-
-  .sidebar__whops-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+  &__collapse-btn {
+    margin-top: auto;
+    margin-bottom: var(--spacing-lg);
     background: none;
     border: none;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    width: 100%;
+    font-size: 1.25rem;
     color: var(--text-color);
-    border-radius: var(--radius-base);
-    text-align: left;
     cursor: pointer;
-    transition: background-color var(--transition);
-
-    &:hover {
-      background-color: var(--border-color);
-    }
-
-    .sidebar__whop-avatar {
-      width: 1.5rem;
-      height: 1.5rem;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    span {
-      font-size: 0.9rem;
-    }
-  }
-}
-
-// Aby hlavní obsah (např. .main-content) nezačínal pod sidebar:
-// Váš hlavní wrapper v JSX by měl mít třídu .main-content, a níže doplnit margin‐left.
-.main-content {
-  margin-left: var(--sidebar-width, 60px);
-}
-
-.main-content.no-sidebar {
-  margin-left: 0;
-}
-
-@include respond(sm) {
-  .sidebar {
-    width: 220px;
-  }
-  .sidebar__nav {
-    flex: none;
-    justify-content: flex-start;
-  }
-  .sidebar__nav-item {
-    justify-content: flex-start;
-    .sidebar__icon {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+    @include respond(md) {
       display: none;
     }
-    .sidebar__label {
-      display: inline;
-      font-size: 1rem;
-    }
-  }
-}
-
-@include respond(md) {
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform var(--transition);
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  .main-content {
-    margin-left: 0;
   }
 }

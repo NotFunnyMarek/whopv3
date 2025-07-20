@@ -1,4 +1,3 @@
-// src/components/BottomBar.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -21,10 +20,8 @@ export default function BottomBar() {
 
   useEffect(() => {
     fetchProfileBalance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load user balance from profile.php
   const fetchProfileBalance = async () => {
     try {
       const res = await fetch('https://app.byxbot.com/php/profile.php', {
@@ -43,18 +40,11 @@ export default function BottomBar() {
     }
   };
 
-  // Format e.g. 1013.5 → "1.01k"
   const formatBalance = amount =>
     amount >= 1000 ? `${(amount / 1000).toFixed(2)}k` : amount.toFixed(2);
 
-
-  const handleMenuClick = () => {
-    setDropdownOpen(prev => !prev);
-  };
-
-  const handleThemeChange = e =>
-    e.target.value === 'light' ? setLight() : setDark();
-
+  const handleMenuClick = () => setDropdownOpen(prev => !prev);
+  const handleThemeChange = e => (e.target.value === 'light' ? setLight() : setDark());
   const handleMouseMove = e => setHoveredX(e.clientX);
   const handleMouseLeave = () => setHoveredX(null);
 
@@ -80,37 +70,32 @@ export default function BottomBar() {
   };
 
   return (
-    <div className="bottombar">
-      {/* Levá sekce: Menu, zůstatek, dropdown */}
-      <div className="bottombar__left">
+    <>
+      {/* LEFT section: menu + balance */}
+      <div className="bottombar-left">
         <button
-          className="bottombar__left-button"
+          className="bottombar-left__button"
           onClick={handleMenuClick}
           aria-expanded={dropdownOpen}
           aria-controls="bottombar-menu"
-          type="button"
         >
           <FiMenu size={20} /> Menu
         </button>
 
-        <NavLink to="/balances" className="bottombar__balance-link">
+        <NavLink to="/balances" className="bottombar-left__balance">
           <img
             src="https://i.ibb.co/gFPZjybL/846174-notes-512x512.png"
             alt="Notes Icon"
-            className="bottombar__note-icon"
           />
-          <span className="bottombar__balance-text">
-            ${formatBalance(balance)}
-          </span>
+          <span>${formatBalance(balance)}</span>
         </NavLink>
 
         <div
           id="bottombar-menu"
-          className={`bottombar__left-dropdown ${dropdownOpen ? 'visible' : ''}`}
+          className={`bottombar-left__dropdown ${dropdownOpen ? 'visible' : ''}`}
           role="menu"
         >
-          {/* Přepínač motivu */}
-          <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-theme">
+          <div className="bottombar-left__dropdown-theme">
             <label>
               <input
                 type="radio"
@@ -133,44 +118,38 @@ export default function BottomBar() {
             </label>
           </div>
 
-          {/* What's New */}
-          <div className="bottombar__left-dropdown-item bottombar__left-dropdown-item-whatsnew">
+          <div className="bottombar-left__dropdown-item">
             What's New <span>06/09/2025</span>
           </div>
 
-          {/* Need help? */}
           <a
-            className="bottombar__left-dropdown-item bottombar__left-dropdown-item-help"
+            className="bottombar-left__dropdown-item bottombar-left__help"
             href="https://discord.gg/SqQskHWb"
             target="_blank"
             rel="noopener noreferrer"
-            role="menuitem"
           >
             Need help?
           </a>
 
-          {/* Logout */}
           <button
-            className="bottombar__left-dropdown-item bottombar__left-dropdown-item-logout"
+            className="bottombar-left__dropdown-item bottombar-left__logout"
             onClick={handleLogout}
-            type="button"
-            role="menuitem"
           >
             <FaSignOutAlt /> Logout
           </button>
         </div>
       </div>
 
-      {/* Střední sekce: bannery Whops */}
+      {/* CENTER section: whops pill */}
       <div
-        className="bottombar__center-icons"
+        className="bottombar-center"
         ref={iconsContainerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         {loadingWhops
           ? Array.from({ length: 5 }).map((_, idx) => (
-              <div key={idx} className="bottombar__center-icon skeleton-circle" />
+              <div key={idx} className="skeleton-circle" />
             ))
           : joinedWhops.map((whop, idx) => {
               const container = iconsContainerRef.current;
@@ -186,24 +165,19 @@ export default function BottomBar() {
               return (
                 <div
                   key={whop.slug}
-                  className="bottombar__center-icon"
+                  className="bottombar-center__icon"
                   style={{
-                    transform:
-                      hoveredX === null ? undefined : `translateY(${translateY}px)`,
+                    transform: hoveredX === null ? undefined : `translateY(${translateY}px)`,
                     transition: 'transform var(--transition-default)',
                   }}
                   onClick={() => navigate(`/c/${whop.slug}?mode=member`)}
                 >
-                  <div className="bottombar__tooltip">{whop.name}</div>
-                  <img
-                    src={whop.banner_url}
-                    alt={`Banner ${whop.slug}`}
-                    className="bottombar__center-img"
-                  />
+                  <div className="bottombar-center__tooltip">{whop.name}</div>
+                  <img src={whop.banner_url} alt={whop.slug} />
                 </div>
               );
             })}
       </div>
-    </div>
+    </>
   );
 }

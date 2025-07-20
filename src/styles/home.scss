@@ -1,5 +1,4 @@
 @import './design-system';
-// src/styles/home.scss
 
 .main-content {
   margin-left: var(--sidebar-width, 60px);
@@ -59,6 +58,7 @@
     &:hover {
       background: var(--border-color);
     }
+
     &.active {
       background: var(--primary-color);
       color: #fff;
@@ -75,22 +75,18 @@
 
 .home-whop-grid {
   display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: var(--spacing-md);
-  @include respond(sm) {
-    flex-direction: column;
-    align-items: center;
-  }
+  padding: 0 var(--spacing-sm);
 }
 
 .home-whop-column {
-  flex: 1;
+  width: 100%;
+  max-width: 860px;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  @include respond(sm) {
-    width: 100%;
-    align-items: center;
-  }
 }
 
 .whop-card-link {
@@ -106,7 +102,10 @@
   border-radius: var(--radius-lg);
   padding: var(--spacing-sm) var(--spacing-md);
   box-shadow: var(--shadow-soft);
-  min-height: 100px;
+  transition: 0.3s ease;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
 
   opacity: 0;
   transform: translateY(10px);
@@ -123,10 +122,9 @@
   }
 
   .whop-thumb {
-    flex: 0 0 40px;
+    flex-shrink: 0;
 
     img {
-      margin-top: 10px;
       width: 55px;
       height: 55px;
       border-radius: var(--radius-base);
@@ -135,30 +133,27 @@
   }
 
   .whop-content {
-          margin-top: 10px;
     flex: 1;
-    padding: 0 var(--spacing-md);
-    text-align: left !important;
+    padding-left: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    gap: var(--spacing-xs);
 
     .whop-title {
       font-size: 1rem;
+      font-weight: 600;
       color: var(--text-color);
-      margin-bottom: var(--spacing-xxs);
-      text-align: left !important;
     }
 
     .whop-desc {
       font-size: 0.75rem;
       color: var(--muted-color);
-      margin-bottom: var(--spacing-xxs);
-      text-align: left !important;
     }
 
     .whop-info {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--spacing-sm);
       font-size: 0.75rem;
@@ -190,7 +185,6 @@
     }
 
     .whop-features {
-      margin-top: var(--spacing-xs);
       display: flex;
       flex-wrap: wrap;
       gap: var(--spacing-xxs);
@@ -202,17 +196,15 @@
         border: 1px solid var(--border-color);
         border-radius: var(--radius-base);
         padding: var(--spacing-xxs) var(--spacing-xs);
-        text-align: left !important;
       }
     }
   }
 
   .whop-tag {
-    margin-top: 10px;
-    flex: 0 0 auto;
-    margin-left: var(--spacing-md);
+    margin-left: auto;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-end;
     gap: var(--spacing-xxs);
 
     .free-access {
@@ -237,33 +229,31 @@
 @include respond(xs) {
   .whop-card {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
     width: 100%;
-    max-width: 400px;
+    max-width: 95%;
+    text-align: left;
   }
+
   .whop-content {
-    padding: var(--spacing-sm) 0;
-    align-items: center;
+    padding-left: 0;
+    padding-top: var(--spacing-sm);
   }
+
   .whop-tag {
-    margin-left: 0;
     margin-top: var(--spacing-sm);
+    align-items: flex-start;
   }
 }
 
-/* Zlatá, stříbrná, bronzová medaile pro první 3 karty v prvním sloupci */
 .home-whop-column:first-child {
   .whop-card-link:nth-child(1) .whop-card {
-    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     border-color: #ffc1076b;
   }
   .whop-card-link:nth-child(2) .whop-card {
-    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     border-color: #81898da4;
   }
   .whop-card-link:nth-child(3) .whop-card {
-    background-image: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     border-color: #a1887f6b;
   }
 }
@@ -276,6 +266,10 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
