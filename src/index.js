@@ -5,6 +5,7 @@ import InitialLoader from './components/InitialLoader';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './components/NotificationProvider';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 import './index.scss';
 import './styles/App.scss';
@@ -46,3 +47,5 @@ root.render(
     </AuthProvider>
   </ThemeProvider>
 );
+
+serviceWorkerRegistration.register();
