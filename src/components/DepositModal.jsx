@@ -89,7 +89,7 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
         flow: 'buy',
         environment: 'sandbox',
         params: {
-          apiKey: 'REPLACE_WITH_PUBLIC_API_KEY',
+          apiKey: 'pk_test_cYWn5MAnEliQ7eM9OFT9d0Tj6bT1Ika',
           currencyCode: 'sol',
           walletAddress: depositAddress,
           redirectURL: window.location.origin + '/balances',
