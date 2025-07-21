@@ -120,4 +120,23 @@
       }
     }
   }
+
+  .dm-fiat-row {
+    text-align: center;
+    margin-top: var(--spacing-md);
+
+    .dm-fiat-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-base);
+      padding: var(--spacing-xs) var(--spacing-lg);
+      cursor: pointer;
+      transition: background var(--transition);
+
+      &:hover {
+        background: var(--primary-hover);
+      }
+    }
+  }
 }
