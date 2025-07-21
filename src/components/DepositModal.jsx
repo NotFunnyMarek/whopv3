@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from './NotificationProvider';
+import { loadMoonPay } from '@moonpay/moonpay-js';
 import '../styles/deposit-modal.scss';
 
 export default function DepositModal({ isOpen, onClose, onSuccess }) {
@@ -80,6 +81,28 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
     );
   };
 
+  const handleFiatDeposit = async () => {
+    if (!depositAddress) return;
+    try {
+      const moonPay = await loadMoonPay();
+      const widget = moonPay({
+        flow: 'buy',
+        environment: 'sandbox',
+        params: {
+          apiKey: 'REPLACE_WITH_PUBLIC_API_KEY',
+          currencyCode: 'sol',
+          walletAddress: depositAddress,
+          redirectURL: window.location.origin + '/balances',
+        },
+        variant: 'overlay',
+      });
+      widget.show();
+    } catch (err) {
+      console.error('MoonPay widget error:', err);
+      showNotification({ type: 'error', message: 'Unable to start MoonPay.' });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -118,6 +141,12 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
                 </li>
                 <li>Wait approximately 30 s for the transaction to process.</li>
               </ul>
+            </div>
+
+            <div className="dm-fiat-row">
+              <button className="dm-fiat-btn" onClick={handleFiatDeposit}>
+                Buy with Fiat
+              </button>
             </div>
 
             <div className="dm-close-row">
