@@ -1,0 +1,60 @@
+@import './design-system';
+
+.payment-process-container {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: var(--spacing-lg);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  color: var(--text-color);
+  text-align: center;
+}
+
+.payment-summary {
+  margin: var(--spacing-md) 0;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.payment-summary .total {
+  margin-top: var(--spacing-md);
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.payment-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-lg);
+}
+
+.payment-actions .btn {
+  flex: 1;
+  padding: var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: var(--error-color);
+  color: #fff;
+  margin-right: var(--spacing-sm);
+}
+
+.btn-confirm {
+  background: var(--success-color);
+  color: #fff;
+  margin-left: var(--spacing-sm);
+}
+
+.btn-confirm:hover {
+  background: var(--success-dark);
+}
+
+.btn-cancel:hover {
+  background: var(--error-dark);
+}
