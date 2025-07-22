@@ -30,6 +30,7 @@ const Memberships          = lazy(() => import("./pages/Memberships"));
 const Payments             = lazy(() => import("./pages/Payments"));
 const DiscordAccess        = lazy(() => import("./pages/DiscordAccess"));
 const DiscordAccessSetup   = lazy(() => import("./pages/DiscordAccessSetup"));
+const PaymentProcess       = lazy(() => import("./pages/PaymentProcess"));
 
 const App = () => {
   useGlobalVibration();
@@ -44,6 +45,7 @@ const App = () => {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/pay/:slug" element={<PaymentProcess />} />
 
           {/* Intro page */}
           <Route
