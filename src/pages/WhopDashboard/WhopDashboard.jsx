@@ -195,7 +195,6 @@ export default function WhopDashboard() {
     await handleSubscribe(
       whopData,
       selectedPlanId,
-      showConfirm,
       setOverlayVisible,
       setOverlayFading,
       setMemberLoading,

@@ -18,7 +18,13 @@
   line-height: 1.6;
 }
 
-.payment-summary .total {
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xs);
+}
+
+.summary-row.total {
   margin-top: var(--spacing-md);
   font-weight: 600;
   font-size: 1.2rem;

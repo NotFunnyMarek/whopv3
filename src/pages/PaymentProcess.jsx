@@ -63,8 +63,31 @@ export default function PaymentProcess() {
     }
     return whopData.billing_period;
   })();
+  const planName = (() => {
+    if (!whopData || !planId) return "";
+    const p = Array.isArray(whopData.pricing_plans)
+      ? whopData.pricing_plans.find(pl => pl.id === parseInt(planId))
+      : null;
+    return p ? p.plan_name || p.billing_period : "";
+  })();
 
   const isRecurring = whopData && whopData.is_recurring;
+
+  useEffect(() => {
+    if (!loading && whopData) {
+      if (
+        whopData.waitlist_enabled &&
+        !whopData.is_accepted_waitlist &&
+        action !== "waitlist"
+      ) {
+        showNotification({
+          type: "error",
+          message: "Access requires waitlist approval.",
+        });
+        navigate(`/c/${slug}`);
+      }
+    }
+  }, [loading, whopData, action, navigate, slug, showNotification]);
 
   async function handlePay() {
     if (!whopData) return;
@@ -126,13 +149,36 @@ export default function PaymentProcess() {
     <div className="payment-process-container">
       <h2>{whopData.name}</h2>
       <div className="payment-summary">
-        <p>Price: {currency}{price.toFixed(2)}</p>
-        {action !== "waitlist" && isRecurring ? (
-          <p>Renews every {billingPeriod}</p>
-        ) : null}
-        {action === "waitlist" && <p>Waitlist request (no charge)</p>}
-        <p>Fee: 0</p>
-        <p className="total">Total: {currency}{price.toFixed(2)}</p>
+        {planName && (
+          <div className="summary-row">
+            <span className="label">Plan</span>
+            <span>{planName}</span>
+          </div>
+        )}
+        <div className="summary-row">
+          <span className="label">Price</span>
+          <span>{currency}{price.toFixed(2)}</span>
+        </div>
+        {action !== "waitlist" && isRecurring && (
+          <div className="summary-row">
+            <span className="label">Renews</span>
+            <span>every {billingPeriod}</span>
+          </div>
+        )}
+        {action === "waitlist" && (
+          <div className="summary-row">
+            <span className="label">Type</span>
+            <span>Waitlist request (no charge)</span>
+          </div>
+        )}
+        <div className="summary-row">
+          <span className="label">Fee</span>
+          <span>0</span>
+        </div>
+        <div className="summary-row total">
+          <span className="label">Total</span>
+          <span>{currency}{price.toFixed(2)}</span>
+        </div>
       </div>
       <div className="payment-actions">
         <button className="btn-cancel btn" onClick={() => navigate(`/c/${slug}`)} disabled={submitting}>Cancel</button>
