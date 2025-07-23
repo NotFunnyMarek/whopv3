@@ -277,6 +277,7 @@
 .chat-modal {
   position: relative; /* make close-button absolute relative to this */
   width: 80%;
+  backdrop-filter: blur(15px);
   height: 80%;
   background: var(--surface-color);
   border-radius: var(--radius-base);

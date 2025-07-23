@@ -14,8 +14,8 @@ html, body {
   background-color: var(--bg-color);
   color: var(--text-color);
   overflow-x: hidden;
-  overscroll-behavior-x: none; // prevent browser back swipe on supported browsers
-  touch-action: pan-y; // disable horizontal swipe navigation
+  overscroll-behavior-x: none; /* Prevent browser back swipe on supported browsers */
+  touch-action: pan-y; /* Disable horizontal swipe navigation */
 }
 
 *,
@@ -27,10 +27,10 @@ html, body {
 // Glassmorphism: aplikujeme na kontejner, background-color + blur
 .app-container {
   display: flex;
-  height: 100vh;            /* Zdarma výška podle viewportu */
-  overflow: hidden;         /* Obsah se rolovat bude uvnitř main-content */
+  height: 100vh;            /* Full height based on viewport */
+  overflow: hidden;         /* Scroll content inside the main-content */
   background-color: var(--bg-color);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); /* Adding blur for glassmorphism effect */
 }
 
 // Odkazy
@@ -51,18 +51,20 @@ button {
   border: none;
   border-radius: var(--radius-base);
   padding: var(--spacing-sm) var(--spacing-md);
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); /* Gradient accent */
   color: #fff;
   font-weight: 500;
-  box-shadow:  8px 8px 20px rgba(0,0,0,0.05),
-               -8px -8px 20px rgba(255,255,255,0.6);
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.05),
+              -8px -8px 20px rgba(255, 255, 255, 0.6); /* Neumorphism effect */
   transition: transform var(--transition), box-shadow var(--transition);
 }
+
 button:hover {
   transform: translateY(-2px);
-  box-shadow:  4px 4px 12px rgba(0,0,0,0.1),
-               -4px -4px 12px rgba(255,255,255,0.7);
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.1),
+              -4px -4px 12px rgba(255, 255, 255, 0.7); /* Hover effect with shadow */
 }
+
 button:disabled {
   background-color: var(--border-color);
   color: var(--muted-color);
@@ -79,19 +81,20 @@ textarea {
   font-size: 1rem;
   color: var(--text-color);
   background: var(--surface-color);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); /* Blur effect for glassmorphism */
   border: 1px solid var(--border-color);
   border-radius: var(--radius-base);
   padding: var(--spacing-xs) var(--spacing-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
   width: 100%;
 }
+
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(var(--primary-hover), 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--primary-hover), 0.2); /* Focus effect with glow */
 }
 
 // Scrollbar styl
@@ -99,20 +102,20 @@ textarea:focus {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: var(--radius-base);
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
 // Hlavní obsah vedle sidebaru
 .main-content {
-  flex: 1;                               /* Zabere zbytek šířky vedle sidebaru */
-  padding: var(--spacing-lg);            /* Standardní padding nahoře/po stranách */
-  padding-bottom: calc(
-    var(--spacing-lg) + var(--bottombar-height)
-  );                                      /* Rezerva pod lištu, aby se obsah nepřekryl */
-  overflow-y: auto;                      /* Vertikální scroll uvnitř main-content */
+  flex: 1; /* Take up the remaining width next to the sidebar */
+  padding: var(--spacing-lg); /* Standard padding on top/side */
+  padding-bottom: calc(var(--spacing-lg) + var(--bottombar-height)); /* Space below to avoid overlap with the bottom bar */
+  overflow-y: auto; /* Vertical scroll inside main-content */
 }

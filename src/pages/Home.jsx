@@ -161,10 +161,7 @@ function Card({ item, index, visibleCount }) {
 
   return (
     <Link to={`/c/${item.slug}`} className="whop-card-link">
-      <div
-        className={`whop-card${visible ? ' visible' : ''}`}
-        style={{ transitionDelay: `${index * 0.1}s` }}
-      >
+      <div className={`whop-card${visible ? ' visible' : ''}${collapsed ? ' collapsed' : ' expanded'}`} style={{ transitionDelay: `${index * 0.1}s` }}>
         <div className="whop-thumb">
           <img src={item.banner_url || item.logo_url || '/placeholder.png'} alt={item.name} />
         </div>

@@ -9,69 +9,75 @@
 body.theme-light {
   --font-family: 'Inter', sans-serif;
 
-  --bg-color: #ffffff;
-  --surface-color: #f9fafc;
-
-  --text-color: #111111;
-  --muted-color: #6b6b6b;
-
-  --gradient-start: #9c4dff;
-  --gradient-end: #7b6ffb;
+  --bg-color: linear-gradient(to bottom right, #f1eef7, #f4f3ff);  /* Light background for the fluid, fresh aesthetic */
+  --surface-color: #f1eef7;  /* Light surface for subtle contrast */
+  
+  --text-color: #111111;  /* Darker text for readability */
+  --muted-color: #6b6b6b;  /* Slightly muted text for subtle contrast */
+  
+  --gradient-start: #100b16;
+  --gradient-end: #07051f;
   --primary-color: var(--gradient-start);
-  --primary-hover: #7a3fe6;
+  --primary-hover: #000000;
   --secondary-color: #6db1ff;
   --secondary-hover: #4c99e6;
-
+  
   --error-color: #e75c62;
   --error-hover: #cc4b55;
-  --success-color: #2bb673;
-
-  --border-color: rgba(0, 0, 0, 0.1);
-  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-
+  --success-color: #c46415;
+  
+  --border-color: rgba(0, 0, 0, 0.1);  /* Lighter border for better contrast */
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1);  /* Softer, larger shadow for depth */
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);  /* Larger shadow for fluidity */
+  
   --radius-sm: 6px;
-  --radius-base: 10px;
-  --radius-lg: 14px;
-
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-
-  --transition: 0.2s ease-in-out;
-
+  --radius-base: 12px;  /* Slightly larger radius for rounded edges */
+  --radius-lg: 18px;  /* Larger radius for more modern look */
+  
+  --spacing-xs: 6px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 28px;
+  
+  --transition: 0.3s ease-in-out;
+  
   --icon-size: 20px;
   --bottombar-height: 60px;
   --sidebar-width: 60px;
   --mobile-sidebar-width: 75%;
+  
+  --glass-bg-light: rgba(255, 255, 255, 0.1);  /* Light glassmorphism effect */
+  --glass-bg-dark: rgba(0, 0, 0, 0.3);  /* Darker glassmorphism for dark theme */
 }
 
-/* --- Dark theme (optional) --- */
+/* --- Dark theme --- */
 body.theme-dark {
-  --bg-color: #0e0e0e;
-  --surface-color: #181818;
-
-  --text-color: #e0e0e0;
-  --muted-color: #999999;
-
-  --primary-color: #9c4dff;
-  --primary-hover: #7a3fe6;
+ --bg-color: linear-gradient(to bottom right, #19191a, #05090f);  /* Light background for the fluid, fresh aesthetic */
+  --surface-color: #101011af;  /* Light surface for subtle contrast */
+  
+  --text-color: #e2e0e0;  /* Darker text for readability */
+  --muted-color: #9c9c9c;  /* Slightly muted text for subtle contrast */
+  
+  --gradient-start: #c46415;
+  --gradient-end: #c46415;
+  --primary-color: #c46415;
+  --primary-hover: #363636ab;
   --secondary-color: #6db1ff;
   --secondary-hover: #4c99e6;
-
+  
   --error-color: #e75c62;
   --error-hover: #cc4b55;
-  --success-color: #2bb673;
-
-  --border-color: rgba(255, 255, 255, 0.2);
-  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --success-color: #c46415;
+  
+  --border-color: rgba(255, 255, 255, 0.2);  /* Subtle border color for dark mode */
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.2);  /* Softer shadow for depth */
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);  /* More defined shadow for enhanced fluidity */
+  
   --sidebar-width: 60px;
   --mobile-sidebar-width: 75%;
 }
 
-/* Reset & global styles */
+/* Reset & Global Styles */
 html, body {
   margin: 0;
   padding: 0;
@@ -91,10 +97,12 @@ a {
   text-decoration: none;
   transition: color var(--transition);
 }
+
 a:hover {
   color: var(--primary-hover);
 }
 
+/* Buttons with neumorphism and gradient */
 button {
   font-family: var(--font-family);
   cursor: pointer;
@@ -110,11 +118,13 @@ button {
   align-items: center;
   justify-content: center;
 }
+
 button:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
+
 button:disabled {
   background: var(--border-color);
   color: var(--muted-color);
@@ -122,6 +132,7 @@ button:disabled {
   transform: none;
 }
 
+/* Inputs, Selects, and Textareas with Glassmorphism effect */
 input, select, textarea {
   font-family: var(--font-family);
   background: var(--surface-color);
@@ -132,21 +143,40 @@ input, select, textarea {
   padding: var(--spacing-xs) var(--spacing-sm);
   transition: border-color var(--transition);
   width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
 }
 
-/* Scrollbar */
+/* Glassmorphism containers for more fluid, modern design */
+.glass-container {
+  background: var(--glass-bg-dark);
+  backdrop-filter: blur(15px);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.glass-container:hover {
+  background: var(--glass-bg-light);
+  box-shadow: var(--shadow);
+}
+
+/* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: var(--radius-base);
 }
+
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }

@@ -95,28 +95,36 @@ export default function BottomBar() {
           className={`bottombar-left__dropdown ${dropdownOpen ? 'visible' : ''}`}
           role="menu"
         >
-          <div className="bottombar-left__dropdown-theme">
-            <label>
-              <input
-                type="radio"
-                name="theme"
-                value="light"
-                checked={theme === 'light'}
-                onChange={handleThemeChange}
-              />
-              <FiSun /> Light
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="theme"
-                value="dark"
-                checked={theme === 'dark'}
-                onChange={handleThemeChange}
-              />
-              <FiMoon /> Dark
-            </label>
-          </div>
+<div className="bottombar-left__dropdown-theme">
+  <label>
+    <input
+      type="radio"
+      name="theme"
+      value="light"
+      checked={theme === 'light'}
+      onChange={handleThemeChange}
+      id="light-theme"
+    />
+    <span className="radio-label">
+      <FiSun /> Light
+    </span>
+  </label>
+  <label>
+    <input
+      type="radio"
+      name="theme"
+      value="dark"
+      checked={theme === 'dark'}
+      onChange={handleThemeChange}
+      id="dark-theme"
+    />
+    <span className="radio-label">
+      <FiMoon /> Dark
+    </span>
+  </label>
+</div>
+
+
 
           <div className="bottombar-left__dropdown-item">
             What's New <span>06/09/2025</span>

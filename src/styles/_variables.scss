@@ -3,49 +3,57 @@
 // ==========================
 
 // Colors
-$gradient-start: #9c4dff !default;
-$gradient-end:   #7b6ffb !default;
+$gradient-start: #f1eef7 !default;
+$gradient-end:   #f4f3ff !default;
 
-$color-bg-light:      #ffffff !default;
-$color-surface-light: #f9fafc !default;
-$color-border-light:  rgba(0, 0, 0, 0.1) !default;
-$color-text-light:    #111111 !default;
-$color-muted-light:   #6b6b6b !default;
+$color-bg-light:      linear-gradient(to bottom right, #f1eef7, #f4f3ff) !default;  // Darker background for fluid feel
+$color-surface-light: #1d1d1d !default;  // Dark surface for better contrast
+$color-border-light:  rgba(255, 255, 255, 0.2) !default;  // Lighter border for visibility
+$color-text-light:    #e0e0e0 !default;  // Lighter text for modern look
+$color-muted-light:   #9e9e9e !default;  // Slightly muted text for readability
 
-$color-bg-dark:       #1c1c1c !default;
-$color-surface-dark:  #2a2a2a !default;
-$color-border-dark:   rgba(255, 255, 255, 0.1) !default;
-$color-text-dark:     #e0e0e0 !default;
-$color-muted-dark:    #999999 !default;
+$color-bg-dark:       #0f0f0f !default;  // Slightly darker for the dark mode aesthetic
+$color-surface-dark:  #1a1a1a !default;  // Soft dark surface to complement dark mode
+$color-border-dark:   rgba(255, 255, 255, 0.2) !default;
+$color-text-dark:     #fafafa !default;  // Bright white text on dark background
+$color-muted-dark:    #757575 !default;  // Muted text for dark mode
 
-$color-primary:       $gradient-start !default;
-$color-primary-hover: darken($gradient-start, 7%) !default;
-$color-secondary:     #6db1ff !default;
-$color-secondary-hover: darken($color-secondary, 7%) !default;
-$color-success:       #2bb673 !default;
+$color-primary:       $gradient-start !default;  // Main accent color
+$color-primary-hover: darken($gradient-start, 7%) !default;  // Hover effect for primary buttons
+$color-secondary:     #4a90e2 !default;  // New secondary color for more contrast
+$color-secondary-hover: darken($color-secondary, 7%) !default;  // Hover effect for secondary elements
+$color-success:       #c46415 !default;  // Success color
 $color-success-dark:  darken($color-success, 10%) !default;
-$color-error:         #e75c62 !default;
+$color-error:         #e76a6a !default;  // Error color
 $color-error-dark:    darken($color-error, 10%) !default;
 
 // Spacing & Radius
-$radius-base: 10px !default;
-$radius-lg:   14px !default;
+$radius-base: 12px !default;  // Slightly larger radius for more modern, rounded look
+$radius-lg:   18px !default;  // Larger radius for interactive elements like buttons
 
-$spacing-xs: 4px !default;
-$spacing-sm: 8px !default;
-$spacing-md: 16px !default;
-$spacing-lg: 24px !default;
-$spacing-xl: 32px !default;
+$spacing-xs: 6px !default;  // Slightly larger small spacing for modern design
+$spacing-sm: 12px !default;  // Medium spacing for sections
+$spacing-md: 20px !default;  // Standard spacing for elements
+$spacing-lg: 28px !default;  // Larger spacing for margin and padding
+$spacing-xl: 40px !default;  // Extra large spacing for larger gaps
 
 // Shadows
-$shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05) !default;
-$shadow-inset-light: inset 2px 2px 4px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(0,0,0,0.05) !default;
-$shadow-inset-dark:  inset 2px 2px 4px rgba(0,0,0,0.4), inset -2px -2px 4px rgba(50,50,60,0.6) !default;
+$shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.1) !default;  // Softer, larger shadow for fluidity
+$shadow-inset-light: inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.1) !default;  // Lighter inset shadow for glassmorphism
+$shadow-inset-dark:  inset 2px 2px 6px rgba(0,0,0,0.6), inset -2px -2px 6px rgba(50,50,60,0.8) !default;  // Darker inset shadow for dark mode glassmorphism
 
 // Typography
 $font-family-sans: 'Inter', Arial, sans-serif !default;
-$font-size-base:   16px !default;
-$line-height-base: 1.5 !default;
+$font-size-base:   18px !default;  // Larger base font size for better readability
+$line-height-base: 1.6 !default;  // Increased line height for fluid readability
 
 // Transitions
-$transition-default: 0.2s ease-in-out !default;
+$transition-default: 0.3s ease-in-out !default;  // Slightly slower transitions for smoothness
+
+// Glassmorphism Backgrounds
+$glass-bg-light: rgba(255, 255, 255, 0.1);  // Light blurred effect for containers
+$glass-bg-dark: rgba(0, 0, 0, 0.3);  // Darker blurred effect for dark mode
+
+// Hover Effects
+$hover-transition: 0.3s ease-in-out !default;  // Smooth hover transitions
+$hover-effect: transform 0.3s ease, box-shadow 0.3s ease !default;  // Scale and shadow effect on hover

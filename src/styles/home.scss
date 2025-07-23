@@ -38,8 +38,8 @@
   margin-bottom: var(--spacing-md);
 
   .home-filter-tag {
-    padding: 3px 10px;
-    background: var(--surface-alt);
+    padding: 5px 15px;
+    background: rgba(0, 0, 0, 0.048);
     border-radius: var(--radius-lg);
     font-size: 0.8rem;
     cursor: pointer;
@@ -72,15 +72,24 @@
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
   width: 100%;
-    margin-top: 16px;
+  margin-top: 16px;
   max-width: 800px;
   padding: 10px 16px;
   transition: var(--transition);
   opacity: 0;
   transform: translateY(6px);
   min-height: 100px;
+  height: 100px;
+  overflow: hidden;  // Přidáno pro zajištění, že obsah nebude vyčnívat
+
+  &.collapsed {
+    height: 100px; // Collapsed state, minimal height
+  }
+
+  &.expanded {
+    height: auto; // Expands to fit content
+  }
 
   &.visible {
     opacity: 1;
@@ -88,8 +97,7 @@
   }
 
   &:hover {
-    box-shadow: var(--shadow);
-    transform: translateY(-1px);
+    scale: 1.03;
   }
 
   .whop-thumb img {
@@ -105,17 +113,22 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    position: relative; // Allow positioning of text
 
     .whop-title {
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--text-color);
+      transition: transform 0.3s ease-in-out; // Smooth transition
+      transform-origin: top; // Plynulý efekt transformace
     }
 
     .whop-desc {
       font-size: 0.8rem;
       color: var(--muted-color);
       line-height: 1.2;
+      transition: transform 0.3s ease-in-out; // Smooth transition
+      transform-origin: top; // Plynulý efekt transformace
     }
 
     .whop-info {
@@ -150,7 +163,7 @@
       transition: max-height 0.3s ease;
 
       &.collapsed {
-        max-height: 40px;
+        max-height: 10px;
 
         &::after {
           content: "";
@@ -181,7 +194,7 @@
 
     .whop-collapse-btn {
       margin-top: 4px;
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       color: var(--primary-color);
       cursor: pointer;
       background: none;
@@ -213,7 +226,8 @@
     }
 
     span:not(.free-access) {
-      border: 1px solid var(--primary-color);
+      background: linear-gradient(to left, #0d0d0e0c, #00000009);
+      border: 1px solid rgba(0, 0, 0, 0.096);
       font-size: 0.7rem;
       color: var(--primary-color);
       padding: 3px 7px;
@@ -221,6 +235,39 @@
     }
   }
 }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.whop-card-skeleton {
+  height: 100px;
+  width: 100%;
+  max-width: 800px;
+  background: var(--border-color);
+  border-radius: var(--radius-lg);
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+@include respond(xs) {
+  .whop-card {
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 95%;
+  }
+
+  .whop-content {
+    margin-left: 0;
+    margin-top: var(--spacing-sm);
+  }
+
+  .whop-tag {
+    margin-top: var(--spacing-sm);
+    align-items: flex-start;
+  }
+}
+
 
 .whop-card-skeleton {
   height: 100px;

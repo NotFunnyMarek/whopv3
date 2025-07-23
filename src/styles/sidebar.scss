@@ -6,9 +6,8 @@
   left: 0;
   height: 100vh;
   width: 220px;
-  background: #fff;
+  background: var(--bg-color);
   border-right: 1px solid var(--border-color);
-  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,6 +46,7 @@
         filter: none;
         color: var(--text-color);
         opacity: 1;
+        scale: 4;
       }
     }
 
@@ -79,7 +79,7 @@
   &__logo {
     margin-bottom: var(--spacing-md);
     img {
-      width: 10rem;
+      width: 8rem;
       border-radius: 0.5rem;
     }
   }

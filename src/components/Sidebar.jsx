@@ -15,7 +15,7 @@ import { FaUserShield, FaDollarSign } from "react-icons/fa";
 import ChatModal from "./Chat/ChatModal";
 import SearchModal from "./SearchModal";
 import useJoinedWhops from "../hooks/useJoinedWhops";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/load.png";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [avatarUrl, setAvatarUrl] = useState("");

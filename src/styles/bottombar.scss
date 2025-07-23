@@ -44,8 +44,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(130, 115, 255, 0.08);
-      border: 1px solid rgba(130, 115, 255, 0.3);
+      background: var(--bg-color);
+      border: 1px solid #c464158e;
       padding: 0.4rem 0.8rem;
       border-radius: 999px;
       font-weight: 600;
@@ -73,6 +73,7 @@
       gap: 0.8rem;
       z-index: 10000;
       min-width: 16rem;
+      backdrop-filter: blur(12px);
 
       &.visible {
         display: flex;
@@ -231,6 +232,56 @@
     }
     50% {
       opacity: 0.4;
+    }
+  }
+}
+
+.bottombar-left__dropdown-theme {
+  display: flex;
+  gap: 1rem;  // Vyšší mezera pro lepší vizuální rozdělení
+  flex-direction: column;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;  // Větší mezera mezi inputem a textem
+    font-size: 0.95rem;  // Trochu větší text pro lepší čitelnost
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+
+    input[type='radio'] {
+      appearance: none;
+      width: 1.5rem;  // Mírně větší radio button
+      height: 1.5rem;  // Mírně větší radio button
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background-color: transparent;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.3s, border-color 0.3s;
+      
+      &:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      &:checked::before {
+        content: '';
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
+        border-radius: 50%;
+        background-color: #fff;
+      }
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;  // Optimalizovaná mezera pro ikonu a text
     }
   }
 }
