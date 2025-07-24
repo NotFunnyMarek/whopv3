@@ -84,6 +84,53 @@ async function getSolPriceUsd() {
 }
 
 // ---------------------------------------------
+// 2.1) Převod SOL -> USDC přes Jupiter API
+// ---------------------------------------------
+const SOL_MINT  = 'So11111111111111111111111111111111111111112';
+const USDC_MINT = '7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm'; // Devnet USDC
+async function swapSolToUsdc(lamportsAmount) {
+  try {
+    const quoteUrl =
+      `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
+      `&amount=${lamportsAmount}&slippageBps=50&environments=devnet`;
+    const quoteRes = await fetch(quoteUrl);
+    const quote = await quoteRes.json();
+    if (!quote || !quote.data || quote.data.length === 0) {
+      console.warn('⚠️ Jupiter neposkytl žádnou route pro swap.');
+      return;
+    }
+    const route = quote.data[0];
+
+    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        route,
+        userPublicKey: CENTRAL_PUBLIC_KEY,
+        wrapUnwrapSOL: true,
+        feeAccount: null,
+      }),
+    });
+    const swapJson = await swapRes.json();
+    if (!swapJson.swapTransaction) {
+      console.warn('⚠️ Jupiter swap API nevrátil transakci.');
+      return;
+    }
+
+    const tx = Transaction.from(Buffer.from(swapJson.swapTransaction, 'base64'));
+    tx.feePayer = centralKeypair.publicKey;
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    tx.sign(centralKeypair);
+
+    const txid = await connection.sendRawTransaction(tx.serialize());
+    await connection.confirmTransaction(txid, 'confirmed');
+    console.log(`💱 Swap SOL→USDC dokončen. TX=${txid}`);
+  } catch (err) {
+    console.error('❌ Chyba při swapu SOL→USDC:', err);
+  }
+}
+
+// ---------------------------------------------
 // 3) Hlavní funkce: zpracování depositů + sweep
 // ---------------------------------------------
 async function processAllDeposits() {
@@ -263,6 +310,9 @@ async function processAllDeposits() {
               "UPDATE deposit_records SET swept = true, swept_signature = ? WHERE id = ?",
               [sweepSignature, depositRecordId]
             );
+
+            // 3.10.3) Ihned konvertujeme SOL na USDC
+            await swapSolToUsdc(lamportsToSend);
           }
         }
       } catch (err) {
