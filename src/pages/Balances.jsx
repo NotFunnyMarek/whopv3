@@ -19,14 +19,14 @@ export default function Balances() {
   const [historyData, setHistoryData] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Check MoonPay redirect params on initial load
+  // Check deposit redirect params on initial load
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const txStatus = params.get('transactionStatus');
     if (txStatus === 'failed') {
       showNotification({
         type: 'error',
-        message: 'MoonPay transaction failed. Please try again later.',
+        message: 'Deposit transaction failed. Please try again later.',
       });
     }
   }, [showNotification]);

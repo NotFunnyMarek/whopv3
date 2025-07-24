@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNotifications } from './NotificationProvider';
-import { loadMoonPay } from '@moonpay/moonpay-js';
 import '../styles/deposit-modal.scss';
 
 export default function DepositModal({ isOpen, onClose, onSuccess }) {
@@ -81,25 +80,23 @@ export default function DepositModal({ isOpen, onClose, onSuccess }) {
     );
   };
 
-  const handleFiatDeposit = async () => {
+  const handleFiatDeposit = () => {
     if (!depositAddress) return;
     try {
-      const moonPay = await loadMoonPay();
-      const widget = moonPay({
-        flow: 'buy',
-        environment: 'sandbox',
-        params: {
-          apiKey: 'pk_test_cYWn5MAnEliQ7eM9OFT9d0Tj6bT1Ika',
-          currencyCode: 'sol',
-          walletAddress: depositAddress,
-          redirectURL: window.location.origin + '/balances',
-        },
-        variant: 'overlay',
-      });
-      widget.show();
+      const widgetUrl =
+        'https://app.kado.money' +
+        `/?apiKey=YOUR_KADO_API_KEY` +
+        `&product=BUY` +
+        `&onToNetwork=SOL` +
+        `&onToAddress=${encodeURIComponent(depositAddress)}` +
+        `&redirectURL=${encodeURIComponent(window.location.origin + '/balances')}`;
+      const popup = window.open(widgetUrl, '_blank', 'width=500,height=750');
+      if (!popup) {
+        showNotification({ type: 'error', message: 'Popup blocked.' });
+      }
     } catch (err) {
-      console.error('MoonPay widget error:', err);
-      showNotification({ type: 'error', message: 'Unable to start MoonPay.' });
+      console.error('Kado widget error:', err);
+      showNotification({ type: 'error', message: 'Unable to start Kado.' });
     }
   };
 
