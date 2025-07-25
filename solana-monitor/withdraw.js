@@ -21,19 +21,42 @@ const SOL_MINT  = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 const FEE_LAMPORTS = 5000; // estimated tx fee
 
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status === 429 && attempt < retries) {
+        const delay = Math.min(1000 * 2 ** attempt, 10000);
+        console.warn(`Server responded with 429 Too Many Requests. Retrying after ${delay}ms delay...`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`);
+      }
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = Math.min(1000 * 2 ** attempt, 10000);
+      console.warn(`Fetch error: ${err.message}. Retrying after ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
   try {
   const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
       `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&cluster=devnet`;
-    const quoteRes = await fetch(quoteUrl);
+    const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
       throw new Error('Jupiter neposkytl route');
     }
     const route = quote.data[0];
 
-    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
