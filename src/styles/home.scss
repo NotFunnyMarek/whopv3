@@ -260,6 +260,15 @@
   .whop-content {
     margin-left: 0;
     margin-top: var(--spacing-sm);
+
+    .whop-title {
+      font-size: 0.8rem;
+    }
+
+    .whop-desc {
+      font-size: 0.7rem;
+      line-height: 1.1;
+    }
   }
 
   .whop-tag {
