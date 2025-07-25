@@ -16,7 +16,9 @@ import {
 } from '@solana/web3.js';
 
 const SOL_MINT  = 'So11111111111111111111111111111111111111112';
-const USDC_MINT = '7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm'; // Devnet USDC
+// Correct devnet USDC mint. The previous value 7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm
+// is not supported by Jupiter and prevented swaps.
+const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 const FEE_LAMPORTS = 5000; // estimated tx fee
 
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {

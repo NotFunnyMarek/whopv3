@@ -87,7 +87,9 @@ async function getSolPriceUsd() {
 // 2.1) Převod SOL -> USDC přes Jupiter API
 // ---------------------------------------------
 const SOL_MINT  = 'So11111111111111111111111111111111111111112';
-const USDC_MINT = '7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm'; // Devnet USDC
+// Correct devnet USDC mint. Previous mint 7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm
+// is not tradable on Jupiter and resulted in missing swap routes.
+const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 async function swapSolToUsdc(lamportsAmount) {
   try {
     const quoteUrl =
