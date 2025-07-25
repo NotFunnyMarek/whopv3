@@ -45,10 +45,14 @@ const dbConfig = {
 };
 
 // Připojení k Solana Testnet RPC
-const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+const connection = new Connection(
+  'https://icy-lively-telescope.solana-mainnet.quiknode.pro/f3cec49667700280c1925092e91051a329e9635b/',
+  'confirmed'
+);
+
 
 // Vaše centrální (sweep) peněženka – privátní klíč v Base58
-const CENTRAL_SECRET_BASE58 = '3tbU6bmmc3XCNs5m8RFMK2DRw7cdeRLq2zrbcao2E5cMEEm2urpsbr3buKXvXiTFDav5HgRvBLRiP5mDSCGBbLwo';
+const CENTRAL_SECRET_BASE58 = '3hZmDxKVg5VAXVHMFVf2Agq7FEVVTYWvn4YqcnGNpxdSCP2A6kEv3HcTm9AnWfkTTtj3zjY4XSFLfuYeFJuQEaeB';
 let centralKeypair;
 let CENTRAL_PUBLIC_KEY = '';
 try {
@@ -114,10 +118,16 @@ const SOL_MINT  = 'So11111111111111111111111111111111111111112';
 // is not tradable on Jupiter and resulted in missing swap routes.
 const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 async function swapSolToUsdc(lamportsAmount) {
+
+    if (!lamportsAmount || lamportsAmount < 500000) { // ~0.0005 SOL
+    console.warn(`⚠️ Swap přeskočen – amount příliš malý (${lamportsAmount} lamports).`);
+    return;
+  }
+  
   try {
-const quoteUrl =
-      `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
-      `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn&cluster=devnet`;
+const quoteUrl = 
+   `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
+   `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn`;
     const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
@@ -126,16 +136,24 @@ const quoteUrl =
     }
     const route = quote.data[0];
 
-    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        route,
-        userPublicKey: CENTRAL_PUBLIC_KEY,
-        wrapUnwrapSOL: true,
-        feeAccount: null,
-      }),
-    });
+const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    route,
+    userPublicKey: CENTRAL_PUBLIC_KEY,
+    wrapUnwrapSOL: true,
+    feeAccount: null,
+    dynamicSlippage: { maxBps: 300 },
+    dynamicComputeUnitLimit: true,
+    prioritizationFeeLamports: {
+      priorityLevelWithMaxLamports: {
+        maxLamports: 10000000,
+        priorityLevel: "veryHigh"
+      }
+    }
+  }),
+});
     const swapJson = await swapRes.json();
     if (!swapJson.swapTransaction) {
       console.warn('⚠️ Jupiter swap API nevrátil transakci.');
@@ -181,9 +199,9 @@ async function performStartupCheck() {
   }
 
   try {
-    const testUrl =
-      `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
-      `&amount=1000&swapMode=ExactIn&cluster=devnet`;
+const testUrl =
+  `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
+  `&amount=1000&swapMode=ExactIn`;
     const res = await fetchWithRetry(testUrl);
     const q = await res.json();
     if (q && q.data && q.data.length > 0) {
@@ -358,7 +376,7 @@ async function processAllDeposits() {
         if (userLamportsBalance <= 0) {
           console.warn(`⚠️ Sweep: user=${userId} má 0 lamports na ${depositAddress}.`);
         } else {
-          const feeLamports = 5000;  // ~0.000005 SOL na testnet
+          const feeLamports = 10000;
           const lamportsToSend = userLamportsBalance - feeLamports;
           if (lamportsToSend <= 0) {
             console.warn(`⚠️ Sweep: user=${userId}, zůstatek ${userLamportsBalance} nestačí na fee.`);

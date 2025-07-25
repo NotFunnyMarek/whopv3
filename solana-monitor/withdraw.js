@@ -46,9 +46,9 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
 
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
   try {
-  const quoteUrl =
-      `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
-      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&cluster=devnet`;
+const quoteUrl =
+    `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
+    `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut`;
     const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
@@ -56,16 +56,24 @@ async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
     }
     const route = quote.data[0];
 
-    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        route,
-        userPublicKey: keypair.publicKey.toBase58(),
-        wrapUnwrapSOL: true,
-        feeAccount: null,
-      }),
-    });
+const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    route,
+    userPublicKey: CENTRAL_PUBLIC_KEY,
+    wrapUnwrapSOL: true,
+    feeAccount: null,
+    dynamicSlippage: { maxBps: 300 },
+    dynamicComputeUnitLimit: true,
+    prioritizationFeeLamports: {
+      priorityLevelWithMaxLamports: {
+        maxLamports: 10000000,
+        priorityLevel: "veryHigh"
+      }
+    }
+  }),
+});
     const swapJson = await swapRes.json();
     if (!swapJson.swapTransaction) {
       throw new Error('Jupiter swap API nevrátil transakci');
@@ -142,7 +150,11 @@ async function main() {
   }
 
   // 4) P�ipoj�me se k Solana Testnet
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+const connection = new Connection(
+  'https://icy-lively-telescope.solana-mainnet.quiknode.pro/f3cec49667700280c1925092e91051a329e9635b/',
+  'confirmed'
+);
+
 
   // 5) Ov��en� c�lov� adresy
   let toPubkey;
