@@ -92,9 +92,9 @@ const SOL_MINT  = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 async function swapSolToUsdc(lamportsAmount) {
   try {
-    const quoteUrl =
+const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
-      `&amount=${lamportsAmount}&slippageBps=50&environments=devnet`;
+      `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn&cluster=devnet`;
     const quoteRes = await fetch(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
@@ -129,6 +129,55 @@ async function swapSolToUsdc(lamportsAmount) {
     console.log(`💱 Swap SOL→USDC dokončen. TX=${txid}`);
   } catch (err) {
     console.error('❌ Chyba při swapu SOL→USDC:', err);
+  }
+}
+
+// ---------------------------------------------
+// 2.2) Úvodní kontrola připojení a API
+// ---------------------------------------------
+async function performStartupCheck() {
+  console.log('🔧 Probíhá úvodní kontrola systému…');
+  let ok = true;
+
+  try {
+    const conn = await mysql.createConnection(dbConfig);
+    await conn.execute('SELECT 1');
+    await conn.end();
+    console.log('✅ MySQL připojení OK.');
+  } catch (err) {
+    console.error('❌ MySQL připojení selhalo:', err);
+    ok = false;
+  }
+
+  try {
+    await connection.getLatestBlockhash();
+    console.log('✅ Solana RPC OK.');
+  } catch (err) {
+    console.error('❌ Solana RPC nedostupné:', err);
+    ok = false;
+  }
+
+  try {
+    const testUrl =
+      `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
+      `&amount=1000&swapMode=ExactIn&cluster=devnet`;
+    const res = await fetch(testUrl);
+    const q = await res.json();
+    if (q && q.data && q.data.length > 0) {
+      console.log('✅ Jupiter API OK.');
+    } else {
+      console.warn('⚠️ Jupiter API nevrátila route.');
+      ok = false;
+    }
+  } catch (err) {
+    console.error('❌ Chyba spojení na Jupiter API:', err);
+    ok = false;
+  }
+
+  if (ok) {
+    console.log('✅ Úvodní kontrola dokončena bez chyb.');
+  } else {
+    console.warn('⚠️ Úvodní kontrola zjistila problémy.');
   }
 }
 
@@ -332,8 +381,12 @@ async function processAllDeposits() {
 // ---------------------------------------------
 console.log(`▶️ Monitor spuštěn. Centrální adresa=${CENTRAL_PUBLIC_KEY}. Kontrola každých ${POLL_INTERVAL/1000} s.`);
 
-// Spustíme jednou hned
-processAllDeposits();
+async function start() {
+  await performStartupCheck();
+  processAllDeposits();
+  setInterval(processAllDeposits, POLL_INTERVAL);
+}
 
-// Poté periodicky
-setInterval(processAllDeposits, POLL_INTERVAL);
+start().catch((err) => {
+  console.error('❌ Chyba při startu monitoru:', err);
+});
