@@ -15,6 +15,52 @@ import {
   sendAndConfirmTransaction
 } from '@solana/web3.js';
 
+const SOL_MINT  = 'So11111111111111111111111111111111111111112';
+const USDC_MINT = '7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm'; // Devnet USDC
+const FEE_LAMPORTS = 5000; // estimated tx fee
+
+async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
+  try {
+    const quoteUrl =
+      `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
+      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&environments=devnet`;
+    const quoteRes = await fetch(quoteUrl);
+    const quote = await quoteRes.json();
+    if (!quote || !quote.data || quote.data.length === 0) {
+      throw new Error('Jupiter neposkytl route');
+    }
+    const route = quote.data[0];
+
+    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        route,
+        userPublicKey: keypair.publicKey.toBase58(),
+        wrapUnwrapSOL: true,
+        feeAccount: null,
+      }),
+    });
+    const swapJson = await swapRes.json();
+    if (!swapJson.swapTransaction) {
+      throw new Error('Jupiter swap API nevrátil transakci');
+    }
+
+    const tx = Transaction.from(Buffer.from(swapJson.swapTransaction, 'base64'));
+    tx.feePayer = keypair.publicKey;
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    tx.sign(keypair);
+
+    const txid = await connection.sendRawTransaction(tx.serialize());
+    await connection.confirmTransaction(txid, 'confirmed');
+    console.log(`💱 Swap USDC→SOL dokončen. TX=${txid}`);
+    return true;
+  } catch (err) {
+    console.error(JSON.stringify({ status: 'error', message: 'Chyba swapu: ' + err.message }));
+    return false;
+  }
+}
+
 async function main() {
   // 1) Zpracov�n� argument�: [0] = c�lov� adresa, [1] = mno�stv� SOL
   const args = process.argv.slice(2);
@@ -95,7 +141,25 @@ async function main() {
     process.exit(1);
   }
 
-  // 7) Sestav�me a po�leme transakci
+  // 7) Zkontrolujeme zůstatek a případně provedeme swap USDC->SOL
+  const requiredLamports = lamports + FEE_LAMPORTS;
+  let currentBalance;
+  try {
+    currentBalance = await connection.getBalance(fromKeypair.publicKey, 'confirmed');
+  } catch (err) {
+    console.error(JSON.stringify({ status: 'error', message: 'Chyba getBalance: ' + err.message }));
+    process.exit(1);
+  }
+
+  if (currentBalance < requiredLamports) {
+    const need = requiredLamports - currentBalance;
+    const ok = await swapUsdcToSol(need, connection, fromKeypair);
+    if (!ok) {
+      process.exit(1);
+    }
+  }
+
+  // 8) Sestavíme a pošleme transakci
   try {
     const transaction = new Transaction().add(
       SystemProgram.transfer({
