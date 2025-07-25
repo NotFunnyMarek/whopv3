@@ -15,6 +15,28 @@ import {
   sendAndConfirmTransaction
 } from '@solana/web3.js';
 
+// Wrapper around fetch with simple retries for 429/errors
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status === 429 || res.status >= 500) {
+        const wait = 500 * (i + 1);
+        console.error(`Server responded with ${res.status} ${res.statusText}.  Retrying after ${wait}ms delay...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      const wait = 500 * (i + 1);
+      console.error(`Fetch error: ${err}. Retrying after ${wait}ms delay...`);
+      await new Promise(r => setTimeout(r, wait));
+    }
+  }
+  throw new Error('Exhausted retries');
+}
+
 const SOL_MINT  = 'So11111111111111111111111111111111111111112';
 // Correct devnet USDC mint. The previous value 7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm
 // is not supported by Jupiter and prevented swaps.
@@ -23,17 +45,17 @@ const FEE_LAMPORTS = 5000; // estimated tx fee
 
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
   try {
-    const quoteUrl =
+  const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
-      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&environments=devnet`;
-    const quoteRes = await fetch(quoteUrl);
+      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&cluster=devnet`;
+    const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
       throw new Error('Jupiter neposkytl route');
     }
     const route = quote.data[0];
 
-    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

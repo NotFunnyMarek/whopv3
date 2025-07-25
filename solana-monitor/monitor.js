@@ -31,6 +31,30 @@ import {
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
 
+// Jednoduchý wrapper fetch s opakováním při chybách/429
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status === 429 || res.status >= 500) {
+        const wait = 500 * (i + 1);
+        console.error(
+          `Server responded with ${res.status} ${res.statusText}.  Retrying after ${wait}ms delay...`
+        );
+        await new Promise((r) => setTimeout(r, wait));
+        continue;
+      }
+      return res;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      const wait = 500 * (i + 1);
+      console.error(`Fetch error: ${err}. Retrying after ${wait}ms delay...`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+  throw new Error('Exhausted retries');
+}
+
 // ---------------------------------------------
 // 1) Konfigurace
 // ---------------------------------------------
@@ -74,7 +98,7 @@ const LAMPORTS = LAMPORTS_PER_SOL;
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd';
 async function getSolPriceUsd() {
   try {
-    const response = await fetch(COINGECKO_API_URL);
+    const response = await fetchWithRetry(COINGECKO_API_URL);
     const data = await response.json();
     return data?.solana?.usd || 0;
   } catch (err) {
@@ -92,10 +116,10 @@ const SOL_MINT  = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
 async function swapSolToUsdc(lamportsAmount) {
   try {
-    const quoteUrl =
+const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
-      `&amount=${lamportsAmount}&slippageBps=50&environments=devnet`;
-    const quoteRes = await fetch(quoteUrl);
+      `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn&cluster=devnet`;
+    const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
       console.warn('⚠️ Jupiter neposkytl žádnou route pro swap.');
@@ -103,7 +127,7 @@ async function swapSolToUsdc(lamportsAmount) {
     }
     const route = quote.data[0];
 
-    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -129,6 +153,55 @@ async function swapSolToUsdc(lamportsAmount) {
     console.log(`💱 Swap SOL→USDC dokončen. TX=${txid}`);
   } catch (err) {
     console.error('❌ Chyba při swapu SOL→USDC:', err);
+  }
+}
+
+// ---------------------------------------------
+// 2.2) Úvodní kontrola připojení a API
+// ---------------------------------------------
+async function performStartupCheck() {
+  console.log('🔧 Probíhá úvodní kontrola systému…');
+  let ok = true;
+
+  try {
+    const conn = await mysql.createConnection(dbConfig);
+    await conn.execute('SELECT 1');
+    await conn.end();
+    console.log('✅ MySQL připojení OK.');
+  } catch (err) {
+    console.error('❌ MySQL připojení selhalo:', err);
+    ok = false;
+  }
+
+  try {
+    await connection.getLatestBlockhash();
+    console.log('✅ Solana RPC OK.');
+  } catch (err) {
+    console.error('❌ Solana RPC nedostupné:', err);
+    ok = false;
+  }
+
+  try {
+    const testUrl =
+      `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
+      `&amount=1000&swapMode=ExactIn&cluster=devnet`;
+    const res = await fetchWithRetry(testUrl);
+    const q = await res.json();
+    if (q && q.data && q.data.length > 0) {
+      console.log('✅ Jupiter API OK.');
+    } else {
+      console.warn('⚠️ Jupiter API nevrátila route.');
+      ok = false;
+    }
+  } catch (err) {
+    console.error('❌ Chyba spojení na Jupiter API:', err);
+    ok = false;
+  }
+
+  if (ok) {
+    console.log('✅ Úvodní kontrola dokončena bez chyb.');
+  } else {
+    console.warn('⚠️ Úvodní kontrola zjistila problémy.');
   }
 }
 
@@ -332,8 +405,12 @@ async function processAllDeposits() {
 // ---------------------------------------------
 console.log(`▶️ Monitor spuštěn. Centrální adresa=${CENTRAL_PUBLIC_KEY}. Kontrola každých ${POLL_INTERVAL/1000} s.`);
 
-// Spustíme jednou hned
-processAllDeposits();
+async function start() {
+  await performStartupCheck();
+  processAllDeposits();
+  setInterval(processAllDeposits, POLL_INTERVAL);
+}
 
-// Poté periodicky
-setInterval(processAllDeposits, POLL_INTERVAL);
+start().catch((err) => {
+  console.error('❌ Chyba při startu monitoru:', err);
+});
