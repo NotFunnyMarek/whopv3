@@ -68,13 +68,36 @@ const POLL_INTERVAL = 30 * 1000; // 30 sekund
 // Pro přepočet lamports→SOL
 const LAMPORTS = LAMPORTS_PER_SOL;
 
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.status === 429 && attempt < retries) {
+        const delay = Math.min(1000 * 2 ** attempt, 10000);
+        console.warn(`Server responded with 429 Too Many Requests. Retrying after ${delay}ms delay...`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      if (!res.ok) {
+        throw new Error(`${res.status} ${res.statusText}`);
+      }
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = Math.min(1000 * 2 ** attempt, 10000);
+      console.warn(`Fetch error: ${err.message}. Retrying after ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
 // ---------------------------------------------
 // 2) Získání ceny SOL v USD (CoinGecko)
 // ---------------------------------------------
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd';
 async function getSolPriceUsd() {
   try {
-    const response = await fetch(COINGECKO_API_URL);
+    const response = await fetchWithRetry(COINGECKO_API_URL);
     const data = await response.json();
     return data?.solana?.usd || 0;
   } catch (err) {
@@ -95,7 +118,7 @@ async function swapSolToUsdc(lamportsAmount) {
 const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
       `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn&cluster=devnet`;
-    const quoteRes = await fetch(quoteUrl);
+    const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
       console.warn('⚠️ Jupiter neposkytl žádnou route pro swap.');
@@ -103,7 +126,7 @@ const quoteUrl =
     }
     const route = quote.data[0];
 
-    const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+    const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -161,7 +184,7 @@ async function performStartupCheck() {
     const testUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
       `&amount=1000&swapMode=ExactIn&cluster=devnet`;
-    const res = await fetch(testUrl);
+    const res = await fetchWithRetry(testUrl);
     const q = await res.json();
     if (q && q.data && q.data.length > 0) {
       console.log('✅ Jupiter API OK.');
