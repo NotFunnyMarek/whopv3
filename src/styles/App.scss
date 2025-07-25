@@ -118,4 +118,6 @@ textarea:focus {
   padding: var(--spacing-lg); /* Standard padding on top/side */
   padding-bottom: calc(var(--spacing-lg) + var(--bottombar-height)); /* Space below to avoid overlap with the bottom bar */
   overflow-y: auto; /* Vertical scroll inside main-content */
+  overscroll-behavior: contain; /* Prevent body scroll when reaching edges */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }

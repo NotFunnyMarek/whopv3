@@ -20,6 +20,7 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   overflow: hidden; // prevent double scrollbars
+  overscroll-behavior: none; // avoid page bounce on mobile
 }
 
 .app-container {
@@ -33,6 +34,8 @@ body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  overscroll-behavior: contain; // keep scroll inside
+  -webkit-overflow-scrolling: touch;
 }
 
 ul {
