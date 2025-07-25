@@ -23,9 +23,9 @@ const FEE_LAMPORTS = 5000; // estimated tx fee
 
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
   try {
-    const quoteUrl =
+  const quoteUrl =
       `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
-      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&environments=devnet`;
+      `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut&cluster=devnet`;
     const quoteRes = await fetch(quoteUrl);
     const quote = await quoteRes.json();
     if (!quote || !quote.data || quote.data.length === 0) {
