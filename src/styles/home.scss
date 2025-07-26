@@ -298,18 +298,46 @@
 
 @include respond(xs) {
   .whop-card {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
+    justify-content: space-between;
     max-width: 95%;
-  }
-
-  .whop-content {
-    margin-left: 0;
-    margin-top: var(--spacing-sm);
+    height: auto !important;
+    padding: 10px;
+    position: relative;
   }
 
   .whop-tag {
-    margin-top: var(--spacing-sm);
-    align-items: flex-start;
+    position: absolute;
+    top: -4px;     /* 🔼 posunuto výš */
+    right: 6px;
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    align-items: center;
+    max-width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
+
+    span:not(:first-child) {
+      display: none;
+    }
+
+    span {
+      font-size: 0.55rem;
+      padding: 0px 5px;   /* 🔽 zmenšený padding, aby to sedělo */
+      border-radius: 8px;
+      line-height: 1.1;
+    }
+  }
+
+  .whop-thumb {
+    flex-shrink: 0;
+  }
+
+  .whop-content {
+    margin-left: 10px;
+    margin-top: 0;
+    flex: 1;
   }
 }
