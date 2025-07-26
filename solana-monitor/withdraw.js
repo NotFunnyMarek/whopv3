@@ -1,14 +1,14 @@
-// File: /solana-monitor/withdraw.js
-// Mus� platit, �e v /solana-monitor/package.json m�te "type": "module".
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fetch from 'node-fetch';
+
 import {
+  VersionedTransaction,
   Connection,
   Keypair,
   PublicKey,
-  clusterApiUrl,
   LAMPORTS_PER_SOL,
   Transaction,
   SystemProgram,
@@ -16,9 +16,7 @@ import {
 } from '@solana/web3.js';
 
 const SOL_MINT  = 'So11111111111111111111111111111111111111112';
-// Correct devnet USDC mint. The previous value 7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm
-// is not supported by Jupiter and prevented swaps.
-const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
+const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 const FEE_LAMPORTS = 5000; // estimated tx fee
 
 async function fetchWithRetry(url, options = {}, retries = 3) {
@@ -27,43 +25,75 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
       const res = await fetch(url, options);
       if (res.status === 429 && attempt < retries) {
         const delay = Math.min(1000 * 2 ** attempt, 10000);
-        console.warn(`Server responded with 429 Too Many Requests. Retrying after ${delay}ms delay...`);
+        // console.warn(`Server responded with 429 Too Many Requests. Retrying after ${delay}ms delay...`);
         await new Promise(r => setTimeout(r, delay));
         continue;
       }
-      if (!res.ok) {
-        throw new Error(`${res.status} ${res.statusText}`);
-      }
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       return res;
     } catch (err) {
       if (attempt === retries) throw err;
       const delay = Math.min(1000 * 2 ** attempt, 10000);
-      console.warn(`Fetch error: ${err.message}. Retrying after ${delay}ms...`);
+      // console.warn(`Fetch error: ${err.message}. Retrying after ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
     }
   }
 }
 
 async function swapUsdcToSol(lamportsNeeded, connection, keypair) {
-  try {
-const quoteUrl =
-    `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
-    `&amount=${lamportsNeeded}&slippageBps=50&swapMode=ExactOut`;
-    const quoteRes = await fetchWithRetry(quoteUrl);
-    const quote = await quoteRes.json();
-    if (!quote || !quote.data || quote.data.length === 0) {
-      throw new Error('Jupiter neposkytl route');
-    }
-    const route = quote.data[0];
+  // console.log(`DEBUG: Swap požadováno SOL: ${(lamportsNeeded / LAMPORTS_PER_SOL).toFixed(6)} SOL (${lamportsNeeded} lamports)`);
+  
+  // Minimální částka v lamports (např. 0.001 SOL = 1_000_000 lamports)
+  if (!lamportsNeeded || lamportsNeeded < 1_000_000) {
+        // console.warn(`⚠️ Swap USDC→SOL přeskočen – částka příliš malá (${(lamportsNeeded / LAMPORTS_PER_SOL).toFixed(6)} SOL).`);
+    return false;
+  }
 
-const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
+  async function getUsdcBalance(pubkey) {
+    try {
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+        pubkey,
+        { mint: new PublicKey(USDC_MINT) }
+      );
+      if (tokenAccounts.value.length === 0) return 0;
+      return parseFloat(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount);
+    } catch (err) {
+  // console.error('❌ Nelze získat USDC balance:', err);
+      return 0;
+    }
+  }
+
+  try {
+    const balanceBefore = await getUsdcBalance(keypair.publicKey);
+     // console.log(`DEBUG: USDC balance před swapem: ${balanceBefore}`);
+
+const quoteUrl =
+  `https://quote-api.jup.ag/v6/quote?inputMint=${USDC_MINT}&outputMint=${SOL_MINT}` +
+  `&amount=${lamportsNeeded}&slippageBps=300&swapMode=ExactOut`;
+
+
+    const quoteRes = await fetchWithRetry(quoteUrl);
+const quote = await quoteRes.json();
+
+ // console.log('DEBUG: Jupiter quote response:', JSON.stringify(quote, null, 2));
+
+if (!quote || !quote.routePlan || quote.routePlan.length === 0) {
+  throw new Error('⚠️ Jupiter neposkytl route pro USDC→SOL');
+}
+
+if (!quote.routePlan || quote.routePlan.length === 0) {
+  throw new Error('⚠️ Jupiter neposkytl žádné route v quote response');
+}
+
+const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    route,
-    userPublicKey: CENTRAL_PUBLIC_KEY,
-    wrapUnwrapSOL: true,
+    quoteResponse: quote,
+    userPublicKey: keypair.publicKey.toBase58(),
+    wrapAndUnwrapSol: true,
     feeAccount: null,
+    platformFeeAccount: null,
     dynamicSlippage: { maxBps: 300 },
     dynamicComputeUnitLimit: true,
     prioritizationFeeLamports: {
@@ -72,35 +102,52 @@ const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
         priorityLevel: "veryHigh"
       }
     }
-  }),
+  })
 });
-    const swapJson = await swapRes.json();
-    if (!swapJson.swapTransaction) {
-      throw new Error('Jupiter swap API nevrátil transakci');
-    }
 
-    const tx = Transaction.from(Buffer.from(swapJson.swapTransaction, 'base64'));
-    tx.feePayer = keypair.publicKey;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    tx.sign(keypair);
+
+const swapJson = await swapRes.json();
+    // console.log('DEBUG swap response:', swapJson);
+
+if (swapJson.error) {
+     // console.error('❌ Jupiter swap API error:', swapJson.error);
+}
+if (!swapJson.swapTransaction) {
+  throw new Error('Jupiter swap API nevrátil transakci');
+}
+
+
+const tx = VersionedTransaction.deserialize(Buffer.from(swapJson.swapTransaction, 'base64'));
+tx.feePayer = keypair.publicKey;
+tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+tx.sign([keypair]); // POZOR: musí být pole s keypairem
+
 
     const txid = await connection.sendRawTransaction(tx.serialize());
     await connection.confirmTransaction(txid, 'confirmed');
-    console.log(`💱 Swap USDC→SOL dokončen. TX=${txid}`);
+
+    const balanceAfter = await getUsdcBalance(keypair.publicKey);
+    const diff = balanceBefore - balanceAfter;
+
+    if (diff <= 0) {
+      throw new Error(`USDC se neodečetly nebo swap selhal! TX=${txid}`);
+    }
+
+       // console.log(`💱 Swap USDC→SOL OK, utraceno ${diff.toFixed(6)} USDC. TX=${txid}`);
     return true;
+
   } catch (err) {
-    console.error(JSON.stringify({ status: 'error', message: 'Chyba swapu: ' + err.message }));
+    // console.error(JSON.stringify({ status: 'error', message: 'Chyba swapu: ' + err.message }));
     return false;
   }
 }
 
 async function main() {
-  // 1) Zpracov�n� argument�: [0] = c�lov� adresa, [1] = mno�stv� SOL
   const args = process.argv.slice(2);
   if (args.length < 2) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Nedostate�n� po�et argument�. Pou�it�: node withdraw.js <solAddress> <solAmount>'
+      message: 'Nedostatečný počet argumentů. Použití: node withdraw.js <solAddress> <solAmount>'
     }));
     process.exit(1);
   }
@@ -110,15 +157,13 @@ async function main() {
   if (isNaN(solAmount) || solAmount <= 0) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Neplatn� hodnota solAmount'
+      message: 'Neplatná SOL částka'
     }));
     process.exit(1);
   }
 
-  // 2) __dirname pro ES modul + cesta ke kl��i v /solana-monitor
   const __filename = fileURLToPath(import.meta.url);
   const __dirname  = path.dirname(__filename);
-  // Te� se v�dy hled� ve stejn�m adres��i, kde je withdraw.js:
   const keypairPath = path.join(__dirname, 'central-keypair.json');
 
   let secretKeyArray;
@@ -126,17 +171,16 @@ async function main() {
     const raw = fs.readFileSync(keypairPath, 'utf-8');
     secretKeyArray = JSON.parse(raw);
     if (!Array.isArray(secretKeyArray) || secretKeyArray.length !== 64) {
-      throw new Error('Soubor neobsahuje pole 64 ��sel');
+      throw new Error('Soubor neobsahuje pole 64 čísel');
     }
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Nelze na��st central-keypair.json: ' + err.message
+      message: 'Withdrawal failed, please try again. ' + err.message
     }));
     process.exit(1);
   }
 
-  // 3) Vytvo��me Keypair z na�ten�ho pole
   let fromKeypair;
   try {
     const secretUint8 = new Uint8Array(secretKeyArray);
@@ -144,42 +188,44 @@ async function main() {
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Chyba p�i vytv��en� Keypair: ' + err.message
+      message: 'Chyba při vytvoření Keypair: ' + err.message
     }));
     process.exit(1);
   }
 
-  // 4) P�ipoj�me se k Solana Testnet
-const connection = new Connection(
-  'https://icy-lively-telescope.solana-mainnet.quiknode.pro/f3cec49667700280c1925092e91051a329e9635b/',
-  'confirmed'
-);
+  const connection = new Connection(
+    'https://icy-lively-telescope.solana-mainnet.quiknode.pro/f3cec49667700280c1925092e91051a329e9635b/',
+    'confirmed'
+  );
 
-
-  // 5) Ov��en� c�lov� adresy
   let toPubkey;
   try {
     toPubkey = new PublicKey(toAddress);
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Neplatn� Solana adresa: ' + err.message
+      message: 'Neplatná Solana adresa: ' + err.message
     }));
     process.exit(1);
   }
 
-  // 6) P�epo�et SOL na lamports
+  // Už máme SOL částku, žádný přepočet na SOL pomocí ceny
   const lamports = Math.round(solAmount * LAMPORTS_PER_SOL);
-  if (lamports <= 0) {
+  const requiredLamports = lamports + FEE_LAMPORTS;
+
+  // console.log(`DEBUG: SOL částka: ${solAmount}, lamports: ${lamports}, requiredLamports: ${requiredLamports}`);
+
+  // Provede swap z USDC na SOL, parametr je výstup SOL v lamports
+  const ok = await swapUsdcToSol(requiredLamports, connection, fromKeypair);
+  if (!ok) {
     console.error(JSON.stringify({
       status: 'error',
-      message: 'Po�et lamports vy�el na nulu'
+      message: 'Withdrawal failed, please try again.'
     }));
     process.exit(1);
   }
 
-  // 7) Zkontrolujeme zůstatek a případně provedeme swap USDC->SOL
-  const requiredLamports = lamports + FEE_LAMPORTS;
+  // Po swapu zkontrolujeme SOL balance
   let currentBalance;
   try {
     currentBalance = await connection.getBalance(fromKeypair.publicKey, 'confirmed');
@@ -189,14 +235,14 @@ const connection = new Connection(
   }
 
   if (currentBalance < requiredLamports) {
-    const need = requiredLamports - currentBalance;
-    const ok = await swapUsdcToSol(need, connection, fromKeypair);
-    if (!ok) {
-      process.exit(1);
-    }
+    console.error(JSON.stringify({
+      status: 'error',
+      message: 'Nedostatek SOL i po swapu'
+    }));
+    process.exit(1);
   }
 
-  // 8) Sestavíme a pošleme transakci
+  // Odešleme transakci na cílovou adresu
   try {
     const transaction = new Transaction().add(
       SystemProgram.transfer({
@@ -217,6 +263,7 @@ const connection = new Connection(
       tx: txSig
     }));
     process.exit(0);
+
   } catch (err) {
     console.error(JSON.stringify({
       status: 'error',
@@ -226,4 +273,7 @@ const connection = new Connection(
   }
 }
 
-main();
+main().catch(err => {
+  console.error('Fatal error:', err);
+  process.exit(1);
+});

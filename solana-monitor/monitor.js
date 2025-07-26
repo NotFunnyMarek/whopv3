@@ -20,6 +20,7 @@
 
 import mysql from 'mysql2/promise';
 import bs58 from 'bs58';
+import { VersionedTransaction } from '@solana/web3.js';
 import {
   Connection,
   PublicKey,
@@ -52,7 +53,7 @@ const connection = new Connection(
 
 
 // Vaše centrální (sweep) peněženka – privátní klíč v Base58
-const CENTRAL_SECRET_BASE58 = '3hZmDxKVg5VAXVHMFVf2Agq7FEVVTYWvn4YqcnGNpxdSCP2A6kEv3HcTm9AnWfkTTtj3zjY4XSFLfuYeFJuQEaeB';
+const CENTRAL_SECRET_BASE58 = '3rMoueuUabKyV8aiYaKho3WT8sChyFJm3Yg1H9zrATbinkXsjz7snGnkLt52smtY9PNPkhtyLm6wyWxWvrNsCVAs';
 let centralKeypair;
 let CENTRAL_PUBLIC_KEY = '';
 try {
@@ -114,64 +115,95 @@ async function getSolPriceUsd() {
 // 2.1) Převod SOL -> USDC přes Jupiter API
 // ---------------------------------------------
 const SOL_MINT  = 'So11111111111111111111111111111111111111112';
-// Correct devnet USDC mint. Previous mint 7rbvUFP8s5eyL9ddi3bDTancoC8NQx7Z1iQg76u1JaSm
-// is not tradable on Jupiter and resulted in missing swap routes.
-const USDC_MINT = '7kbnvuGBxxj8AG9qp8Scn56muWGaRaFqxg1FsRp3PaFT';
-async function swapSolToUsdc(lamportsAmount) {
+const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
-    if (!lamportsAmount || lamportsAmount < 500000) { // ~0.0005 SOL
-    console.warn(`⚠️ Swap přeskočen – amount příliš malý (${lamportsAmount} lamports).`);
+// ✅ Funkce pro zjištění USDC balance centrální peněženky
+async function getUsdcBalance(pubkey) {
+  try {
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      new PublicKey(pubkey),
+      { mint: new PublicKey(USDC_MINT) }
+    );
+    if (tokenAccounts.value.length === 0) return 0;
+    return parseFloat(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount);
+  } catch (e) {
+    console.error('❌ Nelze získat USDC balance:', e);
+    return 0;
+  }
+}
+
+// ✅ Nová verze swap funkce
+async function swapSolToUsdc(lamportsAmount) {
+  if (!lamportsAmount || lamportsAmount < 0.01 * LAMPORTS) {
+    console.warn(`⚠️ Swap přeskočen – amount příliš malý (${(lamportsAmount/LAMPORTS).toFixed(4)} SOL).`);
     return;
   }
-  
+
   try {
-const quoteUrl = 
-   `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}` +
-   `&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn`;
+    const balanceBefore = await getUsdcBalance(CENTRAL_PUBLIC_KEY);
+
+    const quoteUrl = `https://quote-api.jup.ag/v6/quote?inputMint=${SOL_MINT}&outputMint=${USDC_MINT}&amount=${lamportsAmount}&slippageBps=50&swapMode=ExactIn`;
+    console.log('🔗 DEBUG QUOTE URL:', quoteUrl);
+
     const quoteRes = await fetchWithRetry(quoteUrl);
     const quote = await quoteRes.json();
-    if (!quote || !quote.data || quote.data.length === 0) {
+    console.log('🔗 DEBUG QUOTE RESPONSE:', JSON.stringify(quote));
+
+    // ✅ správná kontrola pro API v6
+    if (!quote || !quote.routePlan || quote.routePlan.length === 0) {
       console.warn('⚠️ Jupiter neposkytl žádnou route pro swap.');
       return;
     }
-    const route = quote.data[0];
+
+const swapBody = {
+  quoteResponse: quote,    // ✅ Jupiter vyžaduje celé quoteResponse
+  userPublicKey: CENTRAL_PUBLIC_KEY,
+  wrapAndUnwrapSol: true   // ✅ správný název pole
+};
 
 const swapRes = await fetchWithRetry('https://quote-api.jup.ag/v6/swap', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    route,
-    userPublicKey: CENTRAL_PUBLIC_KEY,
-    wrapUnwrapSOL: true,
-    feeAccount: null,
-    dynamicSlippage: { maxBps: 300 },
-    dynamicComputeUnitLimit: true,
-    prioritizationFeeLamports: {
-      priorityLevelWithMaxLamports: {
-        maxLamports: 10000000,
-        priorityLevel: "veryHigh"
-      }
-    }
-  }),
+  body: JSON.stringify(swapBody),
 });
-    const swapJson = await swapRes.json();
-    if (!swapJson.swapTransaction) {
-      console.warn('⚠️ Jupiter swap API nevrátil transakci.');
-      return;
-    }
 
-    const tx = Transaction.from(Buffer.from(swapJson.swapTransaction, 'base64'));
+const swapJson = await swapRes.json();
+
+// ✅ Logování případné chyby z Jupiter API
+if (!swapJson.swapTransaction && swapJson.error) {
+   console.error('❌ Jupiter swap API vrátilo chybu:', swapJson.error);
+   return;
+}
+
+if (!swapJson.swapTransaction) {
+   console.warn('⚠️ Jupiter swap API nevrátil transakci.');
+   return;
+}
+
+    const tx = VersionedTransaction.deserialize(Buffer.from(swapJson.swapTransaction, 'base64'));
     tx.feePayer = centralKeypair.publicKey;
     tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    tx.sign(centralKeypair);
+    tx.sign([centralKeypair]);
 
+
+    // ⬇️ produkční odeslání
     const txid = await connection.sendRawTransaction(tx.serialize());
     await connection.confirmTransaction(txid, 'confirmed');
-    console.log(`💱 Swap SOL→USDC dokončen. TX=${txid}`);
+
+    const balanceAfter = await getUsdcBalance(CENTRAL_PUBLIC_KEY);
+    const diff = balanceAfter - balanceBefore;
+
+    if (diff > 0) {
+      console.log(`💱 Swap SOL→USDC úspěšný, přibylo ${diff.toFixed(6)} USDC. TX=${txid}`);
+    } else {
+      console.error(`❌ Swap selhal – SOL odešlo, ale USDC nepřišlo! TX=${txid}`);
+    }
+
   } catch (err) {
     console.error('❌ Chyba při swapu SOL→USDC:', err);
   }
 }
+
 
 // ---------------------------------------------
 // 2.2) Úvodní kontrola připojení a API
@@ -376,18 +408,22 @@ async function processAllDeposits() {
         if (userLamportsBalance <= 0) {
           console.warn(`⚠️ Sweep: user=${userId} má 0 lamports na ${depositAddress}.`);
         } else {
-          const feeLamports = 10000;
-          const lamportsToSend = userLamportsBalance - feeLamports;
-          if (lamportsToSend <= 0) {
-            console.warn(`⚠️ Sweep: user=${userId}, zůstatek ${userLamportsBalance} nestačí na fee.`);
-          } else {
-            const transaction = new Transaction().add(
-              SystemProgram.transfer({
-                fromPubkey: userKeypair.publicKey,
-                toPubkey:   centralKeypair.publicKey,
-                lamports:   lamportsToSend,
-              })
-            );
+         // --- ponechat minimální rent-exempt zůstatek, aby účet zůstal platný ---
+const RENT_EXEMPT_RESERVE = 2000000; // 0.002 SOL
+const feeLamports = 10000;
+const lamportsToSend = userLamportsBalance - feeLamports - RENT_EXEMPT_RESERVE;
+
+if (lamportsToSend <= 0) {
+  console.warn(`⚠️ Sweep: user=${userId}, zůstatek ${userLamportsBalance} nestačí na sweep (ponechán rent).`);
+} else {
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: userKeypair.publicKey,
+      toPubkey:   centralKeypair.publicKey,
+      lamports:   lamportsToSend,
+    })
+  );
+
 
             const sweepSignature = await sendAndConfirmTransaction(
               connection,

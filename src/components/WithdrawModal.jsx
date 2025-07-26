@@ -72,7 +72,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
 
     const usd = parseFloat(usdAmount);
-    if (isNaN(usd) || usd < 9.99) {
+    if (isNaN(usd) || usd < 0.01) {
       showNotification({ type: 'error', message: 'Minimum withdraw amount is 9.99 USD.' });
       return;
     }
@@ -144,7 +144,7 @@ export default function WithdrawModal({ isOpen, onClose, onSuccess }) {
               <input
                 type="number"
                 step="0.01"
-                min="9.99"
+                min="0.01"
                 value={usdAmount}
                 onChange={(e) => setUsdAmount(e.target.value)}
                 required
