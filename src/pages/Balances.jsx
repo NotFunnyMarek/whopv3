@@ -177,36 +177,36 @@ export default function Balances() {
                 )}
               </tr>
             </thead>
-            <tbody>
-              {historyData.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{new Date(item.created_at || item.payment_date).toLocaleString()}</td>
-                  {activeTab === 'deposits' ? (
-                    <>
-                      <td>{item.sol_amount.toFixed(8)}</td>
-                      <td>${item.usd_amount.toFixed(2)}</td>
-                      <td className="mono">{item.tx_signature || '-'}</td>
-                    </>
-                  ) : (
-                    <>
-                      <td>${item.usd_amount.toFixed(2)}</td>
-                      <td>{item.sol_amount.toFixed(8)}</td>
-                      <td className="mono">{item.sol_address}</td>
-                      <td>
-                        {item.status === 'completed' ? (
-                          <span className="status-completed">Completed</span>
-                        ) : item.status === 'pending' ? (
-                          <span className="status-pending">Pending</span>
-                        ) : (
-                          <span className="status-failed">Failed</span>
-                        )}
-                      </td>
-                      <td className="mono">{item.tx_signature || '-'}</td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
+           <tbody>
+  {historyData.map((item, idx) => (
+    <tr key={idx}>
+      <td data-label="Date">{new Date(item.created_at || item.payment_date).toLocaleString()}</td>
+      {activeTab === 'deposits' ? (
+        <>
+          <td data-label="SOL Amount">{item.sol_amount.toFixed(8)}</td>
+          <td data-label="USD Equivalent">${item.usd_amount.toFixed(2)}</td>
+          <td data-label="Transaction Hash" className="mono">{item.tx_signature || '-'}</td>
+        </>
+      ) : (
+        <>
+          <td data-label="USD Amount">${item.usd_amount.toFixed(2)}</td>
+          <td data-label="SOL Equivalent">{item.sol_amount.toFixed(8)}</td>
+          <td data-label="Destination Address" className="mono">{item.sol_address}</td>
+          <td data-label="Status">
+            {item.status === 'completed' ? (
+              <span className="status-completed">Completed</span>
+            ) : item.status === 'pending' ? (
+              <span className="status-pending">Pending</span>
+            ) : (
+              <span className="status-failed">Failed</span>
+            )}
+          </td>
+          <td data-label="Transaction Hash" className="mono">{item.tx_signature || '-'}</td>
+        </>
+      )}
+    </tr>
+  ))}
+</tbody>
           </table>
         )}
       </div>
