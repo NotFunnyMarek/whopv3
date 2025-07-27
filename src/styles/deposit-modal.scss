@@ -1,45 +1,50 @@
 @import './design-system';
 
 // =============================
-// Styl pro DepositModal
+// ✅ Deposit Modal – Moderní Redesign
 // =============================
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 0.3s ease;
 }
 
+// ===== MODAL CONTAINER =====
 .dm-container {
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: var(--spacing-lg);
-  background: rgba(255, 255, 255, 0.932);
-  backdrop-filter: blur(5px);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  max-width: 480px;
+  background: var(--surface-color);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
   position: relative;
   z-index: 101;
+  animation: scaleIn 0.3s ease;
 
   h2 {
-    margin-bottom: var(--spacing-md);
-    color: var(--text-color);
-    font-size: 1.5rem;
     text-align: center;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-color);
   }
 
+  // Loading & error
   .dm-loading,
   .dm-error {
     text-align: center;
-    margin: var(--spacing-md) 0;
+    margin: 1rem 0;
+    font-size: 0.95rem;
     color: var(--muted-color);
   }
 
@@ -47,96 +52,175 @@
     color: var(--error-color);
   }
 
+  // ===== Section styling =====
   .dm-section {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 1.5rem;
 
     strong {
       display: block;
-      margin-bottom: var(--spacing-xs);
+      margin-bottom: 0.3rem;
       color: var(--text-color);
+      font-size: 0.95rem;
       font-weight: 600;
     }
 
+    // Address row
     .dm-address-row {
       display: flex;
-      gap: var(--spacing-xs);
+      gap: 0.5rem;
+      align-items: center;
 
       .dm-address-input {
         flex: 1;
-        padding: var(--spacing-xs);
+        padding: 0.6rem;
         border: 1px solid var(--border-color);
-        border-radius: var(--radius-base);
+        border-radius: 0.5rem;
         background: var(--surface-color);
-        backdrop-filter: blur(12px);
-        color: var(--text-color);
         font-family: monospace;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow-x: auto;
       }
 
       .dm-copy-btn {
         background: var(--primary-color);
         color: #fff;
         border: none;
-        border-radius: var(--radius-base);
-        padding: var(--spacing-xs) var(--spacing-md);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
         cursor: pointer;
-        transition: background var(--transition);
+        transition: all 0.2s ease;
 
         &:hover {
           background: var(--primary-hover);
+          transform: translateY(-2px);
         }
       }
     }
 
+    // Instructions
     .dm-instructions {
       list-style: disc inside;
-      margin: var(--spacing-xs) 0 var(--spacing-sm) 0;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
       color: var(--text-color);
-      font-size: 0.9rem;
+      line-height: 1.4;
 
       code {
         background: var(--surface-color);
-        padding: 0 var(--spacing-xs);
-        border-radius: var(--radius-sm);
+        padding: 0 0.3rem;
+        border-radius: 0.25rem;
         font-family: monospace;
       }
     }
   }
 
+  // ===== Action Buttons =====
+  .dm-fiat-row,
   .dm-close-row {
     text-align: center;
-    margin-top: var(--spacing-md);
+    margin-top: 1.5rem;
 
+    .dm-fiat-btn,
     .dm-close-btn {
-      background: var(--secondary-color);
-      color: #fff;
+      display: inline-block;
+      min-width: 120px;
+      padding: 0.6rem 1.5rem;
       border: none;
-      border-radius: var(--radius-base);
-      padding: var(--spacing-xs) var(--spacing-lg);
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background var(--transition);
-
-      &:hover {
-        background: var(--secondary-hover);
-      }
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-  }
-
-  .dm-fiat-row {
-    text-align: center;
-    margin-top: var(--spacing-md);
 
     .dm-fiat-btn {
       background: var(--primary-color);
       color: #fff;
-      border: none;
-      border-radius: var(--radius-base);
-      padding: var(--spacing-xs) var(--spacing-lg);
-      cursor: pointer;
-      transition: background var(--transition);
 
       &:hover {
         background: var(--primary-hover);
+        transform: translateY(-2px);
       }
+    }
+
+    .dm-close-btn {
+      background: var(--secondary-color);
+      color: #fff;
+      margin-top: 0.5rem;
+
+      &:hover {
+        background: var(--secondary-hover);
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  // ===== Close (X) Button =====
+  .dm-close-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
+  }
+}
+
+// ===== Animations =====
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+// ===== ✅ RESPONSIVE – Mobile =====
+@media (max-width: 600px) {
+  .dm-container {
+    max-width: 90%;
+    padding: 1.5rem;
+    border-radius: 0.8rem;
+
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    .dm-section strong {
+      font-size: 0.9rem;
+    }
+
+    .dm-address-row {
+      flex-direction: column;
+      align-items: stretch;
+
+      .dm-copy-btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    .dm-fiat-btn,
+    .dm-close-btn {
+      width: 100%;
+      margin-top: 0.5rem;
     }
   }
 }

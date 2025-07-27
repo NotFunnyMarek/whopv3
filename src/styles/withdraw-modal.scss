@@ -1,103 +1,118 @@
 @import './design-system';
 
 // =============================
-// Styl pro WithdrawModal
+// ✅ Withdraw Modal – Moderní Redesign
 // =============================
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 0.3s ease;
 }
 
+// ===== MODAL CONTAINER =====
 .wm-container {
   width: 100%;
-  max-width: 450px;
-  background: rgba(255, 255, 255, 0.932);
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-  padding: var(--spacing-lg);
+  max-width: 480px;
+  background: var(--surface-color);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
   position: relative;
   z-index: 101;
+  animation: scaleIn 0.3s ease;
 
   h2 {
-    margin-bottom: var(--spacing-md);
-    font-size: 1.5rem;
     text-align: center;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
     color: var(--text-color);
   }
 
+  // ✅ Info messages
   .wm-error,
   .wm-success {
     text-align: center;
-    margin-bottom: var(--spacing-md);
-    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.4rem;
   }
 
   .wm-error {
-    color: var(--error-color);
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
   }
 
   .wm-success {
-    color: var(--success-color);
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
   }
 
+  // ===== Form =====
   .wm-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-  }
+    gap: 1rem;
 
-  .wm-input-group {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.9rem;
-    color: var(--text-color);
-
-    label {
+    .wm-input-group {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xs);
-    }
-
-    input[type='text'],
-    input[type='number'] {
-      padding: var(--spacing-xs) var(--spacing-sm);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-base);
-      background: var(--surface-color);
-      backdrop-filter: blur(12px);
+      font-size: 0.9rem;
       color: var(--text-color);
-      transition: border-color var(--transition);
 
-      &:focus {
-        border-color: var(--primary-color);
-        outline: none;
+      label {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+        color: var(--muted-color);
+      }
+
+      input[type='text'],
+      input[type='number'] {
+        padding: 0.6rem 0.8rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        background: var(--surface-color);
+        font-size: 0.9rem;
+        color: var(--text-color);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+        &:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(50, 102, 255, 0.15);
+          outline: none;
+        }
       }
     }
   }
 
+  // ===== Submit Button =====
   .wm-submit-btn {
-    padding: var(--spacing-xs) var(--spacing-lg);
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 50px;
     background: var(--secondary-color);
     color: #fff;
-    border: none;
-    border-radius: var(--radius-base);
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: background var(--transition), transform var(--transition);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
     &:hover:enabled {
       background: var(--secondary-hover);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
 
     &:disabled {
@@ -108,22 +123,77 @@
     }
   }
 
+  // ===== Close Button Row =====
   .wm-close-row {
     text-align: center;
-    margin-top: var(--spacing-md);
+    margin-top: 1.2rem;
 
     .wm-close-btn {
       background: var(--primary-color);
       color: #fff;
       border: none;
-      border-radius: var(--radius-base);
-      padding: var(--spacing-xs) var(--spacing-lg);
+      border-radius: 50px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: background var(--transition);
+      transition: all 0.2s ease;
 
       &:hover {
         background: var(--primary-hover);
+        transform: translateY(-2px);
       }
+    }
+  }
+
+  // ===== Floating Close (X) Button =====
+  .wm-close-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
+  }
+}
+
+// ===== Animations =====
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+// ===== ✅ Responsive – Mobile =====
+@media (max-width: 600px) {
+  .wm-container {
+    max-width: 90%;
+    padding: 1.5rem;
+    border-radius: 0.8rem;
+
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    .wm-submit-btn,
+    .wm-close-btn {
+      font-size: 0.9rem;
+      padding: 0.7rem;
     }
   }
 }

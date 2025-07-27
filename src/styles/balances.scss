@@ -1,7 +1,7 @@
 @import './design-system';
 
 // =============================
-// Stránka „Balances“ (moderní design)
+// 🌟 Stránka „Balances“ – finální redesign
 // =============================
 
 .balances-container {
@@ -11,12 +11,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  animation: fadeIn 0.3s ease;
 
   h2 {
     font-size: 2rem;
     font-weight: 700;
     text-align: center;
     margin-bottom: var(--spacing-md);
+    color: var(--text-color);
   }
 }
 
@@ -31,10 +33,11 @@
   .bal-amount {
     font-size: 1.6rem;
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
     padding: 0.6rem 1.2rem;
     border-radius: 25px;
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-soft);
 
     span {
       font-weight: 400;
@@ -93,9 +96,11 @@
   display: flex;
   gap: var(--spacing-xs);
   justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   padding: 0.4rem;
   border-radius: 25px;
+  box-shadow: var(--shadow-soft);
 
   .tab-btn {
     background: transparent;
@@ -116,114 +121,113 @@
 
     &:hover {
       color: var(--text-color);
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.05);
     }
   }
 }
 
+// ===== HISTORY TABLE =====
 .balances-history {
   margin-top: var(--spacing-md);
 
   .hist-table {
     width: 100%;
-    border-collapse: separate; // musí být separate, aby fungovalo radius
-    border-spacing: 0 8px;     // mezery mezi řádky pro efekt "cards"
+    border-collapse: separate;
+    border-spacing: 0 8px; // mezery mezi řádky pro efekt "cards"
     font-size: 0.95rem;
+    table-layout: fixed; // ✅ fix proti poskakování šířky
 
     thead {
-      background: var(--secondary-color);
-      border-radius: 10px;
-      overflow: hidden;
+      background: var(--primary-color);
+      color: #fff;
 
       th {
         padding: 0.8rem;
-        color: var(--text-color);
+        text-align: left;
         font-weight: 600;
+        font-size: 0.9rem;
 
         &:first-child {
           border-top-left-radius: 10px;
-          border-bottom-left-radius: 10px;
         }
-
         &:last-child {
           border-top-right-radius: 10px;
-          border-bottom-right-radius: 10px;
         }
       }
     }
 
     tbody {
       tr {
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
         transition: background 0.2s ease;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.05);
         }
 
-        // zaoblení rohů jen na levém a pravém konci
         td:first-child {
-          border-top-left-radius: 25px;
-          border-bottom-left-radius: 25px;
+          border-top-left-radius: 10px;
+          border-bottom-left-radius: 10px;
         }
-
         td:last-child {
-          border-top-right-radius: 25px;
-          border-bottom-right-radius: 25px;
+          border-top-right-radius: 10px;
+          border-bottom-right-radius: 10px;
         }
       }
 
       td {
         padding: 0.8rem;
         color: var(--text-color);
+        overflow-wrap: break-word;
 
         &.mono {
           font-family: monospace;
-          font-size: 0.8rem;
+          font-size: 0.85rem;
           color: var(--muted-color);
-          word-break: break-all;
         }
       }
 
-      // Status badge
+      /* ✅ Status badge */
       .status-completed {
-        background: rgba(39, 174, 96, 0.2);
+        background: rgba(39, 174, 96, 0.15);
         color: #27ae60;
         font-weight: 600;
         padding: 0.2rem 0.6rem;
-        border-radius: 25px;
-        font-size: small;
+        border-radius: 20px;
+        font-size: 0.8rem;
       }
       .status-pending {
-        background: rgba(255, 165, 0, 0.2);
+        background: rgba(255, 165, 0, 0.15);
         color: #f39c12;
         font-weight: 600;
         padding: 0.2rem 0.6rem;
-        border-radius: 25px;
-                font-size: small;
+        border-radius: 20px;
+        font-size: 0.8rem;
       }
       .status-failed {
-        background: rgba(231, 76, 60, 0.2);
+        background: rgba(231, 76, 60, 0.15);
         color: #e74c3c;
         font-weight: 600;
         padding: 0.2rem 0.6rem;
-        border-radius: 25px;
-                font-size: small;
+        border-radius: 20px;
+        font-size: 0.8rem;
       }
     }
   }
 }
 
-// ===== Responsive - Mobilní režim jako "cards" =====
 @media (max-width: 600px) {
   .balances-history {
     .hist-table {
       border: 0;
+      border-spacing: 0;
       width: 100%;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
 
       thead {
-        display: none; // skryje hlavičku
+        display: none;
       }
 
       tbody {
@@ -233,51 +237,50 @@
 
         tr {
           display: block;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--surface-color);
+          border: 1px solid var(--border-color);
           border-radius: 12px;
-          padding: 0.6rem;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.08);
-          }
+          padding: 0.7rem;
+          box-shadow: var(--shadow-soft);
 
           td {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.3rem 0;
+            display: block;            /* ✅ každý údaj pod sebe */
+            padding: 0.4rem 0;
             border: none;
-            font-size: 0.8rem;
-            word-break: break-word;
+            font-size: 0.85rem;
 
             &:before {
               content: attr(data-label);
-              font-weight: 500;       // méně výrazné
-              font-size: 0.7rem;      // zmenšené názvy
+              display: block;          /* ✅ label vždy nad hodnotou */
+              font-weight: 500;
+              font-size: 0.75rem;
               color: var(--muted-color);
-              text-transform: none;   // odstraní velká písmena
-              flex: 1;
-              max-width: 40%;
-              margin-right: 6px;
-              white-space: nowrap;    // nezalomí text
-              overflow: hidden;
-              text-overflow: ellipsis;
+              margin-bottom: 2px;
             }
 
-            &:last-child {
-              border-bottom: none;
+            /* ✅ Hodnota se normálně zalamuje */
+            word-break: break-word;
+            white-space: normal;
+
+            /* ✅ Monospace pro hash/adresy */
+            &.mono {
+              font-family: monospace;
+              font-size: 0.75rem;
+              line-height: 1.2;
             }
-          }
 
-          td:first-child {
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-          }
-
-          td:last-child {
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            /* ✅ Badge status */
+            .status-completed,
+            .status-pending,
+            .status-failed {
+              display: inline-block;
+              padding: 0.25rem 0.6rem;
+              border-radius: 25px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              white-space: nowrap;
+              margin-top: 2px;
+            }
           }
         }
       }
@@ -285,3 +288,9 @@
   }
 }
 
+
+/* ===== Animace ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
