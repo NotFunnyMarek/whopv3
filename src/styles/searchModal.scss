@@ -1,67 +1,85 @@
 @import "./design-system";
+
 /* overlay */
 .search-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(2px);
   z-index: 1000;
+  animation: fadeIn 0.2s ease;
 }
 
 /* modal */
 .search-modal {
-  padding: 50px 10px !important;
   position: relative;
   width: 100%;
-  max-width: 580px;
+  max-width: 640px;
   background: var(--surface-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  padding: var(--spacing-lg);
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  padding: 4rem;
   display: flex;
   flex-direction: column;
+  gap: 1.2rem;
+  animation: scaleIn 0.2s ease;
+
+  @media (max-width: 600px) {
+    margin: 0 1rem;
+    padding: 4rem 0.5rem;
+  }
 }
 
 /* close button */
 .close-btn {
   position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  line-height: 1;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  font-size: 1.4rem;
   color: var(--muted-color);
-  cursor: pointer;
   border-radius: 50%;
-  transition: background var(--transition), color var(--transition);
-}
-.close-btn:hover {
-  background: var(--border-color);
-  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+  }
 }
 
 /* input */
 .search-input {
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 1.1rem;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.05rem;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-base);
-  margin-bottom: var(--spacing-md);
+  border-radius: 50px;
   background: var(--bg-color);
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  }
 }
 
 /* loading */
 .loading {
   text-align: center;
   color: var(--muted-color);
-  margin-bottom: var(--spacing-md);
+  font-size: 0.95rem;
 }
 
 /* results */
@@ -71,32 +89,31 @@
   padding: 0;
   overflow-y: auto;
   max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
   .result-item {
     display: flex;
     align-items: center;
-    padding: var(--spacing-sm) 0;
+    gap: 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.8rem;
     cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
-    transition: background var(--transition), transform var(--transition);
+    transition: all 0.2s ease;
 
     &:hover {
-      background: rgb(238, 237, 237);
-      border-radius: 20px;
-      padding: 10px 8px;
-      transform: scale(0.97);
-    }
-    &:last-child {
-      border-bottom: none;
+      background: var(--border-color);
+      transform: scale(0.99);
     }
 
     .thumb {
-      flex: 0 0 72px;
-      height: 72px;
-      margin-right: var(--spacing-md);
-      border-radius: var(--radius-sm);
+      flex: 0 0 64px;
+      height: 64px;
+      border-radius: 0.6rem;
       overflow: hidden;
       background: var(--border-color);
+      box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.05);
 
       img {
         width: 100%;
@@ -109,20 +126,22 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      justify-content: center;
 
       .title {
         font-weight: 600;
         font-size: 1rem;
         color: var(--text-color);
+        margin-bottom: 0.15rem;
       }
       .slug {
         font-size: 0.9rem;
         color: var(--muted-color);
-        margin: var(--spacing-xs) 0;
       }
       .desc {
         font-size: 0.85rem;
         color: var(--muted-color);
+        margin-top: 0.2rem;
       }
     }
   }
@@ -130,6 +149,17 @@
   .no-results {
     text-align: center;
     color: var(--muted-color);
-    padding: var(--spacing-sm) 0;
+    font-size: 0.95rem;
+    padding: 0.8rem 0;
   }
+}
+
+/* ✅ animace */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
